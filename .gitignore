@@ -1,0 +1,33 @@
+# Pipeline data: downloads, MIDI files, analysis bundles, databases.
+# MIDI transcriptions of copyrighted songs are never committed.
+/data/
+*.mid
+*.midi
+*.kar
+*.rmi
+*.sf2
+*.sf3
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.db
+*.db-journal
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# .NET
+bin/
+obj/
+*.user
+.vs/
+
+# Editors / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+*.log
