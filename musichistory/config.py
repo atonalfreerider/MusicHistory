@@ -14,7 +14,9 @@ ROOT = Path(__file__).resolve().parent.parent
 DATA = Path(os.environ.get("MUSICHISTORY_DATA", ROOT / "data")).resolve()
 RESONANCE_ROOT = Path(os.environ.get("RESONANCE_ROOT", ROOT.parent / "Resonance-2")).resolve()
 
-CACHE = DATA / "cache"            # raw downloads: list sources, Lakh archives, sitemaps, Hooktheory
+# Raw downloads (list sources, Lakh archives, sitemaps, Hooktheory). Separately overridable
+# so a scratch DATA folder for tests can share the multi-gigabyte cache.
+CACHE = Path(os.environ.get("MUSICHISTORY_CACHE", DATA / "cache")).resolve()
 CANDIDATES = DATA / "candidates"  # sanitized candidate MIDIs: candidates/<work_id>/<source>__<md5>.mid
 SONGS = DATA / "songs"            # chosen song per work: songs/<work_id>/score.mid (+ analysis files)
 NORMALIZED = DATA / "normalized"  # every song transposed to C major / A minor at TARGET_BPM
