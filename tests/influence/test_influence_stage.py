@@ -425,10 +425,10 @@ def _design_lineage_tables() -> str:
 
 @pytest.mark.parametrize("which", ["fixture_run", "lineage_run"])
 def test_graph_meets_the_unity_loader_contract(which, request):
-    """The viewer side's own conformance check (tests/unity/graph_fixture.py) passes on both graphs."""
-    path = ROOT / "tests" / "unity" / "graph_fixture.py"
+    """The viewer side's own conformance check (tests/viewer/graph_fixture.py) passes on both graphs."""
+    path = ROOT / "tests" / "viewer" / "graph_fixture.py"
     if not path.exists():
-        pytest.skip("tests/unity/graph_fixture.py not present")
+        pytest.skip("tests/viewer/graph_fixture.py not present")
     import importlib.util
     spec = importlib.util.spec_from_file_location("mh_unity_graph_fixture", path)
     gf = importlib.util.module_from_spec(spec)

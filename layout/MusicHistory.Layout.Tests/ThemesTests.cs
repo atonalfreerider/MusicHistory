@@ -645,6 +645,7 @@ public class ThemesLayoutTests(ITestOutputHelper output)
         string? dll = new[]
         {
             Environment.GetEnvironmentVariable("MUSICHISTORY_SQLITE315") ?? "",
+            Path.Combine(Path.GetDirectoryName(root)!, "MusicHistory-Viewer", "Assets", "Plugins", "x86_64", "sqlite3.dll"),
             Path.Combine(root, "unity", "Assets", "Plugins", "x86_64", "sqlite3.dll"),
             Path.Combine(Path.GetDirectoryName(root)!, "Unity-FDG", "Assets", "Plugins", "x86_64", "sqlite3.dll"),
         }.FirstOrDefault(File.Exists);

@@ -14,6 +14,19 @@ ROOT = Path(__file__).resolve().parent.parent
 DATA = Path(os.environ.get("MUSICHISTORY_DATA", ROOT / "data")).resolve()
 RESONANCE_ROOT = Path(os.environ.get("RESONANCE_ROOT", ROOT.parent / "Resonance-2")).resolve()
 
+
+def _viewer_root() -> Path:
+    """The Unity viewer project (its own repository, normally the sibling ../MusicHistory-Viewer;
+    MUSICHISTORY_VIEWER overrides; the legacy in-repo unity/ folder is the last resort)."""
+    env = os.environ.get("MUSICHISTORY_VIEWER", "").strip()
+    for candidate in ([Path(env)] if env else []) + [ROOT.parent / "MusicHistory-Viewer", ROOT / "unity"]:
+        if (candidate / "Assets").is_dir():
+            return candidate.resolve()
+    return (Path(env) if env else ROOT.parent / "MusicHistory-Viewer").resolve()
+
+
+VIEWER = _viewer_root()
+
 # Raw downloads (list sources, Lakh archives, sitemaps, Hooktheory). Separately overridable
 # so a scratch DATA folder for tests can share the multi-gigabyte cache.
 CACHE = Path(os.environ.get("MUSICHISTORY_CACHE", DATA / "cache")).resolve()

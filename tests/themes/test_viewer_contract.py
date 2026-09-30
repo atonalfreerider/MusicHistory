@@ -1,6 +1,6 @@
 """The LyricThemes Unity viewer against the themes graph contract (DESIGN.md §12).
 
-The viewer's C# reader (unity/Assets/MusicHistory/Themes/ThemesGraphData.cs) keeps its SQL in
+The viewer's C# reader (MusicHistory-Viewer: Assets/MusicHistory/Themes/ThemesGraphData.cs) keeps its SQL in
 string constants. These tests run exactly those queries against the exporter's GRAPH_SCHEMA, so a
 column renamed on either side fails here rather than in Unity; they also check that the viewer
 names the ten themes in the exporter's order, selects no text column other than the fixed
@@ -20,10 +20,11 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
+from musichistory import config  # noqa: E402
 from musichistory.themes import export  # noqa: E402
 from musichistory.themes.classify import THEMES  # noqa: E402
 
-UNITY = ROOT / "unity"
+UNITY = config.VIEWER  # sibling repository ../MusicHistory-Viewer (MUSICHISTORY_VIEWER overrides)
 READER = UNITY / "Assets" / "MusicHistory" / "Themes" / "ThemesGraphData.cs"
 THEMES_DIR = UNITY / "Assets" / "MusicHistory" / "Themes"
 SCENE = UNITY / "Assets" / "Scenes" / "LyricThemes.unity"

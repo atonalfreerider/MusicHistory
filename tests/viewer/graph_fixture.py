@@ -15,8 +15,8 @@ other free-text events; no lyric text is ever decoded, stored or printed here.
 
 CLI::
 
-    python tests/unity/graph_fixture.py build [--out data/fixtures/unity] [--source <dir with MIDIs>]
-    python tests/unity/graph_fixture.py check <graph.db> [...]
+    python tests/viewer/graph_fixture.py build [--out data/fixtures/unity] [--source <dir with MIDIs>]
+    python tests/viewer/graph_fixture.py check <graph.db> [...]
 """
 
 from __future__ import annotations
