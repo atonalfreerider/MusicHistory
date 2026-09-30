@@ -75,9 +75,17 @@ namespace MusicHistory.Playback
         public static int Wrap(int semitones) => ((semitones % 12) + 12 + 6) % 12 - 6;
 
         /// <summary>
+        /// Tempos further apart than this many octaves are treated as half/double time of
+        /// each other (70 -> 140 is not a ramp); closer tempos are ramped literally
+        /// (125 -> 87 starts at 125).
+        /// </summary>
+        public const double FoldOctaves = 0.8;
+
+        /// <summary>
         /// The song starts in the key and BPM of the song played before it and glides to its
-        /// own over <paramref name="morphBars"/> bars. The previous BPM is folded by an octave
-        /// (x1/2, x1, x2) to whichever is closest to the native BPM, so 70 -> 140 is not a ramp.
+        /// own over <paramref name="morphBars"/> bars. The previous BPM is used as is unless it
+        /// is more than <see cref="FoldOctaves"/> away from the native BPM; then it is halved or
+        /// doubled (x1/2, x2) to whichever is closest, so the pulse carries over.
         /// </summary>
         public static MorphPlan Plan(SongClip previous, SongClip next, double morphBars)
         {
@@ -86,8 +94,9 @@ namespace MusicHistory.Playback
             double n = next.NativeBpm > 0 ? next.NativeBpm : 120;
             double p = previous.NativeBpm > 0 ? previous.NativeBpm : n;
             double best = p;
-            foreach (double candidate in new[] { p / 2, p, p * 2 })
-                if (Math.Abs(Math.Log(candidate / n)) < Math.Abs(Math.Log(best / n))) best = candidate;
+            if (Math.Abs(Math.Log(p / n, 2)) > FoldOctaves)
+                foreach (double candidate in new[] { p / 2, p * 2, p / 4, p * 4 })
+                    if (Math.Abs(Math.Log(candidate / n)) < Math.Abs(Math.Log(best / n))) best = candidate;
             double beatsPerBar = next.BeatsPerBar > 0 ? next.BeatsPerBar : 4;
             return new MorphPlan(semis, best / n, morphBars * beatsPerBar);
         }
