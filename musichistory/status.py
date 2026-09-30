@@ -39,5 +39,17 @@ def run(args: argparse.Namespace) -> int:
     ]
     for label, sql in rows:
         print(f"{label:45s} {_scalar(conn, sql):>8}")
-    print(f"{'graph db':45s} {'present' if config.GRAPH_DB.exists() else 'missing':>8}")
+    if not config.GRAPH_DB.exists():
+        print(f"{'graph db':45s} {'missing':>8}")
+        return 0
+    graph = sqlite3.connect(f"file:{config.GRAPH_DB.as_posix()}?mode=ro", uri=True)
+    for label, sql in (
+        ("graph: songs", "SELECT COUNT(*) FROM nodes"),
+        ("graph: influence edges", "SELECT COUNT(*) FROM influence_edges"),
+        ("graph: roots", "SELECT COUNT(*) FROM song_node WHERE tree_parent_node IS NULL"),
+        ("layout: positioned songs", "SELECT COUNT(*) FROM nodes WHERE position_x IS NOT NULL"),
+        ("layout: runs", "SELECT COUNT(*) FROM layout_run"),
+    ):
+        print(f"{label:45s} {_scalar(graph, sql):>8}")
+    graph.close()
     return 0

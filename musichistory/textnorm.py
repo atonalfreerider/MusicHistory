@@ -119,8 +119,24 @@ def filename_tokens(path: str) -> str:
     return squash(fold(base))
 
 
+def strip_featuring(s: str) -> str:
+    """Remove featuring credits ("feat. X", "(with X)") from a title or artist credit."""
+    return _FEAT.sub("", s or "").strip()
+
+
+# Words that may follow an act's own name without making it a different act:
+# "Elvis Presley and the Jordanaires", "Prince & The Revolution".
+_ACT_JOINERS = {"and", "with", "feat", "featuring", "ft", "x", "vs"}
+
+
 def artist_matches(candidate: str, artist: str, threshold: float = 85.0) -> float:
-    """Score 0..100 that ``candidate`` names ``artist`` (token-set, squashed containment)."""
+    """Score 0..100 that ``candidate`` names ``artist``.
+
+    Word order is ignored ("Gaye, Marvin" == "Marvin Gaye"), but every token of ``artist``
+    must appear as a whole word, and extra words are only accepted as a second act joined
+    by "and"/"with"/...: "Queen" does not match "Queen Latifah" or "Queensryche", and
+    "Drake" does not match "Pete Drake".
+    """
     from rapidfuzz import fuzz
 
     a, c = artist_key(artist), artist_key(candidate)
@@ -128,11 +144,29 @@ def artist_matches(candidate: str, artist: str, threshold: float = 85.0) -> floa
         return 0.0
     if squash(a) == squash(c):
         return 100.0
-    score = fuzz.token_set_ratio(a, c)
-    toks = artist_tokens(artist)
-    if toks and all(t in squash(c) for t in toks):
-        score = max(score, 95.0)
-    return float(score)
+    score = float(fuzz.token_sort_ratio(a, c))
+    a_toks = [drop_g(t) for t in a.split() if t != "and"]
+    c_words = [drop_g(w) for w in c.split()]
+    if a_toks and all(t in c_words for t in a_toks):
+        extra = [w for w in c_words if w not in a_toks and w != "and"]
+        if not extra:
+            score = max(score, 97.0)
+        else:
+            # Extra words are fine only after a joiner that follows the whole artist name.
+            last = max(c_words.index(t) for t in a_toks)
+            first = min(c_words.index(t) for t in a_toks)
+            tail = c_words[last + 1:]
+            if first == 0 and tail and tail[0] in _ACT_JOINERS and len(a_toks) == last - first + 1:
+                score = max(score, 90.0)
+            else:
+                score = min(score, 80.0)
+    else:
+        # The reverse: a file filed under "Prince" for the credit "Prince & The Revolution".
+        a_words = [drop_g(w) for w in a.split()]
+        n = len(c_words)
+        if 0 < n < len(a_words) and a_words[:n] == c_words and a_words[n] in _ACT_JOINERS:
+            score = max(score, 90.0)
+    return score
 
 
 def title_matches(candidate: str, title: str) -> float:

@@ -24,6 +24,7 @@ ANALYSIS_WORK = DATA / "analysis-work"  # scratch folders for candidate analysis
 GRAPH = DATA / "graph"            # graph database handed to layout and Unity
 TOOLS = DATA / "tools"            # built executables (PatternPrep)
 SOUNDFONTS = DATA / "soundfonts"  # converted SF2 for the Unity player
+REPORTS = DATA / "reports"        # source comparison and other human-readable reports
 PIPELINE_DB = DATA / "musichistory.sqlite"
 GRAPH_DB = GRAPH / "music_graph.db"
 
@@ -49,5 +50,5 @@ def user_agent() -> str:
 
 
 def ensure_dirs() -> None:
-    for p in (DATA, CACHE, CANDIDATES, SONGS, NORMALIZED, ANALYSIS_WORK, GRAPH, TOOLS, SOUNDFONTS):
+    for p in (DATA, CACHE, CANDIDATES, SONGS, NORMALIZED, ANALYSIS_WORK, GRAPH, TOOLS, SOUNDFONTS, REPORTS):
         p.mkdir(parents=True, exist_ok=True)

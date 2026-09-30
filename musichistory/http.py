@@ -17,7 +17,7 @@ import random
 import sqlite3
 import threading
 import time
-import urllib.robotparser
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -29,6 +29,62 @@ from . import config
 
 class RobotsDisallowed(RuntimeError):
     pass
+
+
+class Robots:
+    """robots.txt rules with the ``*`` and ``$`` wildcards Google and most sites use.
+
+    ``urllib.robotparser`` treats ``Disallow: /*?q=`` literally, so it would allow
+    midicollection's search. Here the group for our agent token (else ``*``) applies, the
+    longest matching rule wins and Allow wins ties, per RFC 9309.
+    """
+
+    def __init__(self, text: str, agent_token: str = "musichistory") -> None:
+        groups: list[tuple[list[str], list[tuple[bool, str]]]] = []
+        agents: list[str] = []
+        rules: list[tuple[bool, str]] = []
+        for raw in text.splitlines():
+            line = raw.split("#", 1)[0].strip()
+            if ":" not in line:
+                continue
+            field, value = (p.strip() for p in line.split(":", 1))
+            field = field.lower()
+            if field == "user-agent":
+                if rules:
+                    groups.append((agents, rules))
+                    agents, rules = [], []
+                agents.append(value.lower())
+            elif field in ("allow", "disallow") and agents:
+                if value:
+                    rules.append((field == "allow", value))
+                elif field == "disallow":
+                    rules.append((True, "/"))  # "Disallow:" (empty) allows everything
+        if agents:
+            groups.append((agents, rules))
+        token = agent_token.lower()
+        chosen = [r for a, r in groups if any(x != "*" and x in token for x in a)]
+        if not chosen:
+            chosen = [r for a, r in groups if "*" in a]
+        self.rules = [rule for group in chosen for rule in group]
+
+    @staticmethod
+    def _pattern(path: str):
+        import re
+
+        anchored = path.endswith("$")
+        body = re.escape(path[:-1] if anchored else path).replace(r"\*", ".*")
+        return re.compile(body + ("$" if anchored else ""))
+
+    def can_fetch(self, url: str) -> bool:
+        parts = urlsplit(url)
+        target = (parts.path or "/") + (f"?{parts.query}" if parts.query else "")
+        best: tuple[int, bool] | None = None
+        for allow, path in self.rules:
+            if self._pattern(path).match(target):
+                key = (len(path), allow)
+                if best is None or key > best:
+                    best = key
+        return True if best is None else best[1]
 
 
 @dataclass
@@ -74,8 +130,10 @@ class PoliteClient:
         self.db = db
         self._sessions: dict[str, requests.Session] = {}
         self._last: dict[str, float] = {}
-        self._robots: dict[str, urllib.robotparser.RobotFileParser | None] = {}
+        self._robots: dict[str, Robots | None] = {}
         self._lock = threading.Lock()
+        # Hosts that share one rate budget (e.g. Wikipedia and Wikidata): host -> group key.
+        self.rate_groups: dict[str, str] = {}
 
     # -- plumbing ---------------------------------------------------------------------
     def session(self, host: str) -> requests.Session:
@@ -88,18 +146,18 @@ class PoliteClient:
 
     def _wait(self, host: str) -> None:
         interval = self.min_interval.get(host, self.default_interval)
+        key = self.rate_groups.get(host, host)
         with self._lock:
-            last = self._last.get(host, 0.0)
+            last = self._last.get(key, 0.0)
             delay = last + interval * random.uniform(1.0, 1.25) - time.monotonic()
             if delay > 0:
                 time.sleep(delay)
-            self._last[host] = time.monotonic()
+            self._last[key] = time.monotonic()
 
     def allowed(self, url: str) -> bool:
         parts = urlsplit(url)
         host = parts.netloc
         if host not in self._robots:
-            rp = urllib.robotparser.RobotFileParser()
             robots_url = f"{parts.scheme}://{host}/robots.txt"
             try:
                 self._wait(host)
@@ -107,14 +165,13 @@ class PoliteClient:
                 ctype = r.headers.get("Content-Type", "")
                 # Soft-404 pages (HTML served with 200) state no rules.
                 if r.status_code == 200 and "html" not in ctype.lower():
-                    rp.parse(r.text.splitlines())
-                    self._robots[host] = rp
+                    self._robots[host] = Robots(r.text)
                 else:
                     self._robots[host] = None
             except requests.RequestException:
                 self._robots[host] = None
-        rp = self._robots[host]
-        return True if rp is None else rp.can_fetch(config.user_agent(), url)
+        rules = self._robots[host]
+        return True if rules is None else rules.can_fetch(url)
 
     def _cache_path(self, url: str) -> Path | None:
         if self.cache_dir is None:
@@ -143,7 +200,10 @@ class PoliteClient:
         use_cache: bool = True,
         allow_redirects: bool = True,
         ok_statuses: tuple[int, ...] = (200,),
+        cache_if: "Callable[[Fetched], bool] | None" = None,
     ) -> Fetched:
+        """GET ``url`` politely. ``cache_if`` decides whether a successful response may be
+        cached (e.g. MediaWiki reports errors with HTTP 200)."""
         full = requests.Request("GET", url, params=params).prepare().url
         cache = self._cache_path(full) if use_cache else None
         if cache is not None and cache.exists():
@@ -183,7 +243,7 @@ class PoliteClient:
                 time.sleep(min(120, wait))
                 continue
             fetched = Fetched(full, r.status_code, r.content, ctype, dict(r.headers))
-            if cache is not None and r.status_code in ok_statuses:
+            if cache is not None and r.status_code in ok_statuses and (cache_if is None or cache_if(fetched)):
                 cache.parent.mkdir(parents=True, exist_ok=True)
                 tmp = cache.with_suffix(".tmp")
                 tmp.write_bytes(r.content)

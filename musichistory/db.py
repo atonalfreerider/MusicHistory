@@ -73,12 +73,15 @@ CREATE TABLE IF NOT EXISTS year_evidence(
   work_id TEXT NOT NULL, source TEXT NOT NULL, value TEXT NOT NULL,
   precision INTEGER, accepted INTEGER NOT NULL DEFAULT 1, reason TEXT
 );
+CREATE INDEX IF NOT EXISTS year_evidence_work ON year_evidence(work_id);
 CREATE TABLE IF NOT EXISTS known_influence(   -- ground truth for validation only
   src_work_id TEXT NOT NULL, dst_work_id TEXT NOT NULL,
   kind TEXT NOT NULL,                -- 'wikidata_P144' | 'wikidata_P2550' | 'control_positive' | ...
   note TEXT,
   PRIMARY KEY(src_work_id, dst_work_id, kind)
 );
+-- Version controls whose recordings merged into one work have src_work_id = dst_work_id.
+CREATE INDEX IF NOT EXISTS known_influence_dst ON known_influence(dst_work_id);
 
 -- ---------------------------------------------------------------- fetch / select
 CREATE TABLE IF NOT EXISTS fetch_log(
@@ -98,7 +101,9 @@ CREATE TABLE IF NOT EXISTS candidate(
   match_class TEXT,                  -- 'accept' | 'probable'
   lmd_match_score REAL,              -- Lakh audio match score when the file is in lmd_matched
   lmd_msd_id TEXT,
-  sanitized_path TEXT,               -- data/candidates/<work_id>/<source>__<md5>.mid
+  sanitized_path TEXT,               -- data/candidates/<work_id>/<source>__<md5>.mid: relative to the
+                                     -- repo root when DATA is inside it, else absolute;
+                                     -- resolve with config.ROOT / path
   valid INTEGER NOT NULL DEFAULT 0,
   invalid_reason TEXT,
   features_json TEXT,                -- musichistory.midi.features output (see DESIGN.md)
@@ -158,7 +163,8 @@ CREATE TABLE IF NOT EXISTS key_region(
 -- Chord sequences over the normalized key frame.
 --   L1 token = root_pc * 3 + q   with q: 0 maj, 1 min, 2 dim        (36 symbols)
 --   L2 token = root_pc * 6 + q   with q: 0 '', 1 m, 2 7, 3 maj7, 4 m7, 5 dim   (72 symbols)
---   keyfree token (kind 'keyfree') = ((root_b - root_a) % 12) * 9 + qa * 3 + qb   (108 symbols, L1 q)
+--   keyfree token (kind 'keyfree', level 'L1' only) = ((root_b - root_a) % 12) * 9 + qa * 3 + qb
+--                                                      (108 symbols, L1 qualities)
 -- kinds: 'chg' (changes, passing chords < 0.75 beat dropped, repeats collapsed),
 --        'cd'  (chg tokens with duration class: token * 8 + clip(round(log2(beats)), -1, 4) + 1),
 --        'beat' (one L1 token per beat; -1 = no chord), 'keyfree' (from chg).
@@ -187,7 +193,8 @@ CREATE TABLE IF NOT EXISTS loop(
 CREATE TABLE IF NOT EXISTS melody_line(
   work_id TEXT NOT NULL, role TEXT NOT NULL,
   onsets TEXT NOT NULL,              -- JSON float array (beats, quantized to 1/12)
-  durs TEXT NOT NULL,                -- JSON float array (beats)
+  durs TEXT NOT NULL,                -- JSON float array (beats): time to the next onset
+                                     -- (rests absorbed); the last note keeps its own length
   pitches TEXT NOT NULL,             -- JSON int array: MIDI pitch + region shift (normalized)
   met TEXT NOT NULL,                 -- JSON int array: 0 downbeat, 1 beat, 2 eighth, 3 other
   PRIMARY KEY(work_id, role)
