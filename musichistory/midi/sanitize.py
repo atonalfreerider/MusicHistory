@@ -10,7 +10,10 @@ Why each step exists (see the Resonance PatternPrep failure modes in the researc
 * type-0 files are split into one track per channel, so every part gets its own lane;
 * track names become neutral ``T<nn> <role>`` labels (no credits or titles leak through,
   and PatternPrep's name-based lane roles still work);
-* a track whose name says drums is moved to channel 10, where NAudio expects drums;
+* a track whose name says drums is moved to channel 10, where NAudio expects drums, when
+  its notes look like a drum part (at most 12 distinct keys, all in 27-87); GM pitched
+  patch names such as "Percussive Organ", "Steel Drums" or "Melodic Tom" never count as
+  drums (or melody) names;
 * hanging notes are closed, a note-on at the final tick is dropped and ``end_of_track`` is
   padded one beat past the last note-off: NAudio/PatternPrep throw otherwise.
 
@@ -41,6 +44,21 @@ from .validate import (
 
 ROLES = ("vocal", "melody", "lead", "bass", "drums", "backing", "piano", "guitar", "strings", "other")
 DRUM_CHANNEL = 9  # 0-based; channel 10 in the 1..16 convention
+
+# General MIDI names of *pitched* patches that contain a drums or melody keyword: Percussive
+# Organ (17), the Chromatic Percussion family (8-15), Steel Drums (114), Melodic Tom (117),
+# Reverse Cymbal (119). Transcribers often name a track after its patch ("PercOrgan",
+# "STEELDRUM", "Melodic Toms"), so these phrases are cut out of a name before the role
+# patterns run: the phrase itself never makes a track 'drums' or 'melody', and a name with
+# nothing else in it takes its role from the program.
+_GM_MELODIC = re.compile(
+    r"perc\w*\.?[\s._/-]*org\w*"            # Percussive Organ, Perc. Org, PercOrgan, Percusive Organ
+    r"|chrom\w*\.?[\s._/-]*perc\w*"         # Chromatic Percussion, Chrom. Perc
+    r"|st(?:ee)?l[\s._-]*dru?ms?"           # Steel Drum(s), STEELDRUM, StlDrum
+    r"|steel[\s._-]*pans?"                  # Steel Pan(s), the same patch
+    r"|mel\w*\.?[\s._-]*toms?\b"            # Melodic Tom(s), Mel. Tom
+    r"|rev\w*\.?[\s._-]*cym\w*"             # Reverse Cymbal, RevCymbal
+)
 
 # Order matters: the first pattern that matches a (lower-cased) name wins.
 _NAME_ROLES: list[tuple[str, re.Pattern[str]]] = [
@@ -77,9 +95,13 @@ def program_role(program: int) -> str:
 
 
 def name_role(names: list[bytes]) -> str | None:
-    """Role keyword found in a track's name/instrument events; the text is then dropped."""
+    """Role keyword found in a track's name/instrument events; the text is then dropped.
+
+    GM pitched-patch names ("Percussive Organ", "Steel Drums", "Melodic Toms") are removed
+    first, so they yield no role (the program decides) instead of 'drums' or 'melody'.
+    """
     for raw in names:
-        s = raw[:64].decode("latin-1").lower()
+        s = _GM_MELODIC.sub(" ", raw[:64].decode("latin-1").lower())
         for role, pat in _NAME_ROLES:
             if pat.search(s):
                 return role
@@ -243,6 +265,18 @@ def _dominant_channel(events: list[Event]) -> int | None:
     return c.most_common(1)[0][0] if c else None
 
 
+# A drum part played on a melodic channel strikes a few kit keys; a pitched part (organ
+# chords, a steel-drum tune) spreads over more keys or leaves the GM/GS drum-key range.
+DRUM_KEYS = range(27, 88)       # GM2/GS drum map, High Q .. Open Surdo
+DRUM_MAX_DISTINCT_KEYS = 12
+
+
+def looks_like_drums(events: list[Event], channel: int) -> bool:
+    """The note-ons on ``channel`` use at most 12 distinct keys, all inside 27-87."""
+    keys = {e.data[0] for e in events if e.status == (0x90 | channel) and e.data[1] > 0}
+    return 0 < len(keys) <= DRUM_MAX_DISTINCT_KEYS and all(k in DRUM_KEYS for k in keys)
+
+
 def sanitize(raw: RawMidi) -> Sanitized:
     ppq = raw.ppq
     warnings = list(raw.warnings)
@@ -294,16 +328,23 @@ def sanitize(raw: RawMidi) -> Sanitized:
     elif raw.format == 0 and tracks:
         tracks[0].name_role = None  # a type-0 track name is the song title, not a role
 
-    # Drum tracks named as such but sitting on another channel go to channel 10.
+    # Drum tracks named as such but sitting on another channel go to channel 10, but only
+    # when their notes look like a drum part: a pitched part under a drum-like name stays on
+    # its channel and takes its role from the program.
     for t in tracks:
         if t.name_role == "drums":
             dom = _dominant_channel(t.events)
-            if dom is not None and dom != DRUM_CHANNEL:
+            if dom is None or dom == DRUM_CHANNEL:
+                continue
+            if looks_like_drums(t.events, dom):
                 t.events = [
                     Event(e.tick, (e.status & 0xF0) | DRUM_CHANNEL, e.data) if e.status & 0x0F == dom else e
                     for e in t.events
                 ]
                 warnings.append("drums_to_ch10")
+            else:
+                t.name_role = None
+                warnings.append("drum_name_pitched_kept")
 
     file_last = max((e.tick for t in tracks for e in t.events if e.status & 0xF0 in (0x80, 0x90)), default=0)
     counts: Counter = Counter()

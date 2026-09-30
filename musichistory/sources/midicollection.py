@@ -24,14 +24,14 @@ from urllib.parse import unquote
 
 from .. import config
 from ..http import PoliteClient, RobotsDisallowed
-from ..textnorm import fold, squash
+from ..textnorm import fold, squash_loose
 from . import base
 from .base import Hit, SourceStats, Work
 
 SOURCE = "midicollection"
 HOST = "https://midicollection.com"
 INTERVAL = 2.0
-INDEX_VERSION = "1"
+INDEX_VERSION = "2"  # 2: slugs squashed with textnorm.squash_loose, like Work.title_forms
 SITEMAP_MAX_AGE_DAYS = 7
 _LOC = re.compile(r"/song/(\d+)/([^<\s]+)$")
 
@@ -60,9 +60,24 @@ def _locs(xml: bytes) -> list[str]:
     return [el.text.strip() for el in root.iter() if el.tag.endswith("loc") and el.text]
 
 
+def _index_version(path: Path) -> str | None:
+    try:
+        c = sqlite3.connect(f"file:{path.as_posix()}?mode=ro", uri=True)
+    except sqlite3.Error:
+        return None
+    try:
+        row = c.execute("SELECT value FROM meta WHERE key='version'").fetchone()
+        return row[0] if row else None
+    except sqlite3.Error:
+        return None
+    finally:
+        c.close()  # an open handle would block replacing the file on Windows
+
+
 def build_index(client: PoliteClient | None, refresh: bool = False) -> Path:
+    """Offline slug index; rebuilt from the cached sitemaps when ``INDEX_VERSION`` changes."""
     dest = cache_dir() / "index.sqlite"
-    if dest.exists() and not refresh:
+    if dest.exists() and not refresh and _index_version(dest) == INDEX_VERSION:
         return dest
     index = _locs(_sitemap(client, "sitemap.xml", refresh))
     names = [u.rsplit("/", 1)[-1] for u in index]
@@ -86,7 +101,7 @@ def build_index(client: PoliteClient | None, refresh: bool = False) -> Path:
         CREATE TABLE artist(slug TEXT PRIMARY KEY);
     """)
     c.executemany("INSERT OR REPLACE INTO song(id, slug, sq) VALUES (?,?,?)",
-                  ((i, s, squash(fold(s))) for i, s in songs))
+                  ((i, s, squash_loose(fold(s))) for i, s in songs))
     c.execute("INSERT INTO song_fts(song_fts) VALUES ('rebuild')")
     c.executemany("INSERT OR IGNORE INTO artist(slug) VALUES (?)", ((a,) for a in artists))
     c.executemany("INSERT INTO meta VALUES (?,?)", [("version", INDEX_VERSION), ("n_songs", str(len(songs))),
@@ -232,3 +247,17 @@ def fetch(conn: sqlite3.Connection, works: list[Work], client: PoliteClient, *,
         conn.commit()
     st.requests = mc.requests
     return st.done()
+
+
+def redownload(conn: sqlite3.Connection, works: list[Work], client: PoliteClient) -> SourceStats:
+    """Download every stored midicollection candidate of ``works`` again (by its stored
+    ``/midi/MIDI/<file>`` URL, >= 2 s per request, not cached) and re-sanitize it in place."""
+
+    def get(row: sqlite3.Row, work: Work, st: SourceStats) -> tuple[bytes | None, str | None]:
+        if not row["url"]:
+            return None, "no url"
+        r = client.get(row["url"], use_cache=False)
+        st.requests += 1
+        return (r.content, None) if r.status == 200 and r.content else (None, f"HTTP {r.status}")
+
+    return base.redownload(conn, SOURCE, works, get)

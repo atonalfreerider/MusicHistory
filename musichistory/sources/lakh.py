@@ -30,7 +30,7 @@ from pathlib import Path
 
 from .. import config, midi
 from ..http import download
-from ..textnorm import fold, squash, title_matches
+from ..textnorm import fold, squash_loose, title_matches
 from . import base
 from .base import ARTIST_MIN, TITLE_MIN, Hit, SourceStats, Work
 
@@ -42,7 +42,7 @@ FILES: dict[str, tuple[str, str | None]] = {
     "match_scores.json": (LMD + "match_scores.json", None),
     "unique_tracks.txt": ("http://millionsongdataset.com/sites/default/files/AdditionalFiles/unique_tracks.txt", None),
 }
-INDEX_VERSION = "1"
+INDEX_VERSION = "2"  # 2: paths squashed with textnorm.squash_loose ("DancingQueen3" -> "dancinqueen3")
 SOURCES = ("lakh", "lakh_clean")
 BATCH = 256  # extracted files sanitized per worker-pool round
 
@@ -81,7 +81,8 @@ def ensure_files(names: tuple[str, ...] = tuple(FILES), offline: bool = False) -
 
 
 def _sq(path: str) -> str:
-    return squash(fold(path.rsplit(".", 1)[0] if path.lower().endswith((".mid", ".midi", ".kar")) else path))
+    """Squashed folded path, in the same loose form as ``Work.title_forms``."""
+    return squash_loose(fold(path.rsplit(".", 1)[0] if path.lower().endswith((".mid", ".midi", ".kar")) else path))
 
 
 def build_index(force: bool = False, offline: bool = False) -> Path:
@@ -260,8 +261,20 @@ class LakhIndex:
 def fetch(conn: sqlite3.Connection, works: list[Work], *, max_per_source: int = base.MAX_PER_SOURCE,
           rebuild: bool = False, offline: bool = False, resanitize: bool = False,
           workers: int = max(1, (os.cpu_count() or 2) - 1)) -> list[SourceStats]:
+    """Search every work, extract the new hits and store them as candidates.
+
+    ``resanitize`` re-extracts **every** stored Lakh candidate of these works as well (also
+    those no longer among the top hits) and re-sanitizes it in place: rows keep their
+    ``candidate_id`` and their source label.
+    """
     stats = {s: SourceStats(s) for s in SOURCES}
     idx = LakhIndex.open(rebuild=rebuild, offline=offline)
+    stored: dict[tuple[str, str], sqlite3.Row] = {}
+    if resanitize:
+        ids = [w.work_id for w in works]
+        for s in SOURCES:
+            for r in base.stored_rows(conn, s, ids):
+                stored[(r["work_id"], r["md5"])] = r
     # Searching is cheap (~50 ms per work), so every run searches every work again and skips
     # files already tried; an interrupted extraction pass therefore loses nothing.
     wanted: dict[str, list[tuple[Work, Hit]]] = {}
@@ -275,14 +288,20 @@ def fetch(conn: sqlite3.Connection, works: list[Work], *, max_per_source: int = 
             st.matched_works += bool(hits[s])
             base.mark_searched(conn, w.work_id, s, len(hits[s]), rejected if s == "lakh" else 0)
             for h in hits[s]:
-                if not resanitize and base.attempted(conn, w.work_id, s, h.source_ref):
+                row = stored.pop((w.work_id, h.source_ref), None)
+                if row is not None and row["source"] != h.source:
+                    h = base.hit_from_row(row)  # stored under the other label: re-sanitize it as it is
+                elif row is None and not resanitize and base.attempted(conn, w.work_id, s, h.source_ref):
                     continue
                 wanted.setdefault(h.source_ref, []).append((w, h))
         stats["lakh"].rejected += rejected
+    by_id = {w.work_id: w for w in works}
+    for (work_id, md5), row in stored.items():  # stored candidates that are no longer top hits
+        wanted.setdefault(md5, []).append((by_id[work_id], base.hit_from_row(row)))
     conn.commit()
     search_s = time.monotonic() - t0
-    print(f"lakh: searched {stats['lakh'].works} works in {search_s:.1f} s; extracting {len(wanted)} files",
-          flush=True)
+    print(f"lakh: searched {stats['lakh'].works} works in {search_s:.1f} s; extracting {len(wanted)} files"
+          + (f" ({len(stored)} stored candidates no longer among the hits)" if resanitize else ""), flush=True)
     found: set[str] = set()
 
     def flush(batch: list[tuple[str, bytes]], pool: ProcessPoolExecutor | None) -> None:

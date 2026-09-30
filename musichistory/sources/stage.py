@@ -6,6 +6,11 @@ than ``--freemidi-below`` valid candidates), midiworld (works with fewer than
 ``--midiworld-below``). Every step is resumable: works already searched by a source and
 files already tried are skipped unless ``--refresh``. A per-run summary is printed and
 written to ``data/reports/fetch_<timestamp>.json``.
+
+After a sanitizer change: ``--resanitize`` re-extracts and re-sanitizes every stored Lakh
+candidate, ``--redownload-web`` downloads every stored web candidate again by its stored
+URL (raw web files are never kept) and re-sanitizes it; both update rows in place, so
+``candidate_id`` stays stable. With ``--redownload-web`` the web sources are not searched.
 """
 
 from __future__ import annotations
@@ -35,6 +40,9 @@ def add_arguments(p: argparse.ArgumentParser) -> None:
     p.add_argument("--rebuild-index", action="store_true", help="rebuild the Lakh and midicollection indexes")
     p.add_argument("--resanitize", action="store_true",
                    help="re-extract and re-sanitize every Lakh candidate (after sanitizer changes)")
+    p.add_argument("--redownload-web", action="store_true",
+                   help="download every stored web candidate again by its URL and re-sanitize it in place"
+                        " (after sanitizer changes); no web searches in this run")
     p.add_argument("--offline", action="store_true", help="no network: Lakh and Hooktheory from the cache only")
     p.add_argument("--no-hooktheory", action="store_true")
 
@@ -81,7 +89,14 @@ def run(args: argparse.Namespace) -> int:
     if web and args.offline:
         print("fetch: --offline, skipping " + ", ".join(web))
         web = []
-    if web:
+    if web and args.redownload_web:
+        cl = client(conn)
+        adapters = {"midicollection": midicollection, "freemidi": freemidi, "midiworld": midiworld}
+        for s in web:
+            print(f"{s}: re-downloading stored candidates", flush=True)
+            stats.append(adapters[s].redownload(conn, works, cl))
+            _print(stats[-1:])
+    elif web:
         cl = client(conn)
         if "midicollection" in web:
             below = args.midicollection_below if args.midicollection_below > 0 else None
@@ -114,4 +129,5 @@ def _print(stats: list[base.SourceStats]) -> None:
     for s in stats:
         print(f"  {s.source:15s} works={s.works} matched={s.matched_works} hits={s.hits} new/valid={s.valid}"
               f" dup={s.duplicate} invalid={s.invalid} failed={s.failed} rejected={s.rejected}"
-              f" {s.seconds:.1f}s {s.invalid_reasons or ''}", flush=True)
+              f"{f' changed={s.changed}' if s.changed else ''}"
+              f" {s.seconds:.1f}s {s.invalid_reasons or ''}{s.failures or ''}", flush=True)

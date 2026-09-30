@@ -19,7 +19,7 @@ from pathlib import Path
 
 from .. import config
 from ..http import download
-from ..textnorm import squash, title_core, title_key, title_matches
+from ..textnorm import squash_loose, title_core, title_key, title_matches
 from . import base
 from .base import ARTIST_MIN, TITLE_MIN, Work
 
@@ -61,7 +61,7 @@ class HooktheoryIndex:
         self.by_title: dict[str, list[str]] = {}
         for ht_id, e in data.items():
             song = _unslug(e.get("hooktheory", {}).get("song", ""))
-            for key in {squash(title_key(song)), squash(title_core(song))}:
+            for key in {squash_loose(title_key(song)), squash_loose(title_core(song))}:  # as Work.title_forms
                 if key:
                     self.by_title.setdefault(key, []).append(ht_id)
 

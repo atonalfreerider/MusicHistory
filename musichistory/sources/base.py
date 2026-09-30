@@ -12,7 +12,12 @@ Ingestion: the MD5 of the original bytes is the identity. A file already stored 
 work (from any source) is a duplicate and is not stored again. Everything else goes
 through ``musichistory.midi.process`` and becomes one ``candidate`` row; valid ones are
 written to ``data/candidates/<work_id>/<source>__<md5>.mid``. Raw downloads are never
-kept on disk (they may contain lyrics); only sanitized files are.
+kept on disk (they may contain lyrics); only sanitized files are. Re-sanitizing a stored
+file (``fetch --resanitize`` for Lakh, ``--redownload-web`` for the web sources) updates
+its row in place, so ``candidate_id`` stays stable.
+
+Squashed comparisons (title/artist forms against squashed file names) use
+``textnorm.squash_loose`` on both sides, which reads "ing" as "in" everywhere.
 """
 
 from __future__ import annotations
@@ -22,6 +27,7 @@ import json
 import re
 import sqlite3
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
@@ -29,6 +35,7 @@ from pathlib import Path
 from rapidfuzz import fuzz
 
 from .. import config, midi
+from ..http import RobotsDisallowed
 from ..textnorm import (
     artist_key,
     artist_matches,
@@ -36,6 +43,7 @@ from ..textnorm import (
     fold,
     primary_artist,
     squash,
+    squash_loose,
     title_core,
     title_key,
     title_matches,
@@ -78,8 +86,12 @@ class Work:
 
     @cached_property
     def title_forms(self) -> list[str]:
-        """Squashed title keys, longest first ("icantgetnosatisfaction", "satisfaction")."""
-        forms = {squash(title_key(self.title)), squash(title_core(self.title))}
+        """Squashed title keys, longest first ("icantgetnosatisfaction", "satisfaction").
+
+        ``squash_loose`` forms ("dancinqueen"): file names are squashed the same way, so a
+        run-together "DancingQueen3" still contains the title.
+        """
+        forms = {squash_loose(title_key(self.title)), squash_loose(title_core(self.title))}
         return sorted((f for f in forms if f), key=len, reverse=True)
 
     @cached_property
@@ -87,7 +99,7 @@ class Work:
         forms: set[str] = set()
         for a in self.artists:
             for f in (artist_key(a), primary_artist(a)):
-                s = squash(f)
+                s = squash_loose(f)
                 if len(s) >= 2:
                     forms.add(s)
         return sorted(forms, key=len, reverse=True)
@@ -262,8 +274,9 @@ def match_name(name: str, work: Work, artist_hint: str | None = None) -> Match:
                 other_artist = True
         consider(ts, ars)
 
-    # Squashed containment: "queenbohemianrhapsody2", "withorwithoutyou2", slugs.
-    b = squash(fold(base))
+    # Squashed containment: "queenbohemianrhapsody2", "withorwithoutyou2", slugs. Loose
+    # squashing on both sides ("DancingQueen3" -> "dancinqueen3" contains "dancinqueen").
+    b = squash_loose(fold(base))
     hint_score = 0.0
     if artist_hint and _specific(artist_hint):
         hint_score = max(artist_score(artist_hint, a) for a in work.artists)
@@ -367,42 +380,139 @@ def searched(conn: sqlite3.Connection, source: str) -> set[str]:
     return {r[0] for r in conn.execute("SELECT work_id FROM fetch_status WHERE source=? AND error IS NULL", (source,))}
 
 
+def _store_sanitized(work_id: str, source: str, md5: str, proc: midi.Processed) -> tuple[str | None, str | None]:
+    """Write the sanitized file of a valid candidate; returns (stored path, sha256) or (None, None)."""
+    if not (proc.ok and proc.data is not None):
+        return None, None
+    path = candidate_file(work_id, source, md5)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(".tmp")
+    tmp.write_bytes(proc.data)
+    tmp.replace(path)
+    return stored_path(path), hashlib.sha256(proc.data).hexdigest()
+
+
+def _drop_stale_file(old: str | None, new: str | None) -> None:
+    if old and old != new:
+        resolve(old).unlink(missing_ok=True)
+
+
 def ingest(conn: sqlite3.Connection, work: Work, hit: Hit, data: bytes, *, replace: bool = False,
            processed: midi.Processed | None = None) -> str:
     """Validate/sanitize ``data`` and store it as a candidate. Returns the attempt status.
 
     ``processed`` is ``midi.process(data)`` when the caller already ran it (in a worker pool).
+    With ``replace`` a file already stored for the work by the same source is re-sanitized
+    **in place**: the row keeps its ``candidate_id`` (select and analyze refer to it).
     """
     md5 = hashlib.md5(data).hexdigest()
     hit.extra["md5"] = md5
-    row = conn.execute("SELECT candidate_id, source FROM candidate WHERE work_id=? AND md5=?",
+    row = conn.execute("SELECT candidate_id, source, sanitized_path FROM candidate WHERE work_id=? AND md5=?",
                        (work.work_id, md5)).fetchone()
     if row and not (replace and row["source"] == hit.source):
         record_attempt(conn, work.work_id, hit.source, hit.source_ref, "duplicate", md5, len(data), row["source"])
         return "duplicate"
     proc = processed if processed is not None else midi.process(data)
-    path_s, sha = None, None
-    if proc.ok and proc.data is not None:
-        path = candidate_file(work.work_id, hit.source, md5)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        tmp = path.with_suffix(".tmp")
-        tmp.write_bytes(proc.data)
-        tmp.replace(path)
-        path_s, sha = stored_path(path), hashlib.sha256(proc.data).hexdigest()
+    path_s, sha = _store_sanitized(work.work_id, hit.source, md5, proc)
     feats = json.dumps(proc.features, separators=(",", ":")) if proc.features else None
-    values = (work.work_id, hit.source, hit.source_ref, hit.url, hit.orig_name[:300], md5, sha, len(data),
-              hit.title_score, hit.artist_score, hit.match_class, hit.lmd_match_score, hit.lmd_msd_id,
-              path_s, int(proc.ok), proc.reason, feats)
     if row:
-        conn.execute("DELETE FROM candidate WHERE candidate_id=?", (row["candidate_id"],))
-    conn.execute(
-        "INSERT INTO candidate(work_id, source, source_ref, url, orig_name, md5, sha256, bytes, title_score,"
-        " artist_score, match_class, lmd_match_score, lmd_msd_id, sanitized_path, valid, invalid_reason,"
-        " features_json, fetched_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))", values)
+        _drop_stale_file(row["sanitized_path"], path_s)
+        conn.execute(
+            "UPDATE candidate SET source_ref=?, url=?, orig_name=?, sha256=?, bytes=?, title_score=?,"
+            " artist_score=?, match_class=?, lmd_match_score=?, lmd_msd_id=?, sanitized_path=?, valid=?,"
+            " invalid_reason=?, features_json=?, fetched_at=datetime('now') WHERE candidate_id=?",
+            (hit.source_ref, hit.url, hit.orig_name[:300], sha, len(data), hit.title_score, hit.artist_score,
+             hit.match_class, hit.lmd_match_score, hit.lmd_msd_id, path_s, int(proc.ok), proc.reason, feats,
+             row["candidate_id"]))
+    else:
+        conn.execute(
+            "INSERT INTO candidate(work_id, source, source_ref, url, orig_name, md5, sha256, bytes, title_score,"
+            " artist_score, match_class, lmd_match_score, lmd_msd_id, sanitized_path, valid, invalid_reason,"
+            " features_json, fetched_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))",
+            (work.work_id, hit.source, hit.source_ref, hit.url, hit.orig_name[:300], md5, sha, len(data),
+             hit.title_score, hit.artist_score, hit.match_class, hit.lmd_match_score, hit.lmd_msd_id,
+             path_s, int(proc.ok), proc.reason, feats))
     status = "new" if proc.ok else "invalid"
     record_attempt(conn, work.work_id, hit.source, hit.source_ref, status, md5, len(data), proc.reason)
     return status
 
+
+def hit_from_row(row: sqlite3.Row) -> Hit:
+    """The Hit a stored candidate row was ingested from (for re-sanitizing it as it is)."""
+    return Hit(row["source"], row["source_ref"], row["orig_name"] or "", row["title_score"] or 0.0,
+               row["artist_score"] or 0.0, row["match_class"] or "accept", url=row["url"],
+               lmd_match_score=row["lmd_match_score"], lmd_msd_id=row["lmd_msd_id"])
+
+
+def stored_rows(conn: sqlite3.Connection, source: str, work_ids: list[str] | None = None) -> list[sqlite3.Row]:
+    """Stored candidate rows of one source (optionally only for these works), by candidate_id."""
+    rows = conn.execute("SELECT * FROM candidate WHERE source=? ORDER BY candidate_id", (source,)).fetchall()
+    if work_ids is not None:
+        keep = set(work_ids)
+        rows = [r for r in rows if r["work_id"] in keep]
+    return rows
+
+
+def refresh_row(conn: sqlite3.Connection, row: sqlite3.Row, data: bytes, *,
+                processed: midi.Processed | None = None) -> str:
+    """Re-sanitize freshly downloaded bytes of a stored candidate **in place** (same candidate_id).
+
+    For web sources, whose raw files are not kept: the file is downloaded again by its stored
+    URL and goes through the current sanitizer. Returns 'new' / 'invalid' like ``ingest``,
+    'changed' (valid, but the site now serves different bytes: md5 and path are updated,
+    the id is kept) or 'duplicate' (the new bytes equal another candidate of the work: this
+    row is removed, since the other row already holds that file).
+    """
+    md5 = hashlib.md5(data).hexdigest()
+    work_id, source = row["work_id"], row["source"]
+    if md5 != row["md5"]:
+        other = conn.execute("SELECT candidate_id, source FROM candidate WHERE work_id=? AND md5=? AND candidate_id<>?",
+                             (work_id, md5, row["candidate_id"])).fetchone()
+        if other:
+            _drop_stale_file(row["sanitized_path"], None)
+            conn.execute("DELETE FROM candidate WHERE candidate_id=?", (row["candidate_id"],))
+            record_attempt(conn, work_id, source, row["source_ref"], "duplicate", md5, len(data), other["source"])
+            return "duplicate"
+    proc = processed if processed is not None else midi.process(data)
+    path_s, sha = _store_sanitized(work_id, source, md5, proc)
+    _drop_stale_file(row["sanitized_path"], path_s)
+    feats = json.dumps(proc.features, separators=(",", ":")) if proc.features else None
+    conn.execute(
+        "UPDATE candidate SET md5=?, sha256=?, bytes=?, sanitized_path=?, valid=?, invalid_reason=?,"
+        " features_json=?, fetched_at=datetime('now') WHERE candidate_id=?",
+        (md5, sha, len(data), path_s, int(proc.ok), proc.reason, feats, row["candidate_id"]))
+    status = "new" if proc.ok else "invalid"
+    record_attempt(conn, work_id, source, row["source_ref"], status, md5, len(data), proc.reason)
+    return "changed" if proc.ok and md5 != row["md5"] else status
+
+
+
+def redownload(conn: sqlite3.Connection, source: str, works: list[Work],
+               get: Callable[[sqlite3.Row, Work, "SourceStats"], tuple[bytes | None, str | None]]) -> "SourceStats":
+    """Download every stored candidate of a web source again and re-sanitize it in place.
+
+    Web downloads are not kept raw, so this is how a sanitizer change reaches them.
+    ``get(row, work, stats)`` returns (bytes, None) or (None, failure detail) using the
+    adapter's own polite download path. A failed download leaves the stored row untouched.
+    """
+    st = SourceStats(source)
+    by_id = {w.work_id: w for w in works}
+    rows = stored_rows(conn, source, list(by_id))
+    st.works, st.hits = len({r["work_id"] for r in rows}), len(rows)
+    for row in rows:
+        try:
+            data, detail = get(row, by_id[row["work_id"]], st)
+        except RobotsDisallowed:
+            data, detail = None, "robots"
+        except Exception as exc:  # network trouble: the row stays as it was
+            data, detail = None, f"net:{type(exc).__name__}"
+        if data is None:
+            st.count("download_failed", detail=detail)
+            continue
+        status = refresh_row(conn, row, data)
+        st.count(status, conn, row["work_id"], hashlib.md5(data).hexdigest())
+        conn.commit()
+    return st.done()
 
 @dataclass
 class SourceStats:
@@ -415,16 +525,21 @@ class SourceStats:
     duplicate: int = 0
     invalid: int = 0
     failed: int = 0             # download failures
+    changed: int = 0            # re-downloads whose bytes differ from the stored file's md5
     rejected: int = 0           # title matches rejected (title-only, other artist)
     seconds: float = 0.0
     requests: int = 0
     invalid_reasons: dict[str, int] = field(default_factory=dict)
+    failures: dict[str, int] = field(default_factory=dict)   # download failures by detail
     _t0: float = field(default_factory=time.monotonic, repr=False)
 
     def count(self, status: str, conn: sqlite3.Connection | None = None, work_id: str | None = None,
-              md5: str | None = None) -> None:
+              md5: str | None = None, detail: str | None = None) -> None:
         if status == "new":
             self.new += 1
+            self.valid += 1
+        elif status == "changed":
+            self.changed += 1
             self.valid += 1
         elif status == "invalid":
             self.invalid += 1
@@ -437,6 +552,8 @@ class SourceStats:
             self.duplicate += 1
         elif status == "download_failed":
             self.failed += 1
+            if detail:
+                self.failures[detail] = self.failures.get(detail, 0) + 1
 
     def done(self) -> "SourceStats":
         self.seconds = round(time.monotonic() - self._t0, 1)

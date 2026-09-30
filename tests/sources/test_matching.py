@@ -92,3 +92,27 @@ def test_filler_matching_is_fast_on_adversarial_names():
         _explained(s, "")
         _explained(s, "queen")
     assert time.perf_counter() - t0 < 0.5
+
+
+# Review 'fetch-midi' #3: run-together or CamelCase names keep a word-internal "ing" that
+# drop_g cannot see; squash_loose reads "ing" as "in" on both sides.
+@pytest.mark.parametrize("work,name", [
+    (W("Dancing Queen", "ABBA"), "Abba/DancingQueen3.mid"),
+    (W("Stayin' Alive", "Bee Gees"), "Bee Gees/Beegeesstayingalive.mid"),
+    (W("Can't Help Falling in Love", "Elvis Presley"), "Elvis Presley/CantHelpFallingInLove5.mid"),
+    (W("Livin' on a Prayer", "Bon Jovi"), "Bon Jovi/LivingOnAPrayer.mid"),
+    (W("Bring Me to Life", "Evanescence"), "Evanescence/BringMetoLife.mid"),
+    (W("I Saw Her Standing There", "The Beatles"), "beatles-isawherstandingthere.mid"),
+])
+def test_squashed_ing_names_accepted(work, name):
+    m = match_name(name, work)
+    assert m.accepted, (name, m)
+
+
+def test_squash_loose_is_separate_from_squash():
+    from musichistory.textnorm import squash, squash_loose
+
+    assert squash_loose("dancingqueen3") == squash_loose("dancing queen3") == "dancinqueen3"
+    assert squash_loose("singing in the rain") == squash_loose("singinintherain")
+    assert squash("dancingqueen") == "dancingqueen"  # canon's keys are unchanged
+    assert W("Dancing Queen", "ABBA").title_forms == ["dancinqueen"]

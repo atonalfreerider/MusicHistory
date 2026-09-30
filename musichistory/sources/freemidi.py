@@ -187,3 +187,45 @@ def fetch(conn: sqlite3.Connection, works: list[Work], client: PoliteClient, *, 
         base.mark_searched(conn, w.work_id, SOURCE, int(hit is not None), rejected, error)
         conn.commit()
     return st.done()
+
+
+def _page_url(conn: sqlite3.Connection, client: PoliteClient, song_id: str, work: Work, st: SourceStats) -> str | None:
+    """The ``download3-<id>-...`` page of a stored song: from the request log, else the (cached) search."""
+    r = conn.execute("SELECT url FROM fetch_log WHERE url LIKE ? ORDER BY id DESC LIMIT 1",
+                     (f"{HOST}/download3-{song_id}-%",)).fetchone()
+    if r:
+        return r[0]
+    s = client.get(f"{HOST}/search", params={"q": query_for(work.title)})
+    st.requests += 0 if s.from_cache else 1
+    if s.status == 200:
+        for c in parse_search(s.text):
+            if c["id"] == song_id:
+                return f"{HOST}/{c['href']}"
+    return None
+
+
+def download(client: PoliteClient, page: str, song_id: str, st: SourceStats) -> tuple[bytes | None, str | None]:
+    """The two-step session download: song page (sets the session), then the getter with Referer."""
+    p = client.get(page, use_cache=False)
+    st.requests += 1
+    if p.status != 200:
+        return None, f"page HTTP {p.status}"
+    g = client.get(f"{HOST}/getter-{song_id}", use_cache=False, allow_redirects=False, headers={"Referer": page})
+    st.requests += 1
+    if g.status == 200 and g.content:
+        return g.content, None
+    return None, f"getter HTTP {g.status}"
+
+
+def redownload(conn: sqlite3.Connection, works: list[Work], client: PoliteClient) -> SourceStats:
+    """Download every stored freemidi candidate of ``works`` again and re-sanitize it in place.
+
+    Same politeness as ``fetch``: >= 3 s per request, at most 3 requests per song (search,
+    only when the song page is not in the request log and usually a cache hit; the song page,
+    which sets the session; the getter with that page as Referer).
+    """
+    def get(row: sqlite3.Row, work: Work, st: SourceStats) -> tuple[bytes | None, str | None]:
+        page = _page_url(conn, client, row["source_ref"], work, st)
+        return download(client, page, row["source_ref"], st) if page else (None, "no song page")
+
+    return base.redownload(conn, SOURCE, works, get)

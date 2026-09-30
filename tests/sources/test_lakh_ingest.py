@@ -149,6 +149,45 @@ def test_fetch_ingest_and_dedupe(env):
     assert conn.execute("SELECT COUNT(*) FROM candidate").fetchone()[0] == 5
 
 
+def test_squashed_ing_paths_are_found(env):
+    """Review 'fetch-midi' #3: 'DancingQueen3' squashes to 'dancinqueen3' in the index, like the title."""
+    conn, files, md5 = env
+    ld = config.CACHE / "lakh"
+    paths = json.loads((ld / "md5_to_paths.json").read_text())
+    paths["f" * 32] = ["Abba/DancingQueen3.mid"]
+    paths["e" * 32] = ["b/beegeesstayingalive.mid"]
+    (ld / "md5_to_paths.json").write_text(json.dumps(paths))
+    idx = lakh.LakhIndex.open()
+    assert idx.meta()["version"] == lakh.INDEX_VERSION
+    hits, _ = idx.search(Work("Q1", "Dancing Queen", "ABBA", ["ABBA"]))
+    assert [h.source_ref for h in hits["lakh"]] == ["f" * 32]
+    hits, _ = idx.search(Work("Q2", "Stayin' Alive", "Bee Gees", ["Bee Gees"]))
+    assert [h.source_ref for h in hits["lakh"]] == ["e" * 32]
+
+
+def test_resanitize_updates_every_stored_row_in_place(env):
+    """--resanitize keeps candidate_ids (rows updated, not deleted and re-inserted) and also
+    re-sanitizes stored candidates that are no longer among the top hits."""
+    conn, files, md5 = env
+    conn.execute("INSERT INTO work(work_id, title, canonical_artist, search_artists, work_year, canon_rank, in_pool)"
+                 " VALUES (?,?,?,?,?,?,1)", ("Q1131812", "With or Without You", "U2", '["U2"]', 1987, 143))
+    conn.commit()
+    works = base.load_works(conn)
+    lakh.fetch(conn, works)
+    before = {r["md5"]: tuple(r) for r in conn.execute(
+        "SELECT md5, candidate_id, source, valid, sha256, sanitized_path FROM candidate")}
+    assert len(before) == 4
+    conn.execute("UPDATE candidate SET sha256='stale', features_json=NULL, fetched_at=NULL")
+    conn.commit()
+    stats = {s.source: s for s in lakh.fetch(conn, works, resanitize=True, max_per_source=1)}
+    after = {r["md5"]: tuple(r) for r in conn.execute(
+        "SELECT md5, candidate_id, source, valid, sha256, sanitized_path FROM candidate")}
+    assert after == before  # same ids, labels, validity and files; every stale sha256 rewritten
+    assert conn.execute("SELECT COUNT(*) FROM candidate WHERE fetched_at IS NULL").fetchone()[0] == 0
+    assert conn.execute("SELECT COUNT(*) FROM candidate WHERE valid=1 AND features_json IS NULL").fetchone()[0] == 0
+    assert stats["lakh_clean"].valid == 2 and stats["lakh"].valid == 1 and stats["lakh"].invalid == 1
+
+
 def test_hooktheory_matching(env, monkeypatch):
     conn, *_ = env
     fake = {

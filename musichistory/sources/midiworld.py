@@ -93,3 +93,17 @@ def fetch(conn: sqlite3.Connection, works: list[Work], client: PoliteClient, *, 
         base.mark_searched(conn, w.work_id, SOURCE, len(hits), rejected, error)
         conn.commit()
     return st.done()
+
+
+def redownload(conn: sqlite3.Connection, works: list[Work], client: PoliteClient) -> SourceStats:
+    """Download every stored midiworld candidate of ``works`` again (by its stored
+    ``/download/<id>`` URL, >= 3 s per request, not cached) and re-sanitize it in place."""
+
+    def get(row: sqlite3.Row, work: Work, st: SourceStats) -> tuple[bytes | None, str | None]:
+        if not row["url"]:
+            return None, "no url"
+        r = client.get(row["url"], use_cache=False)
+        st.requests += 1
+        return (r.content, None) if r.status == 200 and r.content else (None, f"HTTP {r.status}")
+
+    return base.redownload(conn, SOURCE, works, get)

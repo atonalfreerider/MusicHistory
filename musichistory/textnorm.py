@@ -67,6 +67,17 @@ def squash(s: str) -> str:
     return drop_g(s).replace(" ", "")
 
 
+def squash_loose(s: str) -> str:
+    """``squash`` that reads every "ing" as "in", inside run-together words too.
+
+    MIDI file names are often CamelCase or squashed ("DancingQueen3", "beegeesstayingalive"),
+    where drop_g's word-final rule cannot see the "ing". The MIDI sources compare squashed
+    title/artist forms with squashed file names, so both sides use this form. ``squash``
+    itself is unchanged: the song list's keys rely on it.
+    """
+    return squash(s).replace("ing", "in")
+
+
 def title_key(title: str) -> str:
     t = _FEAT.sub("", title or "")
     prev = None
