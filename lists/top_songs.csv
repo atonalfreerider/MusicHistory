@@ -1,0 +1,1513 @@
+canon_rank,work_id,title,artist,original_artist,work_year,effective_year,year_confidence,rrf_score,lists
+1,Q609104,I Want to Hold Your Hand,The Beatles,,1963,1963,high,0.189039,billboard_ye_1964#1;grammy_hof;rs500_2021#15;rs500_2004#16;tsort_5000#20
+2,Q158553,(I Can't Get No) Satisfaction,The Rolling Stones,,1965,1965,high,0.187129,billboard_ye_1965#3;grammy_hof;rs500_2021#31;rs500_2004#2;tsort_5000#21
+3,Q607742,Hey Jude,The Beatles,,1968,1968,high,0.183105,billboard_ye_1968#1;grammy_hof;rs500_2021#89;rs500_2004#8;tsort_5000#6
+4,Q187745,Bohemian Rhapsody,Queen,,1975,1975,high,0.175335,billboard_ye_1976#18;billboard_ye_1992#39;grammy_hof;spotify_top#46;rs500_2021#17;rs500_2004#163;tsort_5000#37
+5,Q485907,Smells Like Teen Spirit,Nirvana,,1991,1991,high,0.173387,billboard_ye_1992#32;grammy_hof;spotify_top#68;rs500_2021#5;rs500_2004#9;tsort_5000#102
+6,Q193319,Billie Jean,Michael Jackson,,1982,1982,high,0.170134,billboard_ye_1983#2;spotify_top#47;rs500_2021#44;rs500_2004#58;tsort_5000#24
+7,Q1971,Imagine,John Lennon,,1971,1971,high,0.161343,grammy_hof;rs500_2021#19;rs500_2004#3;tsort_5000#43
+8,Q1330171,Every Breath You Take,The Police,,1983,1983,high,0.154338,billboard_ye_1983#1;grammy_hof;spotify_top#22;rs500_2021#305;rs500_2004#84;tsort_5000#18
+9,Q184259,Let It Be,The Beatles,,1970,1970,high,0.153066,billboard_ye_1970#9;grammy_hof;rs500_2021#121;rs500_2004#20;tsort_5000#23
+10,Q666856,I Will Always Love You,Whitney Houston,Dolly Parton,1974,1992,high,0.148599,billboard_ye_1993#1;grammy_hof;rs500_2021#94;tsort_5000#3
+11,Q957616,Lose Yourself,Eminem,,2002,2002,high,0.148537,billboard_ye_2002#63;billboard_ye_2003#28;spotify_top#75;rs500_2021#167;rs500_2004#166;tsort_5000#12
+12,Q1352181,Stayin' Alive,Bee Gees,,1977,1977,high,0.140992,billboard_ye_1978#4;rs500_2021#99;rs500_2004#189;tsort_5000#11
+13,Q2030651,Respect,Aretha Franklin,Otis Redding,1965,1967,high,0.138668,billboard_ye_1967#13;grammy_hof;rs500_2021#1;rs500_2004#5;tsort_5000#654
+14,Q281085,Hey Ya!,OutKast,,2003,2003,high,0.136073,billboard_ye_2004#8;rs500_2021#10;rs500_2004#180;tsort_5000#56
+15,Q214430,Like a Rolling Stone,Bob Dylan,,1965,1965,high,0.134919,billboard_ye_1965#41;grammy_hof;rs500_2021#4;rs500_2004#1;tsort_5000#646
+16,Q552098,Rock Around the Clock,Bill Haley & His Comets,,1954,1954,high,0.128479,billboard_ye_1955#2;grammy_hof;rs500_2004#158;tsort_5000#4
+17,Q2299883,When Doves Cry,Prince,,1984,1984,high,0.124151,billboard_ye_1984#1;rs500_2021#37;rs500_2004#52;tsort_5000#91
+18,Q2517476,What's Going On,Marvin Gaye,,1971,1971,high,0.123845,billboard_ye_1971#21;rs500_2021#6;rs500_2004#4;tsort_5000#1433
+19,Q300620,A Whiter Shade of Pale,Procol Harum,,1967,1967,high,0.120950,billboard_ye_1967#38;grammy_hof;rs500_2021#271;rs500_2004#57;tsort_5000#28
+20,Q913700,Bridge Over Troubled Water,Simon & Garfunkel,,1969,1970,high,0.119356,billboard_ye_1970#1;billboard_ye_1971#52;grammy_hof;rs500_2021#66;rs500_2004#47;tsort_5000#144
+21,Q678516,Nothing Compares 2 U,Sinéad O'Connor,,1990,1990,high,0.118939,billboard_ye_1990#3;rs500_2004#162;tsort_5000#7
+22,Q2449307,Candle in the Wind '97,Elton John,,1997,1997,high,0.116814,billboard_ye_1997#1;billboard_ye_1998#8;tsort_5000#10
+23,Q652262,Killing Me Softly with His Song,Roberta Flack,Lori Lieberman,1972,1973,high,0.114791,billboard_ye_1973#3;grammy_hof;rs500_2021#273;rs500_2004#360;tsort_5000#77
+24,Q1131761,White Christmas,Bing Crosby,,1942,1942,high,0.114310,billboard_ye_1947#30;grammy_hof;tsort_5000#1
+25,Q158549,(Everything I Do) I Do It for You,Bryan Adams,,1991,1991,high,0.113168,billboard_ye_1991#1;tsort_5000#2
+26,Q567940,Another Brick in the Wall (part 2),Pink Floyd,,1979,1980,high,0.111261,billboard_ye_1980#2;rs500_2004#375;tsort_5000#8
+27,Q870786,Dancing Queen,ABBA,,1976,1976,high,0.110691,billboard_ye_1977#12;grammy_hof;rs500_2021#286;rs500_2004#171;tsort_5000#29
+28,Q2498428,A Change Is Gonna Come,Sam Cooke,,1964,1964,high,0.109997,grammy_hof;rs500_2021#3;rs500_2004#12
+29,Q949416,Unchained Melody,The Righteous Brothers,Les Baxter,1955,1965,high,0.109962,billboard_ye_1955#5;billboard_ye_1965#21;grammy_hof;rs500_2021#269;rs500_2004#365;tsort_5000#99
+30,Q812819,Be My Baby,The Ronettes,,1963,1963,high,0.109808,billboard_ye_1963#35;grammy_hof;rs500_2021#22;rs500_2004#22;tsort_5000#601
+31,Q2016260,(Sittin' On) The Dock of the Bay,Otis Redding,,1967,1967,high,0.109794,billboard_ye_1968#4;grammy_hof;rs500_2021#38;rs500_2004#28;tsort_5000#356
+32,Q139917982,Like a Prayer,Madonna,,1989,1989,high,0.108951,billboard_ye_1989#25;rs500_2021#55;rs500_2004#300;tsort_5000#55
+33,Q2639231,Believe,Cher,,1998,1998,high,0.108661,billboard_ye_1999#1;rs500_2021#337;tsort_5000#13
+34,Q842176,Good Vibrations,The Beach Boys,,1966,1966,high,0.107996,grammy_hof;rs500_2021#53;rs500_2004#6;tsort_5000#209
+35,Q744297,Yeah!,Usher featuring Lil Jon and Ludacris,,2004,2004,high,0.107822,billboard_ye_2004#1;rs500_2021#290;tsort_5000#15
+36,Q1214889,Mack the Knife,Bobby Darin,,1928,1959,medium,0.107704,billboard_ye_1959#2;grammy_hof;rs500_2004#251;tsort_5000#26
+37,Q139917951,Gangsta's Paradise,Coolio featuring L.V.,,1995,1995,high,0.106093,billboard_ye_1995#1;billboard_ye_1996#33;tsort_5000#16
+38,Q155577,My Heart Will Go On,Celine Dion,,1997,1998,high,0.106006,billboard_ye_1998#13;tsort_5000#5
+39,Q202698,Yesterday,The Beatles,,1965,1965,high,0.105941,grammy_hof;rs500_2021#72;rs500_2004#13;tsort_5000#142
+40,Q1941299,Mr. Tambourine Man,The Byrds,,1965,1965,high,0.105934,billboard_ye_1965#25;grammy_hof;rs500_2021#164;rs500_2004#79;tsort_5000#395
+41,Q1353423,Jailhouse Rock,Elvis Presley,,1957,1957,high,0.104892,billboard_ye_1957#16;grammy_hof;rs500_2021#216;rs500_2004#67;tsort_5000#63
+42,Q931491,She Loves You,The Beatles,,1963,1964,high,0.104001,billboard_ye_1964#2;rs500_2021#135;rs500_2004#64;tsort_5000#79
+43,Q1472773,"Oh, Pretty Woman",Roy Orbison,,1964,1964,high,0.103793,billboard_ye_1964#4;billboard_ye_1982#88;grammy_hof;rs500_2004#222;tsort_5000#31
+44,Q727067,Superstition,Stevie Wonder,,1972,1972,high,0.103727,billboard_ye_1973#26;grammy_hof;rs500_2021#12;rs500_2004#74;tsort_5000#584
+45,Q1415045,Flashdance... What a Feeling,Irene Cara,,1983,1983,high,0.102830,billboard_ye_1983#3;tsort_5000#9
+46,Q148511,Crazy in Love,Beyoncé featuring Jay-Z,,2003,2003,high,0.101590,billboard_ye_2003#4;rs500_2021#16;tsort_5000#120
+47,Q1513654,Stand by Me,Ben E. King,,1961,1961,high,0.100286,billboard_ye_1961#63;billboard_ye_1980#82;billboard_ye_1987#67;grammy_hof;rs500_2021#131;rs500_2004#121;tsort_5000#112
+48,Q139916573,Umbrella,Rihanna & Jay-Z,,2007,2007,high,0.099504,billboard_ye_2007#2;rs500_2021#332;tsort_5000#22
+49,Q139916760,Johnny B. Goode,Chuck Berry,,1958,1958,high,0.099428,grammy_hof;rs500_2021#33;rs500_2004#7;tsort_5000#822
+50,Q635756,Heart of Glass,Blondie,,1978,1979,high,0.098667,billboard_ye_1979#18;grammy_hof;rs500_2021#138;rs500_2004#255;tsort_5000#57
+51,Q832297,Bette Davis Eyes,Kim Carnes,,1974,1981,medium,0.097475,billboard_ye_1981#1;tsort_5000#14
+52,Q155016,...Baby One More Time,Britney Spears,,1998,1998,high,0.097146,billboard_ye_1999#5;rs500_2021#205;tsort_5000#30
+53,Q839842,Help!,The Beatles,,1965,1965,high,0.096656,billboard_ye_1965#7;grammy_hof;rs500_2021#447;rs500_2004#29;tsort_5000#110
+54,Q780394,Hotel California,Eagles,,1977,1977,high,0.096342,billboard_ye_1977#19;grammy_hof;rs500_2021#311;rs500_2004#49;tsort_5000#88
+55,Q248185,Can't Help Falling in Love,UB40,Elvis Presley,1961,1993,high,0.096031,billboard_ye_1962#57;billboard_ye_1993#3;rs500_2004#394;tsort_5000#51
+56,Q213718,Strawberry Fields Forever,The Beatles,,1967,1967,high,0.095488,grammy_hof;rs500_2021#7;rs500_2004#76;tsort_5000#615
+57,Q153029,Poker Face,Lady Gaga,,2008,2009,high,0.094051,billboard_ye_2009#2;tsort_5000#17
+58,Q632342,God Only Knows,Beach Boys,,1966,1966,high,0.093448,rs500_2021#11;rs500_2004#25;tsort_5000#3245
+59,Q1476003,My Sweet Lord,George Harrison,,1970,1971,high,0.092775,billboard_ye_1971#31;rs500_2004#454;tsort_5000#19
+60,Q640529,Blowin' in the Wind,Bob Dylan,,1962,1963,high,0.091572,billboard_ye_1963#13;grammy_hof;rs500_2021#100;rs500_2004#14;tsort_5000#4028
+61,Q865095,Hound Dog,Elvis Presley,Big Mama Thornton,1952,1956,high,0.091350,billboard_ye_1956#6;grammy_hof;rs500_2021#318;rs500_2004#19;tsort_5000#274
+62,Q2449842,Suspicious Minds,Elvis Presley,Mark James,1968,1969,high,0.091197,billboard_ye_1969#18;grammy_hof;rs500_2021#70;rs500_2004#91;tsort_5000#202
+63,Q1479183,Without Me,Eminem,,2002,2002,high,0.090864,billboard_ye_2002#21;spotify_top#48;tsort_5000#40
+64,Q778849,I Gotta Feeling,The Black Eyed Peas,,2009,2009,high,0.090691,billboard_ye_2009#4;billboard_ye_2010#29;tsort_5000#34
+65,Q1113979,What'd I Say,Ray Charles,,1959,1959,high,0.089706,billboard_ye_1959#50;grammy_hof;rs500_2021#80;rs500_2004#10;tsort_5000#1320
+66,Q1149738,Macarena (Bayside Boys Mix),Los del Río,,1993,1995,medium,0.088588,billboard_ye_1996#1;billboard_ye_1997#82;tsort_5000#42
+67,Q3047446,Walk On By,Dionne Warwick,,1964,1964,high,0.087707,billboard_ye_1964#37;grammy_hof;rs500_2021#51;rs500_2004#70;tsort_5000#2168
+68,Q1541182,My Girl,The Temptations,,1964,1964,high,0.087266,billboard_ye_1965#10;grammy_hof;rs500_2021#43;rs500_2004#88;tsort_5000#604
+69,Q276431,Bleeding Love,Leona Lewis,,2007,2008,high,0.086717,billboard_ye_2008#2;tsort_5000#25
+70,Q2311707,Dreams,Fleetwood Mac,,1977,1977,high,0.086715,billboard_ye_1977#39;spotify_top#84;rs500_2021#9;tsort_5000#1202
+71,Q2734366,Born to Run,Bruce Springsteen,,1975,1975,high,0.085944,rs500_2021#27;rs500_2004#21;tsort_5000#1988
+72,Q1128775,Vogue,Madonna,,1990,1990,high,0.085485,billboard_ye_1990#5;rs500_2021#139;tsort_5000#60
+73,Q253783,Gimme Shelter,Stones,,1969,1969,high,0.085407,rs500_2021#13;rs500_2004#38
+74,Q1792838,Waterloo Sunset,The Kinks,,1967,1967,high,0.085167,rs500_2021#14;rs500_2004#42;tsort_5000#3466
+75,Q2706084,I'll Be Missing You,P Diddy & Faith Evans,,1997,1997,high,0.084839,billboard_ye_1997#3;tsort_5000#27
+76,Q580010,Light My Fire,The Doors,,1965,1967,medium,0.084307,billboard_ye_1967#6;billboard_ye_1968#52;grammy_hof;rs500_2021#310;rs500_2004#35;tsort_5000#482
+77,Q1165194,One,U2,,1992,1992,high,0.084131,billboard_ye_1992#60;rs500_2021#62;rs500_2004#36;tsort_5000#599
+78,Q300385,A Day in the Life,The Beatles,,1967,1967,high,0.083723,rs500_2021#24;rs500_2004#26;tsort_5000#4857
+79,Q587614,Fast Car,Tracy Chapman,,1988,1988,high,0.083444,billboard_ye_1988#76;billboard_ye_2023#8;billboard_ye_2024#23;rs500_2021#71;rs500_2004#165;tsort_5000#1037
+80,Q2084142,Papa's Got a Brand New Bag,James Brown,,1965,1965,high,0.082372,billboard_ye_1965#33;grammy_hof;rs500_2021#34;rs500_2004#72;tsort_5000#3940
+81,Q2001772,Blueberry Hill,Fats Domino,,1940,1956,medium,0.082195,billboard_ye_1956#41;billboard_ye_1957#48;grammy_hof;rs500_2021#147;rs500_2004#81;tsort_5000#281
+82,Q1343509,Heartbreak Hotel,Elvis Presley,,1956,1956,high,0.082188,billboard_ye_1956#1;grammy_hof;rs500_2021#347;rs500_2004#45;tsort_5000#206
+83,Q2499453,Maggie May,Rod Stewart,,1971,1971,high,0.081048,billboard_ye_1971#2;grammy_hof;rs500_2021#141;rs500_2004#130;tsort_5000#186
+84,Q1541242,The Twist,Chubby Checker,Hank Ballard and the Midnighters,1958,1960,medium,0.080925,billboard_ye_1960#10;billboard_ye_1962#9;grammy_hof;rs500_2004#451;tsort_5000#93
+85,Q651472,Careless Whisper,George Michael,,1984,1984,high,0.080910,billboard_ye_1985#1;tsort_5000#33
+86,Q5251956,That'll Be the Day,Buddy Holly,,1957,1957,high,0.080677,billboard_ye_1957#30;grammy_hof;rs500_2021#124;rs500_2004#39;tsort_5000#413
+87,Q698481,Without You,Mariah Carey,Nilsson,1970,1994,high,0.080362,billboard_ye_1972#4;billboard_ye_1994#16;rs500_2021#496;tsort_5000#153
+88,Q2001828,Tutti Frutti,Little Richard,,1955,1955,high,0.080183,grammy_hof;rs500_2021#35;rs500_2004#43;tsort_5000#1399
+89,Q308895,We Are the World,USA for Africa,,1985,1985,high,0.079839,billboard_ye_1985#20;grammy_hof;tsort_5000#36
+90,Q1129496,Let's Stay Together,Al Green,,1971,1971,high,0.079776,billboard_ye_1972#11;grammy_hof;rs500_2021#84;rs500_2004#60;tsort_5000#683
+91,Q418833,Wannabe,Spice Girls,,1996,1996,high,0.079503,billboard_ye_1997#10;tsort_5000#32
+92,Q835013,Sweet Child o' Mine,Guns N' Roses,,1987,1987,high,0.079002,billboard_ye_1988#5;spotify_top#90;rs500_2021#88;rs500_2004#196;tsort_5000#460
+93,Q1159366,Dancing in the Street,Martha and the Vandellas,,1964,1964,high,0.078960,billboard_ye_1964#17;grammy_hof;rs500_2021#130;rs500_2004#40;tsort_5000#972
+94,Q701655,’Heroes’,David Bowie,,1977,1977,high,0.078362,rs500_2021#23;rs500_2004#46;tsort_5000#3153
+95,Q478928,The House of the Rising Sun,The Animals,Pete Seeger,1958,1964,medium,0.078187,billboard_ye_1964#38;billboard_ye_1970#60;grammy_hof;rs500_2021#471;rs500_2004#122;tsort_5000#163
+96,Q31000,Lady Marmalade,"Christina Aguilera, Lil' Kim, Mýa and Pink",Labelle,1974,2001,high,0.077949,billboard_ye_1975#23;billboard_ye_2001#24;grammy_hof;rs500_2004#479;tsort_5000#117
+97,Q1982366,Fight the Power,Public Enemy,,1989,1989,high,0.077208,grammy_hof;rs500_2021#2;rs500_2004#322
+98,Q578320,Proud Mary,Creedence Clearwater Revival,,1968,1968,high,0.076954,billboard_ye_1969#19;billboard_ye_1971#55;grammy_hof;rs500_2021#152;rs500_2004#155;tsort_5000#472
+99,Q592696,Y.M.C.A.,Village People,,1978,1978,high,0.076687,billboard_ye_1979#8;grammy_hof;tsort_5000#45
+100,Q2560935,The Tracks of My Tears,The Miracles,,1965,1965,high,0.076173,billboard_ye_1965#78;grammy_hof;rs500_2021#54;rs500_2004#50;tsort_5000#3414
+101,Q2300404,What's Love Got to Do with It,Tina Turner,,1984,1984,high,0.076160,billboard_ye_1984#2;grammy_hof;rs500_2021#134;rs500_2004#309;tsort_5000#183
+102,Q192023,Stairway to Heaven,Led Zeppelin,,1971,1971,high,0.075843,grammy_hof;rs500_2021#61;rs500_2004#31;tsort_5000#1145
+103,Q2000445,Purple Rain,Prince,,1983,1984,high,0.075392,rs500_2021#18;rs500_2004#143;tsort_5000#583
+104,Q7810914,To Each His Own,Eddy Howard,,1946,1946,high,0.075333,billboard_ye_1946#2;tsort_5000#1194
+105,Q170165,Rolling in the Deep,Adele,,2010,2010,high,0.075185,billboard_ye_2011#1;billboard_ye_2012#71;rs500_2021#82;tsort_5000#201
+106,Q673947,In da Club,50 Cent,,2003,2003,high,0.075177,billboard_ye_2003#1;rs500_2021#444;tsort_5000#58
+107,Q1847429,MMMBop,Hanson,,1997,1997,high,0.075113,billboard_ye_1997#12;tsort_5000#38
+108,Q653794,All Along the Watchtower,Jimi Hendrix,Bob Dylan,1967,1968,high,0.075072,grammy_hof;rs500_2021#40;rs500_2004#48;tsort_5000#2383
+109,Q1487396,You've Lost That Lovin' Feelin',The Righteous Brothers,,1964,1964,high,0.075065,billboard_ye_1965#5;billboard_ye_1981#90;grammy_hof;rs500_2004#34;tsort_5000#309
+110,Q1655199,I Just Called to Say I Love You,Stevie Wonder,,1984,1984,high,0.074923,billboard_ye_1984#25;tsort_5000#35
+111,Q1281313,You're the One That I Want,John Travolta & Olivia Newton-John,,1978,1978,high,0.074305,billboard_ye_1978#13;tsort_5000#39
+112,Q1165305,Eye of the Tiger,Survivor,,1982,1982,high,0.073821,billboard_ye_1982#2;tsort_5000#44
+113,Q14370331,Royals,Lorde,,2011,2011,high,0.073473,billboard_ye_2013#15;billboard_ye_2014#20;rs500_2021#30;tsort_5000#1818
+114,Q653991,All I Want for Christmas Is You,Mariah Carey,,1994,2000,medium,0.072801,billboard_ye_2020#67;billboard_ye_2021#78;billboard_ye_2022#65;billboard_ye_2023#55;billboard_ye_2024#54;billboard_ye_2025#59;tsort_5000#192
+115,Q1655183,I Heard It Through the Grapevine,Marvin Gaye,Gladys Knight & the Pips,1967,1968,high,0.072555,billboard_ye_1969#88;grammy_hof;rs500_2021#119;rs500_2004#80;tsort_5000#426
+116,Q2915752,It's Now or Never,Elvis Presley,,1960,1960,high,0.072388,billboard_ye_1960#7;billboard_ye_1981#82;tsort_5000#59
+117,Q928089,SexyBack,Justin Timberlake featuring Timbaland,,2006,2006,high,0.072210,billboard_ye_2006#9;billboard_ye_2007#63;tsort_5000#61
+118,Q3504849,Get Your Freak On,Missy Elliott,,2001,2001,high,0.072163,billboard_ye_2001#35;rs500_2021#8;tsort_5000#2073
+119,Q901333,Losing My Religion,REM,,1991,1991,high,0.072150,billboard_ye_1991#33;grammy_hof;rs500_2021#112;rs500_2004#169;tsort_5000#237
+120,Q719454,I Love Rock 'n Roll,Joan Jett & The Blackhearts,Arrows,1975,1982,medium,0.072028,billboard_ye_1982#3;grammy_hof;rs500_2004#484;tsort_5000#71
+121,Q1780500,Hips don't lie,Shakira & Wyclef Jean,,2006,2006,high,0.071988,billboard_ye_2006#5;tsort_5000#46
+122,Q638334,The Sign,Ace of Base,,1993,1994,high,0.071949,billboard_ye_1994#1;tsort_5000#48
+123,Q1660805,In the Summertime,Mungo Jerry,,1970,1970,high,0.071335,billboard_ye_1970#53;billboard_ye_1995#18;tsort_5000#47
+124,Q755421,The Loco-Motion,Little Eva,,1962,1962,high,0.071213,billboard_ye_1962#7;billboard_ye_1974#6;billboard_ye_1988#49;grammy_hof;rs500_2004#350;tsort_5000#632
+125,Q2043793,Crying,Roy Orbison,,1961,1961,high,0.070966,billboard_ye_1961#4;billboard_ye_1981#40;grammy_hof;rs500_2021#461;rs500_2004#69;tsort_5000#1043
+126,Q2080355,Maybellene,Chuck Berry,,1955,1955,high,0.070658,grammy_hof;rs500_2021#102;rs500_2004#18;tsort_5000#2190
+127,Q1067670,I Will Survive,Gloria Gaynor,,1978,1978,high,0.070402,billboard_ye_1979#6;grammy_hof;rs500_2021#251;rs500_2004#489;tsort_5000#127
+128,Q919867,I Walk the Line,Johnny Cash,,1956,1956,high,0.069506,grammy_hof;rs500_2021#76;rs500_2004#30;tsort_5000#3061
+129,Q923966,Layla,Derek and the Dominos,,1970,1971,high,0.069426,billboard_ye_1972#60;grammy_hof;rs500_2021#224;rs500_2004#27;tsort_5000#1085
+130,Q2334683,Reach Out (I’ll Be There),The Four Tops,,1966,1966,high,0.069416,billboard_ye_1966#5;grammy_hof;rs500_2021#78;rs500_2004#206;tsort_5000#612
+131,Q139809138,Beat It,Michael Jackson,,1982,1982,high,0.068253,billboard_ye_1983#5;rs500_2021#185;rs500_2004#337;tsort_5000#147
+132,Q1045517,Wonderwall,Oasis,,1995,1995,high,0.067841,billboard_ye_1996#56;spotify_top#69;rs500_2021#95;tsort_5000#275
+133,Q1394919,I'm a Believer,The Monkees,,1966,1966,high,0.067765,billboard_ye_1967#5;rs500_2021#341;tsort_5000#87
+134,Q1814594,The Message,Grandmaster Flash and the Furious Five,,1982,1982,high,0.067638,grammy_hof;rs500_2021#59;rs500_2004#51;tsort_5000#2719
+135,Q1933481,Nuthin' but a 'G' Thang,Dr. Dre,,1992,1992,high,0.066694,billboard_ye_1993#11;rs500_2021#29;rs500_2004#419;tsort_5000#4218
+136,Q640429,Are You Lonesome Tonight?,Elvis Presley,,1927,1960,medium,0.066295,billboard_ye_1961#96;grammy_hof;tsort_5000#49
+137,Q1036227,Smooth,Rob Thomas & Santana,,1999,1999,high,0.066287,billboard_ye_1999#19;billboard_ye_2000#2;tsort_5000#100
+138,Q5979116,I Swear,All-4-One,John Michael Montgomery,1993,1994,high,0.065309,billboard_ye_1994#2;tsort_5000#62
+139,Q1458883,I Wanna Dance with Somebody (Who Loves Me),Whitney Houston,,1987,1987,high,0.065299,billboard_ye_1987#4;rs500_2021#231;tsort_5000#107
+140,Q1280295,Near You,Francis Craig,,1947,1947,high,0.065190,billboard_ye_1947#1;grammy_hof;tsort_5000#362
+141,Q76566134,Blinding Lights,The Weeknd,,2019,2019,high,0.065053,billboard_ye_2020#1;billboard_ye_2021#3;spotify_top#1
+142,Q1423445,Lean on Me,Bill Withers,,1972,1972,high,0.064896,billboard_ye_1972#7;billboard_ye_1987#29;grammy_hof;rs500_2021#236;rs500_2004#205;tsort_5000#1070
+143,Q1460758,Where Is the Love?,Black Eyed Peas,,2003,2003,high,0.064725,billboard_ye_2003#26;tsort_5000#53
+144,Q1445942,I Want You Back,The Jackson 5,,1969,1969,high,0.064703,billboard_ye_1970#28;grammy_hof;rs500_2021#104;rs500_2004#120;tsort_5000#746
+145,Q161402,Over the Rainbow,Judy Garland,,1939,1939,high,0.064245,grammy_hof;tsort_5000#41
+146,Q707034,I Don't Want to Miss a Thing,Aerosmith,,1998,1998,high,0.064040,billboard_ye_1998#23;billboard_ye_1999#67;tsort_5000#76
+147,Q625090,Louie Louie,The Kingsmen,,1955,1963,medium,0.063998,billboard_ye_1964#99;grammy_hof;rs500_2021#156;rs500_2004#55;tsort_5000#666
+148,Q2734855,The Weight,The Band,,1968,1968,high,0.063601,rs500_2021#58;rs500_2004#41
+149,Q170183,Just the Way You Are,Bruno Mars,,2010,2010,high,0.063379,billboard_ye_2010#18;billboard_ye_2011#15;spotify_top#35;tsort_5000#311
+150,Q1131812,With or Without You,U2,,1987,1987,high,0.063344,billboard_ye_1987#15;rs500_2021#211;rs500_2004#131;tsort_5000#247
+151,Q749752,Venus,Shocking Blue,,1969,1969,high,0.063244,billboard_ye_1970#33;billboard_ye_1986#38;tsort_5000#116
+152,Q3298960,Family Affair,Sly & the Family Stone,,1971,1971,high,0.063200,billboard_ye_1972#79;rs500_2021#57;rs500_2004#138;tsort_5000#840
+153,Q8353114,My Generation,The Who,,1965,1965,high,0.063172,grammy_hof;rs500_2021#232;rs500_2004#11;tsort_5000#2460
+154,Q145677,Take On Me,a-ha,,1984,1984,high,0.063167,billboard_ye_1985#10;spotify_top#85;tsort_5000#111
+155,Q2297799,Woman in Love,Barbra Streisand,,1980,1980,high,0.063158,billboard_ye_1981#35;tsort_5000#54
+156,Q155029,Can't Get You Out of My Head,Kylie Minogue,,2001,2001,high,0.063095,billboard_ye_2002#45;tsort_5000#52
+157,Q655373,Redemption Song,Bob Marley,,1980,1980,high,0.063025,rs500_2021#42;rs500_2004#66
+158,Q1709975,Riders in the Sky,Vaughn Monroe,R.E.M.,1948,1949,high,0.062905,billboard_ye_1949#1;tsort_5000#69
+159,Q725334,We Found Love,Rihanna & Calvin Harris,,2011,2011,high,0.062726,billboard_ye_2011#69;billboard_ye_2012#8;tsort_5000#89
+160,Q1228847,I Can't Stop Loving You,Ray Charles,Don Gibson,1958,1962,high,0.062580,billboard_ye_1962#2;grammy_hof;rs500_2004#161;tsort_5000#154
+161,Q7165874,People Get Ready,The Impressions,,1965,1965,high,0.062531,grammy_hof;rs500_2021#122;rs500_2004#24
+162,Q1655174,I Feel Love,Donna Summer,,1977,1977,high,0.062466,grammy_hof;rs500_2021#52;rs500_2004#411;tsort_5000#326
+163,Q2604345,Livin' la Vida Loca,Ricky Martin,,1999,1999,high,0.062286,billboard_ye_1999#10;tsort_5000#65
+164,Q1477141,Jumpin' Jack Flash,The Rolling Stones,,1968,1968,high,0.061952,billboard_ye_1968#50;rs500_2021#144;rs500_2004#124;tsort_5000#294
+165,Q155512,I Kissed a Girl,Katy Perry,,2008,2008,high,0.061901,billboard_ye_2008#14;tsort_5000#64
+166,Q516203,"Sugar, Sugar",The Archies,,1969,1969,high,0.061848,billboard_ye_1969#1;tsort_5000#72
+167,Q623470,Big Girls Don't Cry,Fergie,,2007,2007,high,0.061581,billboard_ye_2007#4;billboard_ye_2008#78;tsort_5000#95
+168,Q1324384,In My Life,The Beatles,,1965,1965,high,0.061461,rs500_2021#98;rs500_2004#23
+169,Q1420007,Georgia on My Mind,Ray Charles,Hoagy Carmichael & his Orchestra (featuring Bix Beiderbecke on Cornet),1930,1960,high,0.061232,billboard_ye_1960#78;grammy_hof;rs500_2021#283;rs500_2004#44;tsort_5000#1519
+170,Q2456757,When a Man Loves a Woman,Percy Sledge,,1966,1966,high,0.061154,billboard_ye_1966#31;billboard_ye_1992#54;grammy_hof;rs500_2004#54;tsort_5000#686
+171,Q153064,Bad Romance,Lady Gaga,,2009,2009,high,0.061047,billboard_ye_2010#8;rs500_2021#482;tsort_5000#94
+172,Q1510219,Strangers in the Night,Frank Sinatra,,1966,1966,high,0.060924,billboard_ye_1966#8;grammy_hof;tsort_5000#85
+173,Q466255,American Pie,Don McLean,,1971,1971,high,0.060767,billboard_ye_1972#3;grammy_hof;tsort_5000#141
+174,Q1671090,Le Freak,Chic,,1978,1978,high,0.060712,billboard_ye_1979#3;grammy_hof;tsort_5000#90
+175,Q1028032,Great Balls of Fire,Jerry Lee Lewis,,1957,1957,high,0.060257,billboard_ye_1958#36;grammy_hof;rs500_2021#242;rs500_2004#96;tsort_5000#419
+176,Q2418659,Honky Tonk Women,The Rolling Stones,,1969,1969,high,0.060236,billboard_ye_1969#4;grammy_hof;rs500_2004#116;tsort_5000#204
+177,Q111397510,As It Was,Harry Styles,,2022,2022,high,0.060232,billboard_ye_2022#2;billboard_ye_2023#15;spotify_top#5
+178,Q1349395,Kung Fu Fighting,Carl Douglas,,1974,1974,high,0.060208,billboard_ye_1975#15;tsort_5000#68
+179,Q641677,La Bamba,Los Lobos,El Jarocho,1939,1987,review,0.060034,billboard_ye_1987#11;grammy_hof;rs500_2004#345;tsort_5000#170
+180,Q643423,Whole Lotta Love,Led Zeppelin,,1969,1969,high,0.060033,grammy_hof;rs500_2021#128;rs500_2004#75;tsort_5000#453
+181,Q644416,London Calling,The Clash,,1979,1980,high,0.059704,rs500_2021#143;rs500_2004#15
+182,Q76743491,Seasons in the Sun,Terry Jacks,,1961,1974,medium,0.059607,billboard_ye_1974#2;tsort_5000#78
+183,Q1046717,Paint It Black,The Rolling Stones,,1966,1966,high,0.059524,billboard_ye_1966#34;grammy_hof;rs500_2021#213;rs500_2004#174;tsort_5000#302
+184,Q139916746,Karma Chameleon,Culture Club,,1983,1983,high,0.059398,billboard_ye_1984#10;tsort_5000#73
+185,Q1011938,Good Times,Chic,,1979,1979,high,0.059129,billboard_ye_1979#20;rs500_2021#68;rs500_2004#224;tsort_5000#1186
+186,Q1586351,Third Man Theme,Anton Karas,,1949,1949,high,0.059075,billboard_ye_1950#3;grammy_hof;tsort_5000#196
+187,Q1569320,Work It,Missy Elliott,,2002,2002,high,0.058967,billboard_ye_2002#54;billboard_ye_2003#36;rs500_2021#56;tsort_5000#1073
+188,Q4038061,End of the Road,Boyz II Men,,1992,1992,high,0.058947,billboard_ye_1992#1;tsort_5000#81
+189,Q1427327,Kiss,Prince,,1986,1986,high,0.058751,billboard_ye_1986#19;rs500_2021#85;rs500_2004#461;tsort_5000#498
+190,Q1241630,Purple Haze,The Jimi Hendrix Experience,,1967,1967,high,0.058744,grammy_hof;rs500_2021#250;rs500_2004#17;tsort_5000#2879
+191,Q497506,"No Woman, No Cry",Bob Marley and the Wailers,,1974,1975,high,0.058551,grammy_hof;rs500_2021#140;rs500_2004#37;tsort_5000#2095
+192,Q6012950,In the Still of the Nite,Five Satins,,1956,1956,high,0.058507,billboard_ye_1993#12;grammy_hof;rs500_2021#170;rs500_2004#90;tsort_5000#2452
+193,Q7754861,The Old Lamp-Lighter,Sammy Kaye,,1946,1946,high,0.058388,billboard_ye_1946#18;billboard_ye_1947#18;billboard_ye_1960#58;tsort_5000#2110
+194,Q765709,Strange Fruit,Billie Holiday,,1939,1939,high,0.058388,grammy_hof;rs500_2021#21;tsort_5000#1380
+195,Q107439752,Stay,The Kid Laroi and Justin Bieber,,2021,2021,high,0.058333,billboard_ye_2021#12;billboard_ye_2022#3;spotify_top#10
+196,Q857507,Call Me,Blondie,,1979,1980,high,0.058289,billboard_ye_1980#1;rs500_2004#283;tsort_5000#121
+197,Q7468830,Apologize,Timbaland & OneRepublic,,2007,2007,high,0.058003,billboard_ye_2007#66;billboard_ye_2008#5;tsort_5000#113
+198,Q1121052,Waterfalls,TLC,,1995,1995,high,0.057928,billboard_ye_1995#2;rs500_2021#127;tsort_5000#234
+199,Q626490,Viva la Vida,Coldplay,,2008,2008,high,0.057797,billboard_ye_2008#13;billboard_ye_2009#55;spotify_top#29;tsort_5000#404
+200,Q2304745,No Scrubs,TLC,,1999,1999,high,0.057761,billboard_ye_1999#2;rs500_2021#303;tsort_5000#136
+201,Q139922872,Gloria,Patti Smith,Them,1964,1964,high,0.057601,billboard_ye_1966#71;grammy_hof;rs500_2021#97;rs500_2004#208
+202,Q28132505,Shape of You,Ed Sheeran,,2017,2017,high,0.057578,billboard_ye_2017#1;billboard_ye_2018#71;spotify_top#2;tsort_5000#4582
+203,Q1991449,"Whenever, Wherever",Shakira,,2001,2001,high,0.057517,billboard_ye_2002#28;tsort_5000#70
+204,Q1579259,Low,Flo-Rida & T-Pain,,2007,2007,high,0.057489,billboard_ye_2008#1;tsort_5000#86
+205,Q139917638,Dilemma,Nelly & Kelly Rowland,,2002,2002,high,0.057292,billboard_ye_2002#4;tsort_5000#84
+206,Q1260086,Will You Love Me Tomorrow,The Shirelles,,1960,1960,high,0.057094,billboard_ye_1961#16;grammy_hof;rs500_2021#151;rs500_2004#125;tsort_5000#1469
+207,Q568004,Another Day in Paradise,Phil Collins,,1989,1989,high,0.056883,billboard_ye_1990#7;tsort_5000#83
+208,Q605342,Sympathy for the Devil,The Rolling Stones,,1968,1968,high,0.056705,rs500_2021#106;rs500_2004#32
+209,Q1939374,Streets of Philadelphia,Bruce Springsteen,,1994,1994,high,0.056391,billboard_ye_1994#54;tsort_5000#66
+210,Q1026811,California Dreamin',The Mamas & the Papas,,1965,1965,high,0.056359,billboard_ye_1966#1;grammy_hof;rs500_2021#420;rs500_2004#89;tsort_5000#841
+211,Q1426279,Get Back,The Beatles with Billy Preston,,1969,1969,high,0.056209,billboard_ye_1969#25;tsort_5000#75
+212,Q126721841,Birds of a Feather,Billie Eilish,,2024,2024,high,0.056115,billboard_ye_2024#15;billboard_ye_2025#5;spotify_top#13
+213,Q62618893,Bad Guy,Billie Eilish,,2019,2019,high,0.056050,billboard_ye_2019#4;billboard_ye_2020#46;spotify_top#81;rs500_2021#178
+214,Q2083222,Crazy,Gnarls Barkley,,2006,2006,high,0.055975,billboard_ye_2006#7;rs500_2021#307;tsort_5000#139
+215,Q257915,"Que Sera, Sera (Whatever Will Be, Will Be)",Doris Day,,1956,1956,high,0.055908,billboard_ye_1956#8;grammy_hof;tsort_5000#105
+216,Q1413725,In the Mood,Glenn Miller & his Orchestra,,1939,1939,high,0.055904,billboard_ye_1959#99;grammy_hof;tsort_5000#74
+217,Q26257738,Closer,The Chainsmokers featuring Halsey,,2016,2016,high,0.055779,billboard_ye_2016#10;billboard_ye_2017#7;spotify_top#19;tsort_5000#4734
+218,Q249863,Everyday People,Sly and the Family Stone,,1968,1968,high,0.055572,billboard_ye_1969#5;rs500_2021#109;rs500_2004#145;tsort_5000#3124
+219,Q104540815,Heat Waves,Glass Animals,,2020,2020,high,0.055525,billboard_ye_2021#16;billboard_ye_2022#1;spotify_top#17
+220,Q3206616,My Happiness,Jon and Sondra Steele,,1948,1948,high,0.055516,billboard_ye_1948#5;billboard_ye_1959#39;tsort_5000#2627
+221,Q5296955,Doo Wop (That Thing),Lauryn Hill,,1998,1998,high,0.055514,billboard_ye_1999#41;rs500_2021#49;tsort_5000#613
+222,Q1164190,Mona Lisa,Nat King Cole,,1950,1950,high,0.055454,billboard_ye_1950#2;grammy_hof;tsort_5000#124
+223,Q379751,Toxic,Britney Spears,,2003,2003,high,0.055325,billboard_ye_2004#48;rs500_2021#114;tsort_5000#200
+224,Q60768202,Someone You Loved,Lewis Capaldi,,2018,2018,high,0.055192,billboard_ye_2019#27;billboard_ye_2020#10;spotify_top#8
+225,Q2504150,All I Have to Do Is Dream,The Everly Brothers,,1958,1958,high,0.054995,billboard_ye_1958#2;grammy_hof;rs500_2021#323;rs500_2004#141;tsort_5000#633
+226,Q3047985,Tangled Up in Blue,Bob Dylan,,1975,1975,high,0.054934,rs500_2021#67;rs500_2004#68
+227,Q2273108,Don't Be Cruel,Elvis Presley,,1956,1956,high,0.054791,billboard_ye_1956#2;billboard_ye_1988#70;grammy_hof;rs500_2004#197;tsort_5000#355
+228,Q1349961,Tie a Yellow Ribbon 'round the Old Oak Tree,Tony Orlando & Dawn,,1973,1973,high,0.054610,billboard_ye_1973#1;tsort_5000#97
+229,Q2659767,Night Fever,Bee Gees,,1978,1978,high,0.054591,billboard_ye_1978#2;tsort_5000#96
+230,Q908516,Don't Speak,No Doubt,,1996,1997,high,0.054545,tsort_5000#50
+231,Q22043782,Oh! What It Seemed to Be,Frankie Carle,,1945,1946,high,0.054524,billboard_ye_1946#6;tsort_5000#2937
+232,Q1523310,Hot Stuff,Donna Summer,,1979,1979,high,0.054457,billboard_ye_1979#7;rs500_2004#103;tsort_5000#224
+233,Q1426177,Love Will Tear Us Apart,Joy Division,,1980,1980,high,0.053989,rs500_2021#41;rs500_2004#179;tsort_5000#3214
+234,Q1407276,Hung Up,Madonna,,2005,2005,high,0.053867,billboard_ye_2006#91;tsort_5000#67
+235,Q695648,All That She Wants,Ace of Base,,1992,1993,high,0.053805,billboard_ye_1993#51;billboard_ye_1994#9;tsort_5000#138
+236,Q672515,Party Rock Anthem,LMFAO featuring Lauren Bennett and GoonRock,,2010,2011,high,0.053797,billboard_ye_2011#2;billboard_ye_2012#29;tsort_5000#167
+237,Q989611,Endless Love,Diana Ross & Lionel Richie,,1981,1981,high,0.053229,billboard_ye_1981#2;billboard_ye_1994#56;tsort_5000#208
+238,Q1786521,A Hard Day's Night,The Beatles,,1964,1964,high,0.053207,billboard_ye_1964#13;rs500_2004#153;tsort_5000#176
+239,Q572709,You Really Got Me,The Kinks,,1964,1964,high,0.053078,billboard_ye_1964#79;grammy_hof;rs500_2021#176;rs500_2004#82;tsort_5000#1961
+240,Q842168,Penny Lane,The Beatles,,1967,1967,high,0.053011,billboard_ye_1967#55;grammy_hof;rs500_2021#280;rs500_2004#449;tsort_5000#215
+241,Q2248020,River Deep - Mountain High,Ike & Tina Turner,,1966,1966,high,0.052996,grammy_hof;rs500_2021#221;rs500_2004#33;tsort_5000#3545
+242,Q2452188,How You Remind Me,Nickelback,,2001,2001,high,0.052979,billboard_ye_2002#1;tsort_5000#104
+243,Q158560,(Just Like) Starting Over,John Lennon,,1980,1980,high,0.052892,billboard_ye_1981#4;tsort_5000#101
+244,Q573354,I'd Do Anything for Love (But I Won't Do That),Meat Loaf,,1993,1993,high,0.052879,billboard_ye_1993#36;billboard_ye_1994#38;tsort_5000#126
+245,Q4041691,I'll Make Love to You,Boyz II Men,,1994,1994,high,0.052742,billboard_ye_1994#3;billboard_ye_1995#50;tsort_5000#156
+246,Q671197,I'm So Lonesome I Could Cry,Hank Williams,,1949,1949,high,0.052531,billboard_ye_1966#36;grammy_hof;rs500_2021#165;rs500_2004#111;tsort_5000#3011
+247,Q338796,I Want It That Way,Backstreet Boys,,1999,1999,high,0.052529,billboard_ye_1999#15;rs500_2021#240;tsort_5000#172
+248,Q129169212,Die with a Smile,Lady Gaga and Bruno Mars,,2024,2024,high,0.052368,billboard_ye_2024#62;billboard_ye_2025#1;spotify_top#12
+249,Q1088774,The Boy Is Mine,Brandy and Monica,,1998,1998,high,0.052274,billboard_ye_1998#2;tsort_5000#106
+250,Q27000439,Starboy,The Weeknd and Daft Punk,,2016,2016,high,0.052225,billboard_ye_2016#58;billboard_ye_2017#20;spotify_top#4
+251,Q705575,Mambo No. 5,Lou Bega,Perez Prado,1949,1999,medium,0.052057,billboard_ye_1999#42;tsort_5000#82
+252,Q2332140,Blitzkrieg Bop,The Ramones,,1976,1976,high,0.051995,rs500_2021#64;rs500_2004#92
+253,Q996033,Fantasy,Mariah Carey,,1995,1995,high,0.051805,billboard_ye_1995#7;billboard_ye_1996#49;rs500_2021#419;tsort_5000#250
+254,Q2529083,All for Love,"Bryan Adams, Rod Stewart and Sting",,1993,1993,high,0.051516,billboard_ye_1994#8;tsort_5000#103
+255,Q5966023,I'll Take You There,The Staple Singers,,1972,1972,high,0.051391,billboard_ye_1972#19;billboard_ye_1994#95;grammy_hof;rs500_2021#186;rs500_2004#276;tsort_5000#2602
+256,Q176098,All You Need Is Love,The Beatles,,1967,1967,high,0.051187,billboard_ye_1967#30;rs500_2004#362;tsort_5000#122
+257,Q922139,The Sounds of Silence,Simon & Garfunkel,,1964,1964,high,0.050841,grammy_hof;rs500_2021#182;rs500_2004#156;tsort_5000#325
+258,Q2721073,Paper Planes,M.I.A.,,2008,2008,high,0.050707,billboard_ye_2008#35;rs500_2021#46;tsort_5000#2394
+259,Q5003111,Buttons and Bows,Dinah Shore,,1948,1948,high,0.050645,billboard_ye_1948#21;billboard_ye_1949#19;tsort_5000#174
+260,Q128033790,Symphony,Freddy Martin,Bing Crosby,1945,1946,high,0.050624,billboard_ye_1946#17;tsort_5000#1404
+261,Q1473718,Ring of Fire,Johnny Cash,Anita Carter,1962,1963,high,0.050602,billboard_ye_1963#69;grammy_hof;rs500_2021#201;rs500_2004#87;tsort_5000#2574
+262,Q88222469,Those Were the Days,Mary Hopkin,The Limeliters,1962,1968,high,0.050585,billboard_ye_1968#30;tsort_5000#92
+263,Q56043480,Running Up That Hill (A Deal with God),Kate Bush,,1985,1985,high,0.050475,billboard_ye_2022#23;rs500_2021#60;tsort_5000#1118
+264,Q239489,Tennessee Waltz,Patti Page,,1947,1950,medium,0.050406,billboard_ye_1950#18;billboard_ye_1951#10;grammy_hof;tsort_5000#265
+265,Q1676080,You Keep Me Hangin' On,The Supremes,,1966,1966,high,0.050224,billboard_ye_1968#77;billboard_ye_1987#34;grammy_hof;rs500_2021#234;rs500_2004#339;tsort_5000#1479
+266,Q1242249,Don't Cha,The Pussycat Dolls featuring Busta Rhymes,,2005,2005,high,0.050207,billboard_ye_2005#9;tsort_5000#108
+267,Q7160526,Peg o' My Heart,The Harmonicats,,1947,1947,high,0.050165,billboard_ye_1947#2;grammy_hof;tsort_5000#1542
+268,Q138410,Total Eclipse of the Heart,Bonnie Tyler,,1983,1983,high,0.050062,billboard_ye_1983#6;billboard_ye_1995#19;tsort_5000#267
+269,Q3488185,Dancing on My Own,Robyn,,2010,2010,high,0.050000,rs500_2021#20
+270,Q3990206,Theme from A Summer Place,Percy Faith,,1959,1959,high,0.049804,billboard_ye_1960#1;grammy_hof;tsort_5000#150
+271,Q1469232,Sixteen Tons,Tennessee Ernie Ford,Merle Travis,1946,1955,high,0.049780,billboard_ye_1955#13;billboard_ye_1956#22;grammy_hof;tsort_5000#255
+272,Q166686,Angie,The Rolling Stones,,1973,1973,high,0.049754,billboard_ye_1973#85;tsort_5000#80
+273,Q2000188,Da Doo Ron Ron,The Crystals,,1962,1963,high,0.049722,billboard_ye_1963#46;billboard_ye_1977#45;rs500_2021#366;rs500_2004#114;tsort_5000#2815
+274,Q1573997,Jolene,Dolly Parton,,1973,1973,high,0.049506,grammy_hof;rs500_2021#63;rs500_2004#217;tsort_5000#4496
+275,Q1535296,These Boots Are Made for Walkin',Nancy Sinatra,,1965,1965,high,0.049259,billboard_ye_1966#6;grammy_hof;tsort_5000#145
+276,Q210485,Something,The Beatles,,1969,1969,high,0.049193,billboard_ye_1969#83;rs500_2021#110;rs500_2004#273;tsort_5000#561
+277,Q885912,Blue Suede Shoes,Carl Perkins,,1955,1956,high,0.049056,billboard_ye_1956#18;grammy_hof;rs500_2004#95;tsort_5000#969
+278,Q2307832,Don't Stop Believin',Journey,,1981,1981,high,0.048970,billboard_ye_1982#73;grammy_hof;spotify_top#77;rs500_2021#133;tsort_5000#4596
+279,Q2562766,Tiny Dancer,Elton John,,1972,1972,high,0.048933,grammy_hof;rs500_2021#47;rs500_2004#387
+280,Q1346474,Sh-Boom,The Crew-Cuts with David Carroll,,1954,1954,high,0.048925,billboard_ye_1954#4;grammy_hof;rs500_2004#215;tsort_5000#314
+281,Q1044354,So What,Pink,,2008,2008,high,0.048826,billboard_ye_2008#24;billboard_ye_2009#45;tsort_5000#159
+282,Q2562710,The Anniversary Song,Al Jolson,,1947,1947,review,0.048765,billboard_ye_1947#8;tsort_5000#3445
+283,Q1921383,Music,Madonna,,2000,2000,high,0.048490,billboard_ye_2000#17;tsort_5000#109
+284,Q1513756,Summertime Blues,Eddie Cochran,,1958,1958,high,0.048422,billboard_ye_1968#56;grammy_hof;rs500_2021#432;rs500_2004#73;tsort_5000#2070
+285,Q1233068,Do You Really Want to Hurt Me,Culture Club,,1982,1982,high,0.048370,billboard_ye_1983#11;tsort_5000#115
+286,Q486421,Anarchy in the U.K.,The Sex Pistols,,1976,1977,high,0.048170,rs500_2021#125;rs500_2004#53
+287,Q13422120,Counting Stars,OneRepublic,,2013,2013,high,0.048141,billboard_ye_2013#63;billboard_ye_2014#5;spotify_top#26;tsort_5000#4317
+288,Q1587664,Sweet Dreams (Are Made of This),Eurythmics,,1983,1983,high,0.048045,billboard_ye_1983#10;grammy_hof;rs500_2021#353;rs500_2004#356;tsort_5000#439
+289,Q214113,Black or White,Michael Jackson,,1991,1991,high,0.047996,billboard_ye_1992#14;tsort_5000#114
+290,Q67184416,Cruel Summer,Taylor Swift,,2019,2019,high,0.047986,billboard_ye_2023#18;billboard_ye_2024#12;spotify_top#34
+291,Q3437349,You Belong to Me,Jo Stafford with Paul Weston,,1952,1952,high,0.047946,billboard_ye_1952#4;billboard_ye_1962#64;grammy_hof;tsort_5000#249
+292,Q1060948,I Still Haven't Found What I'm Looking For,U2,,1987,1987,high,0.047742,billboard_ye_1987#23;rs500_2004#93;tsort_5000#313
+293,Q1474712,Funkytown,Lipps Inc.,,1980,1980,high,0.047705,billboard_ye_1980#8;billboard_ye_1987#99;tsort_5000#193
+294,Q124422481,Beautiful Things,Benson Boone,,2024,2024,high,0.047691,billboard_ye_2024#3;billboard_ye_2025#6;spotify_top#60
+295,Q23762956,One Dance,Drake featuring Wizkid and Kyla,,2016,2016,high,0.047687,billboard_ye_2016#3;spotify_top#6;tsort_5000#3911
+296,Q225871,Un-Break My Heart,Toni Braxton,,1996,1996,high,0.047613,billboard_ye_1996#81;billboard_ye_1997#4;tsort_5000#181
+297,Q28737603,Believer,Imagine Dragons,,2017,2017,high,0.047409,billboard_ye_2017#9;billboard_ye_2018#100;spotify_top#15
+298,Q5978682,I Only Have Eyes for You,The Flamingos,,1934,1959,medium,0.047362,billboard_ye_1959#73;grammy_hof;rs500_2021#175;rs500_2004#157;tsort_5000#2033
+299,Q2517449,You Are the Sunshine of My Life,Stevie Wonder,,1972,1972,high,0.047360,billboard_ye_1973#19;grammy_hof;rs500_2021#183;rs500_2004#281;tsort_5000#1243
+300,Q2095265,The Letter,The Box Tops,,1967,1967,high,0.047179,billboard_ye_1967#2;billboard_ye_1970#80;grammy_hof;rs500_2004#363;tsort_5000#441
+301,Q1573223,How Deep Is Your Love,Bee Gees,,1977,1977,high,0.047166,billboard_ye_1978#6;rs500_2004#366;tsort_5000#233
+302,Q527234,Ms. Jackson,Outkast,,2000,2000,high,0.047108,billboard_ye_2001#25;rs500_2021#145;tsort_5000#319
+303,Q2664309,Runaway,Kanye West,,2010,2010,high,0.047059,rs500_2021#25
+304,Q2471239,Good Golly Miss Molly,Little Richard,,1958,1958,high,0.047036,rs500_2021#92;rs500_2004#94;tsort_5000#4778
+305,Q2078402,Ode to Billie Joe,Bobbie Gentry,,1967,1967,high,0.046941,billboard_ye_1967#3;grammy_hof;rs500_2021#191;rs500_2004#412;tsort_5000#1464
+306,Q1932351,Iris,Goo Goo Dolls,,1998,1998,high,0.046894,billboard_ye_1999#94;spotify_top#23;tsort_5000#308
+307,Q57,Never Gonna Give You Up,Rick Astley,,1987,1987,high,0.046875,billboard_ye_1988#4;tsort_5000#132
+308,Q726557,Whole Lotta Shakin' Goin On,Jerry Lee Lewis,Big Maybelle,1955,1957,high,0.046855,billboard_ye_1957#28;grammy_hof;rs500_2004#61;tsort_5000#964
+309,Q65622067,You're Beautiful,James Blunt,,2005,2005,high,0.046713,billboard_ye_2006#4;tsort_5000#133
+310,Q13557314,Wake Me Up,Avicii,,2013,2013,high,0.046688,billboard_ye_2013#19;billboard_ye_2014#22;spotify_top#49;tsort_5000#1661
+311,Q661493,Once in a Lifetime,Talking Heads,,1980,1980,high,0.046661,rs500_2021#28;tsort_5000#4914
+312,Q1999714,Mr. Brightside,The Killers,,2003,2003,high,0.046625,billboard_ye_2005#16;spotify_top#33;rs500_2021#378;tsort_5000#2061
+313,Q1242292,Don't Go Breaking My Heart,Elton John & Kiki Dee,,1976,1976,high,0.046586,billboard_ye_1976#2;tsort_5000#137
+314,Q1423509,Since U Been Gone,Kelly Clarkson,,2004,2004,high,0.046580,billboard_ye_2005#4;rs500_2021#93;tsort_5000#1187
+315,Q1511102,Upside Down,Diana Ross,,1980,1980,high,0.046528,billboard_ye_1980#18;tsort_5000#118
+316,Q4655752,A Case of You,Joni Mitchell,,1971,1971,high,0.046512,rs500_2021#26
+317,Q2372232,The Gypsy,The Ink Spots,,1945,1946,high,0.046419,billboard_ye_1946#3;tsort_5000#1495
+318,Q1280027,Ebony and Ivory,Paul McCartney and Stevie Wonder,,1982,1982,high,0.046394,billboard_ye_1982#4;tsort_5000#135
+319,Q1607572,I Want to Know What Love Is,Foreigner,,1984,1984,high,0.046327,billboard_ye_1985#4;rs500_2004#476;tsort_5000#179
+320,Q2276100,Long Tall Sally,Little Richard,,1956,1956,high,0.046249,billboard_ye_1956#45;grammy_hof;rs500_2004#56;tsort_5000#936
+321,Q139917096,Espresso,Sabrina Carpenter,,2024,2024,high,0.046206,billboard_ye_2024#7;billboard_ye_2025#12;spotify_top#55
+322,Q969635,Hallelujah,Leonard Cohen,,1984,1984,high,0.046197,grammy_hof;rs500_2021#74;rs500_2004#259;tsort_5000#2793
+323,Q5451533,Fire and Rain,James Taylor,,1970,1970,high,0.046163,billboard_ye_1970#67;grammy_hof;rs500_2021#146;rs500_2004#227;tsort_5000#1616
+324,Q509722,I Believe I Can Fly,R. Kelly,,1996,1996,high,0.046079,billboard_ye_1997#6;rs500_2004#406;tsort_5000#185
+325,Q57939337,Sunflower,Post Malone and Swae Lee,,2018,2018,high,0.045980,billboard_ye_2019#2;spotify_top#7
+326,Q720547,Jump,Van Halen,,1983,1983,high,0.045950,billboard_ye_1984#6;rs500_2021#177;tsort_5000#371
+327,Q176544,California Girls,The Beach Boys,,1965,1965,high,0.045766,billboard_ye_1965#49;billboard_ye_1985#88;grammy_hof;rs500_2004#71;tsort_5000#2804
+328,Q3798619,Informer,Snow,,1992,1993,high,0.045699,billboard_ye_1993#10;tsort_5000#131
+329,Q1420378,Seven Nation Army,White Stripes,,2003,2003,high,0.045601,rs500_2021#36;tsort_5000#1465
+330,Q965422,Walk This Way,Aerosmith,,1975,1975,high,0.045574,billboard_ye_1977#90;billboard_ye_1986#89;grammy_hof;rs500_2004#287;tsort_5000#1171
+331,Q16035060,Let's Get It On,Marvin Gaye,,1973,1973,high,0.045557,billboard_ye_1973#4;rs500_2021#264;rs500_2004#167;tsort_5000#1313
+332,Q2567560,You're So Vain,Carly Simon,,1972,1972,high,0.045526,billboard_ye_1973#9;grammy_hof;rs500_2021#495;tsort_5000#256
+333,Q1073719,I'll Be There,The Jackson 5,,1970,1970,high,0.045506,billboard_ye_1970#7;billboard_ye_1992#16;grammy_hof;tsort_5000#810
+334,Q491663,Rockin' Around the Christmas Tree,Brenda Lee,,1958,1958,high,0.045200,billboard_ye_2021#92;billboard_ye_2022#80;billboard_ye_2023#60;billboard_ye_2024#59;billboard_ye_2025#67;grammy_hof;tsort_5000#2897
+335,Q11977632,It's Too Late,Carole King,,1971,1971,high,0.045122,billboard_ye_1971#3;grammy_hof;rs500_2021#345;rs500_2004#469;tsort_5000#617
+336,Q29051557,Perfect,Ed Sheeran,,2017,2017,high,0.045115,billboard_ye_2018#2;spotify_top#9
+337,Q41553138,Rockstar,Post Malone featuring 21 Savage,,2017,2017,high,0.044839,billboard_ye_2017#56;billboard_ye_2018#5;spotify_top#36
+338,Q686850,Dream On,Aerosmith,,1973,1973,high,0.044494,billboard_ye_1976#51;grammy_hof;rs500_2021#199;rs500_2004#172;tsort_5000#2582
+339,Q300428,A Groovy Kind of Love,Phil Collins,The Mindbenders,1965,1988,high,0.044335,billboard_ye_1966#20;billboard_ye_1988#29;tsort_5000#263
+340,Q3206359,The Ballad of Davy Crockett,Bill Hayes,,1955,1955,high,0.044311,billboard_ye_1955#6;tsort_5000#3070
+341,Q2574121,Back for Good,Take That,,1995,1995,high,0.044205,billboard_ye_1995#62;billboard_ye_1996#95;tsort_5000#143
+342,Q1592434,Heart of Gold,Neil Young,,1971,1972,high,0.044082,billboard_ye_1972#17;rs500_2021#259;rs500_2004#297;tsort_5000#531
+343,Q149053,Irreplaceable,Beyoncé,,2006,2006,high,0.044043,billboard_ye_2007#1;tsort_5000#157
+344,Q5183105,Crazy,Patsy Cline,,1961,1961,high,0.043986,grammy_hof;rs500_2021#195;rs500_2004#85;tsort_5000#2105
+345,Q20003,In the End,Linkin Park,,2000,2000,high,0.043972,billboard_ye_2002#7;spotify_top#41;tsort_5000#589
+346,Q1573287,Thunder Road,Bruce Springsteen,,1975,1975,medium,0.043940,rs500_2021#111;rs500_2004#86
+347,Q56088104,Sexual Healing,Marvin Gaye,,1982,1982,high,0.043929,billboard_ye_1983#32;rs500_2021#198;rs500_2004#231;tsort_5000#768
+348,Q978005,Tears in Heaven,Eric Clapton,,1991,1992,high,0.043921,billboard_ye_1992#6;rs500_2004#353;tsort_5000#219
+349,Q195534,Beautiful Girls,Sean Kingston,,2007,2007,high,0.043776,billboard_ye_2007#31;tsort_5000#123
+350,Rada52dc80820,Cathy's Clown,The Everly Brothers,,1960,1960,high,0.043741,billboard_ye_1960#3;rs500_2004#149;tsort_5000#384
+351,Q3364424,Your Cheatin' Heart,Hank Williams,,1952,1953,high,0.043563,billboard_ye_1953#26;grammy_hof;rs500_2021#237;rs500_2004#213;tsort_5000#2213
+352,Q909121,Physical,Olivia Newton-John,,1981,1981,high,0.043543,billboard_ye_1982#1;tsort_5000#161
+353,Q2020828,Downtown,Petula Clark,,1964,1964,high,0.043520,billboard_ye_1965#6;grammy_hof;tsort_5000#195
+354,Q2701727,Juicy,Notorious B.I.G.,,1994,1994,high,0.043478,rs500_2021#32
+355,Q66839247,Circles,Post Malone,,2019,2019,high,0.043373,billboard_ye_2019#62;billboard_ye_2020#2;spotify_top#45
+356,Q64729088,Señorita,Shawn Mendes and Camila Cabello,,2019,2019,high,0.043357,billboard_ye_2019#15;billboard_ye_2020#44;spotify_top#38
+357,Q2287387,No One,Alicia Keys,,2007,2007,high,0.043293,billboard_ye_2007#76;billboard_ye_2008#3;tsort_5000#239
+358,Q3075151,September,"Earth, Wind & Fire",,1978,1978,high,0.043196,billboard_ye_1979#78;rs500_2021#65;tsort_5000#1459
+359,Q3366791,Vaya con Dios,Les Paul and Mary Ford,,1953,1953,high,0.043108,billboard_ye_1953#2;grammy_hof;tsort_5000#211
+360,Q1242392,Don't You Want Me,The Human League,,1981,1982,high,0.043058,billboard_ye_1982#6;tsort_5000#155
+361,Q2551974,For What It's Worth,Buffalo Springfield,,1967,1967,high,0.042851,billboard_ye_1967#27;grammy_hof;rs500_2004#63;tsort_5000#2760
+362,Q598412,Volare (Nel blu dipinto di blu),Domenico Modugno,,1958,1958,high,0.042842,billboard_ye_1958#1;billboard_ye_1960#54;tsort_5000#306
+363,Q2907491,Bo Diddley,Bo Diddley,,1955,1955,high,0.042801,grammy_hof;rs500_2021#277;rs500_2004#62;tsort_5000#3932
+364,Q189007,Just Dance,Lady GaGa & Colby O'Donis,,2008,2008,high,0.042540,billboard_ye_2009#3;tsort_5000#165
+365,Q1393546,Faith,George Michael,,1987,1987,high,0.042367,billboard_ye_1988#1;tsort_5000#171
+366,Q3959743,Shout,The Isley Brothers,,1959,1959,high,0.042362,billboard_ye_1962#58;grammy_hof;rs500_2021#268;rs500_2004#118
+367,Q844214,Hot n Cold,Katy Perry,,2008,2008,high,0.042316,billboard_ye_2008#36;billboard_ye_2009#25;tsort_5000#238
+368,Q2314748,Sunshine of Your Love,Cream,,1968,1968,high,0.042296,billboard_ye_1968#6;rs500_2004#65;tsort_5000#1848
+369,Q1463811,Only You (And You Alone),The Platters,,1954,1955,high,0.042244,billboard_ye_1955#29;billboard_ye_1959#52;billboard_ye_1975#96;grammy_hof;tsort_5000#494
+370,Q2290055,Higher Ground,Stevie Wonder,,1973,1973,high,0.042220,billboard_ye_1973#62;rs500_2021#113;rs500_2004#261;tsort_5000#3796
+371,Q1770488,Sukiyaki,Kyu Sakamoto,,1961,1963,medium,0.042160,billboard_ye_1963#10;billboard_ye_1981#22;billboard_ye_1995#48;tsort_5000#1184
+372,Q56070897,Rocket Man,Elton John,,1972,1972,high,0.042092,billboard_ye_1972#40;rs500_2021#149;rs500_2004#242;tsort_5000#1927
+373,Q2626464,I’m Waiting for the Man,Velvet Underground,,1967,1967,high,0.042067,rs500_2021#81;rs500_2004#159
+374,Q4544800,(I Love You) For Sentimental Reasons,King Cole Trio,Deek Watson & His Brown Dots,1945,1946,high,0.041934,billboard_ye_1946#41;billboard_ye_1947#25;grammy_hof;tsort_5000#956
+375,Q312122,Stan,Eminem,,2000,2000,high,0.041875,rs500_2021#223;rs500_2004#290;tsort_5000#253
+376,Q7444056,Secret Love,Doris Day with Ray Heindorf,,1953,1953,high,0.041803,billboard_ye_1954#9;grammy_hof;tsort_5000#207
+377,Q863433,Creep,Radiohead,,1992,1992,high,0.041706,spotify_top#62;rs500_2021#118;tsort_5000#2052
+378,Q20648823,The Hills,The Weeknd,,2015,2015,high,0.041684,billboard_ye_2015#10;billboard_ye_2016#32;spotify_top#61
+379,Q2628090,Gold Digger,Kanye West featuring Jamie Foxx,,2005,2005,high,0.041538,billboard_ye_2005#6;billboard_ye_2006#34;tsort_5000#321
+380,Q741353,Five Minutes More,Frank Sinatra,,1946,1946,high,0.041343,billboard_ye_1946#4;tsort_5000#370
+381,Q2732222,Because You Loved Me,Celine Dion,,1995,1996,high,0.041189,billboard_ye_1996#3;tsort_5000#177
+382,Q4544930,(Your Love Keeps Lifting Me) Higher and Higher,Jackie Wilson,,1967,1967,high,0.041008,billboard_ye_1967#53;billboard_ye_1977#8;grammy_hof;rs500_2004#246;tsort_5000#3802
+383,Q619878,If You Leave Me Now,Chicago,,1976,1976,high,0.041005,billboard_ye_1976#48;tsort_5000#129
+384,Q15817835,Tom Dooley,The Kingston Trio,,1958,1958,high,0.040996,billboard_ye_1958#28;grammy_hof;tsort_5000#182
+385,Q2342791,Little Red Corvette,Prince,,1982,1982,high,0.040934,billboard_ye_1983#25;rs500_2021#360;rs500_2004#108;tsort_5000#3295
+386,Q931296,Mister Sandman,The Chordettes,,1954,1954,high,0.040884,billboard_ye_1955#18;grammy_hof;tsort_5000#245
+387,Q54869141,Lucid Dreams,Juice Wrld,,2018,2018,high,0.040847,billboard_ye_2018#12;billboard_ye_2019#48;spotify_top#53
+388,Q2544408,Truly Madly Deeply,Savage Garden,,1997,1997,high,0.040835,billboard_ye_1998#4;tsort_5000#178
+389,Q126149,The Way We Were,Barbra Streisand,,1973,1973,high,0.040699,billboard_ye_1974#1;billboard_ye_1975#54;grammy_hof;tsort_5000#501
+390,Q2198258,Stars On 45,Starsound,,1981,1981,high,0.040613,billboard_ye_1981#24;tsort_5000#149
+391,Q378429,Me and Bobby McGee,Janis Joplin,Roger Miller,1969,1971,high,0.040558,billboard_ye_1971#11;grammy_hof;rs500_2004#148;tsort_5000#772
+392,Q15700261,"Hold On, We're Going Home",Drake featuring Majid Jordan,,2013,2013,high,0.040498,billboard_ye_2013#34;billboard_ye_2014#55;rs500_2021#129
+393,Q1971300,That's What Friends Are For,Dionne Warwick & Friends,Rod Stewart,1982,1985,high,0.040490,billboard_ye_1986#1;tsort_5000#189
+394,Q4833847,B.O.B.,Outkast,,2000,2000,high,0.040404,rs500_2021#39
+395,Q18559542,Uptown Funk,Mark Ronson featuring Bruno Mars,,2014,2014,high,0.040326,billboard_ye_2015#1;spotify_top#96;rs500_2021#417;tsort_5000#2141
+396,Q2321290,Desolation Row,Bob Dylan,,1965,1965,high,0.040217,rs500_2021#83;rs500_2004#185
+397,Q200799,Eleanor Rigby,The Beatles,,1966,1966,high,0.040173,grammy_hof;rs500_2021#243;rs500_2004#137;tsort_5000#809
+398,Q180418,West End Girls,Pet Shop Boys,,1984,1984,high,0.040139,billboard_ye_1986#15;rs500_2021#433;tsort_5000#261
+399,Q738474,Girlfriend,Avril Lavigne,,2007,2007,high,0.040090,billboard_ye_2007#12;tsort_5000#169
+400,Q28824109,Something Just Like This,The Chainsmokers and Coldplay,,2017,2017,high,0.040076,billboard_ye_2017#5;spotify_top#21
+401,Q1340095,Hard to Say I'm Sorry,Chicago,,1982,1982,high,0.040048,billboard_ye_1982#10;billboard_ye_1997#19;tsort_5000#512
+402,Q755176,Boom Boom Pow,The Black Eyed Peas,,2009,2009,high,0.040015,billboard_ye_2009#1;tsort_5000#194
+403,Q790315,Barbie Girl,Aqua,,1997,1997,high,0.040013,billboard_ye_1997#94;tsort_5000#119
+404,Q25562,Locked Out of Heaven,Bruno Mars,,2012,2012,high,0.039992,billboard_ye_2013#11;spotify_top#31;tsort_5000#1467
+405,Q543362,Complicated,Avril Lavigne,,2002,2002,high,0.039836,billboard_ye_2002#11;tsort_5000#173
+406,Q1097500,Everybody Wants to Rule the World,Tears for Fears,,1985,1985,high,0.039731,billboard_ye_1985#7;rs500_2021#319;tsort_5000#361
+407,Q2323852,Tragedy,Bee Gees,,1979,1979,high,0.039707,billboard_ye_1979#16;tsort_5000#166
+408,Q2012932,Fortunate Son,Creedence Clearwater Revival,,1969,1969,high,0.039675,grammy_hof;rs500_2021#227;rs500_2004#99;tsort_5000#2894
+409,Q838829,Your Song,Elton John,,1970,1970,high,0.039664,grammy_hof;rs500_2021#202;rs500_2004#136;tsort_5000#1351
+410,Q406292,Ain't No Sunshine,Bill Withers,,1971,1971,high,0.039618,billboard_ye_1971#23;grammy_hof;rs500_2021#309;rs500_2004#280;tsort_5000#1896
+411,Q2478053,Always,Bon Jovi,,1994,1994,high,0.039543,billboard_ye_1994#91;billboard_ye_1995#17;tsort_5000#241
+412,Q449967,Papa Was a Rollin' Stone,The Temptations,,1972,1972,high,0.039446,billboard_ye_1973#100;grammy_hof;rs500_2021#333;rs500_2004#168;tsort_5000#1135
+413,Q484958,Save the Last Dance for Me,The Drifters,,1960,1960,high,0.039371,billboard_ye_1960#26;grammy_hof;rs500_2004#182;tsort_5000#511
+414,Q51622,Love Shack,The B-52's,,1989,1989,high,0.039369,billboard_ye_1989#47;billboard_ye_1990#78;rs500_2004#243;tsort_5000#406
+415,Q285001,Runaway,Del Shannon,,1961,1961,high,0.039260,billboard_ye_1961#5;grammy_hof;rs500_2004#466;tsort_5000#390
+416,Q2526096,Do Ya Think I'm Sexy?,Rod Stewart,,1978,1979,high,0.039202,billboard_ye_1979#4;rs500_2004#301;tsort_5000#333
+417,Q96405034,Save Your Tears,The Weeknd and Ariana Grande,,2020,2020,high,0.039201,billboard_ye_2021#2;billboard_ye_2022#40;spotify_top#93
+418,Q696600,Blue (Da Ba Dee),Eiffel 65,,1998,1999,high,0.039174,billboard_ye_2000#49;tsort_5000#140
+419,Q17048834,Sweater Weather,The Neighbourhood,,2012,2012,high,0.039153,billboard_ye_2014#75;spotify_top#3
+420,Q1807009,Why Do Fools Fall in Love,Frankie Lymon and the Teenagers,,1956,1956,high,0.039077,billboard_ye_1956#28;billboard_ye_1982#54;grammy_hof;rs500_2004#307;tsort_5000#1268
+421,Q1544632,Green Onions,Booker T. & the MG's,,1962,1962,high,0.039043,billboard_ye_1962#53;grammy_hof;rs500_2021#418;rs500_2004#181;tsort_5000#1262
+422,Q5917588,How Do I Live,LeAnn Rimes,,1997,1997,high,0.039024,billboard_ye_1997#9;billboard_ye_1998#5;tsort_5000#596
+423,Q2298481,Take My Breath Away,Berlin,,1986,1986,high,0.039017,billboard_ye_1986#27;tsort_5000#158
+424,Q309727,Moves like Jagger,Maroon 5 featuring Christina Aguilera,,2011,2011,high,0.038961,billboard_ye_2011#9;billboard_ye_2012#36;tsort_5000#367
+425,Q2593307,Wooly Bully,Sam the Sham and the Pharaohs,,1965,1965,high,0.038879,billboard_ye_1965#1;grammy_hof;tsort_5000#280
+426,Q127012,Crying in the Chapel,Elvis Presley,June Valli,1953,1965,high,0.038807,billboard_ye_1953#24;billboard_ye_1965#9;grammy_hof;tsort_5000#1150
+427,Q1454909,Peggy Sue,Buddy Holly,,1957,1957,high,0.038802,billboard_ye_1958#50;grammy_hof;rs500_2021#370;rs500_2004#194;tsort_5000#1536
+428,Q147409,Single Ladies (Put a Ring on It),Beyoncé,,2008,2008,high,0.038782,billboard_ye_2009#8;rs500_2021#228;tsort_5000#529
+429,Q913565,One Sweet Day,Mariah Carey and Boyz II Men,,1995,1995,high,0.038771,billboard_ye_1996#2;tsort_5000#205
+430,Q8057496,You Send Me,Sam Cooke,,1955,1957,medium,0.038637,billboard_ye_1957#20;grammy_hof;rs500_2004#115;tsort_5000#1384
+431,Q3944735,All Too Well (Taylor's Version),Taylor Swift,,2012,2012,high,0.038361,billboard_ye_2022#76;rs500_2021#69
+432,Q7339620,Roadrunner,Modern Lovers,,1976,1976,high,0.038316,rs500_2021#77;rs500_2004#269
+433,Q1049620,Gasolina,Daddy Yankee,,2004,2004,high,0.038302,rs500_2021#50;tsort_5000#3035
+434,Q5185718,Crimson and Clover,Tommy James and the Shondells,,1968,1968,high,0.038245,billboard_ye_1969#10;billboard_ye_1982#78;tsort_5000#299
+435,Q893936,Born to Be Wild,Steppenwolf,,1968,1968,high,0.038244,billboard_ye_1968#31;grammy_hof;rs500_2004#129;tsort_5000#857
+436,Q115945493,Flowers,Miley Cyrus,,2023,2023,high,0.038167,billboard_ye_2023#2;billboard_ye_2024#69;spotify_top#80
+437,Q19954301,Alright,Kendrick Lamar,,2015,2015,high,0.038095,rs500_2021#45
+438,Q698346,Rivers of Babylon,Boney M,The Melodians,1970,1978,high,0.037975,tsort_5000#98
+439,Q2275409,All Shook Up,Elvis Presley,,1957,1957,high,0.037859,billboard_ye_1957#1;rs500_2004#352;tsort_5000#363
+440,Q26963266,Say You Won't Let Go,James Arthur,,2016,2016,high,0.037614,billboard_ye_2017#11;spotify_top#25
+441,Q5028914,Can't Hold Us,Macklemore & Ryan Lewis and Ray Dalton,,2011,2011,high,0.037607,billboard_ye_2013#5;spotify_top#30
+442,Q1950768,Changes,David Bowie,,1971,1971,high,0.037584,grammy_hof;rs500_2021#200;rs500_2004#127;tsort_5000#4492
+443,Q970993,Under the Bridge,Red Hot Chili Peppers,,1991,1991,high,0.037567,billboard_ye_1992#8;rs500_2021#328;tsort_5000#418
+444,Q806079,Day-O (The Banana Boat Song),Harry Belafonte,,1956,1957,high,0.037453,billboard_ye_1957#15;grammy_hof;tsort_5000#724
+445,Q812795,Be-Bop-A-Lula,Gene Vincent,,1956,1956,high,0.037447,billboard_ye_1956#27;grammy_hof;rs500_2004#102;tsort_5000#2252
+446,Q1821319,Let's Dance,David Bowie,,1983,1983,high,0.037411,billboard_ye_1983#18;tsort_5000#184
+447,Q3057105,I Can't Help Myself (Sugar Pie Honey Bunch),Four Tops,,1965,1965,high,0.037320,billboard_ye_1965#2;grammy_hof;rs500_2021#483;rs500_2004#415;tsort_5000#2187
+448,Q21601705,Love Yourself,Justin Bieber,,2015,2015,high,0.037269,billboard_ye_2016#1;spotify_top#42;tsort_5000#4673
+449,Q5457531,Flash Light,Parliament,,1977,1977,high,0.037214,billboard_ye_1978#92;grammy_hof;rs500_2021#252;rs500_2004#199;tsort_5000#4248
+450,Q383842,Africa,Toto,,1982,1982,high,0.037151,billboard_ye_1983#24;spotify_top#100;rs500_2021#452;tsort_5000#1156
+451,Q2007661,Tubthumping,Chumbawamba,,1997,1997,high,0.037146,billboard_ye_1997#69;billboard_ye_1998#35;tsort_5000#258
+452,Q3859219,Missing,Everything but the Girl,,1995,1995,high,0.037055,billboard_ye_1996#12;tsort_5000#199
+453,Q2378884,Idioteque,Radiohead,,2000,2000,high,0.037037,rs500_2021#48
+454,Q1648719,Too Young,Nat King Cole with Les Baxter,,1951,1951,high,0.037012,billboard_ye_1951#1;tsort_5000#231
+455,Q510158,Rock Your Baby,George McCrae,,1974,1974,high,0.036990,billboard_ye_1974#38;tsort_5000#164
+456,Q5499835,Free Fallin',Tom Petty,,1989,1989,high,0.036978,billboard_ye_1990#64;rs500_2021#219;rs500_2004#177;tsort_5000#3068
+457,Q26254088,Let Me Love You,DJ Snake featuring Justin Bieber,,2016,2016,high,0.036962,billboard_ye_2016#47;billboard_ye_2017#46;spotify_top#50
+458,Q2387143,Go Your Own Way,Fleetwood Mac,,1976,1977,high,0.036955,billboard_ye_1977#94;rs500_2021#401;rs500_2004#119;tsort_5000#1134
+459,Q29790517,Thunder,Imagine Dragons,,2017,2017,high,0.036952,billboard_ye_2017#51;billboard_ye_2018#22;spotify_top#67
+460,Q1303534,Eight Miles High,The Byrds,,1966,1966,high,0.036921,grammy_hof;rs500_2021#181;rs500_2004#150;tsort_5000#4943
+461,Q893931,Born to Be Alive,Patrick Hernandez,,1978,1979,high,0.036819,billboard_ye_1979#70;tsort_5000#146
+462,Q1142725,All I Wanna Do,Sheryl Crow,,1993,1993,high,0.036805,billboard_ye_1994#34;billboard_ye_1995#67;tsort_5000#268
+463,Q225027,Wild Thing,The Troggs,,1966,1966,high,0.036746,billboard_ye_1966#40;billboard_ye_1974#99;grammy_hof;rs500_2004#257;tsort_5000#915
+464,Q1894466,Livin' on a Prayer,Bon Jovi,,1986,1986,high,0.036693,billboard_ye_1987#10;rs500_2021#457;tsort_5000#349
+465,Q432461,Girls Just Wanna Have Fun,Cyndi Lauper,,1979,1984,medium,0.036680,billboard_ye_1984#15;tsort_5000#197
+466,Q475031,Brown Eyed Girl,Van Morrison,,1967,1967,high,0.036625,billboard_ye_1967#35;grammy_hof;rs500_2004#109;tsort_5000#1650
+467,Q7848433,Try a Little Tenderness,Otis Redding,,1932,1966,medium,0.036611,grammy_hof;rs500_2021#136;rs500_2004#204
+468,Q15837454,Ole Buttermilk Sky,Kay Kyser,,1946,1946,high,0.036525,billboard_ye_1946#15;billboard_ye_1947#26;tsort_5000#2757
+469,Q303783,Bring Me to Life,Evanescence featuring Paul McCoy,,2003,2003,high,0.036508,billboard_ye_2003#10;tsort_5000#210
+470,Q5256282,Demons,Imagine Dragons,,2012,2012,high,0.036505,billboard_ye_2013#62;billboard_ye_2014#23;spotify_top#63
+471,Q18220127,Take Me to Church,Hozier,,2013,2013,high,0.036502,billboard_ye_2015#14;spotify_top#27
+472,Q964737,The Boys of Summer,Don Henley,,1984,1984,high,0.036425,billboard_ye_1985#53;rs500_2021#209;rs500_2004#416;tsort_5000#877
+473,Q2479430,Swinging on a Star,Bing Crosby with The Williams Brothers and John Scott Trotter & his Orchestra,,1944,1944,high,0.036418,grammy_hof;tsort_5000#130
+474,Q2574224,Have You Ever Really Loved a Woman?,Bryan Adams,,1995,1995,high,0.036414,billboard_ye_1995#16;tsort_5000#198
+475,Q1885339,Walk Like An Egyptian,The Bangles,,1985,1986,high,0.036393,billboard_ye_1987#1;tsort_5000#240
+476,Q1808348,Time After Time,Cyndi Lauper,,1983,1983,high,0.036380,billboard_ye_1984#17;billboard_ye_1998#64;rs500_2021#494;tsort_5000#680
+477,Q600718,Rock Me Amadeus,Falco,,1985,1986,high,0.036364,billboard_ye_1986#28;tsort_5000#180
+478,Q7898096,Up on the Roof,The Drifters,,1962,1962,high,0.036099,billboard_ye_1963#64;rs500_2021#375;rs500_2004#113;tsort_5000#3944
+479,Q1754167,Won't Get Fooled Again,The Who,,1971,1971,high,0.036089,billboard_ye_1971#84;rs500_2021#295;rs500_2004#133;tsort_5000#2512
+480,Q28452709,That's What I Like,Bruno Mars,,2016,2016,high,0.036075,billboard_ye_2017#3;spotify_top#39
+481,Q2005943,Right Round,Flo-Rida & Ke$ha,,2009,2009,high,0.035985,billboard_ye_2009#6;tsort_5000#228
+482,Q6012528,In the Midnight Hour,Wilson Pickett,,1965,1965,high,0.035885,grammy_hof;rs500_2021#218;rs500_2004#134;tsort_5000#4964
+483,Q2454080,Walk on the Wild Side,Lou Reed,,1972,1972,high,0.035876,grammy_hof;rs500_2021#180;rs500_2004#221;tsort_5000#1564
+484,Q17332468,Thinking Out Loud,Ed Sheeran,,2014,2014,high,0.035864,billboard_ye_2015#2;spotify_top#52;tsort_5000#3135
+485,Q8058244,Young Love,Tab Hunter,Sonny James,1956,1957,high,0.035839,billboard_ye_1957#4;tsort_5000#1392
+486,Q7044110,No Diggity,Blackstreet featuring Dr. Dre,,1996,1996,high,0.035788,billboard_ye_1996#42;billboard_ye_1997#23;rs500_2021#424;tsort_5000#998
+487,Q1812815,Tumbling Dice,The Rolling Stones,,1972,1972,high,0.035779,rs500_2021#86;rs500_2004#424;tsort_5000#2688
+488,Q323324,Abracadabra,Steve Miller Band,,1982,1982,high,0.035769,billboard_ye_1982#9;tsort_5000#222
+489,Q778055,Please Mr. Postman,The Carpenters,The Marvelettes,1961,1974,high,0.035719,billboard_ye_1975#33;grammy_hof;rs500_2021#331;tsort_5000#740
+490,Q1150469,I Think We're Alone Now,Tiffany,Tommy James and the Shondells,1967,1987,high,0.035718,billboard_ye_1967#12;billboard_ye_1987#18;tsort_5000#606
+491,Q326246,Genie in a Bottle,Christina Aguilera,,1999,1999,high,0.035687,billboard_ye_1999#7;tsort_5000#229
+492,Q2511971,Goodnight Irene,Gordon Jenkins & The Weavers,"Huddie ""Lead Belly"" Ledbetter",1936,1950,high,0.035664,billboard_ye_1950#1;grammy_hof;tsort_5000#430
+493,Q2706015,Lola,The Kinks,,1970,1970,high,0.035550,billboard_ye_1970#52;rs500_2021#386;rs500_2004#422;tsort_5000#465
+494,Q30597941,Die For You,The Weeknd,,2016,2016,high,0.035544,billboard_ye_2023#7;spotify_top#37
+495,Q129158,We Belong Together,Mariah Carey,,2005,2005,high,0.035502,billboard_ye_2005#1;tsort_5000#254
+496,Q1513101,School's Out,Alice Cooper,,1972,1972,high,0.035501,billboard_ye_1972#75;grammy_hof;rs500_2021#293;rs500_2004#319;tsort_5000#1437
+497,Q155006,Love The Way You Lie,Eminem & Rihanna,,2010,2010,high,0.035473,billboard_ye_2010#7;tsort_5000#232
+498,Q1269045,Dynamite,Taio Cruz,,2010,2010,high,0.035472,billboard_ye_2010#9;billboard_ye_2011#44;tsort_5000#468
+499,Q995862,Fallin',Alicia Keys,,2001,2001,high,0.035422,billboard_ye_2001#2;tsort_5000#251
+500,Q796606,"Shake, Rattle and Roll",Big Joe Turner,,1954,1954,high,0.035405,billboard_ye_1954#26;grammy_hof;rs500_2004#126;tsort_5000#2076
+501,Q5656384,The Great Pretender,The Platters,,1955,1956,high,0.035402,billboard_ye_1956#12;grammy_hof;rs500_2004#351;tsort_5000#580
+502,Q1574689,Smoke Gets in Your Eyes,The Platters,Paul Whiteman,1933,1958,high,0.035356,billboard_ye_1959#16;grammy_hof;tsort_5000#352
+503,Q1490448,Wake Me Up Before You Go-Go,Wham!,,1984,1984,high,0.035354,billboard_ye_1985#3;tsort_5000#248
+504,Q2715264,Let's Twist Again,Chubby Checker,,1961,1961,high,0.035340,billboard_ye_1961#94;tsort_5000#148
+505,Q3375430,Only the Lonely,Roy Orbison,,1960,1960,high,0.035335,billboard_ye_1960#20;grammy_hof;rs500_2004#232;tsort_5000#717
+506,Q65071242,Dance Monkey,Tones and I,,2019,2019,high,0.035253,billboard_ye_2020#14;spotify_top#32
+507,Q708273,Tainted Love,Soft Cell,Gloria Jones,1965,1981,high,0.035226,billboard_ye_1982#11;tsort_5000#246
+508,Q2287284,Raindrops Keep Fallin' on My Head,B.J. Thomas,,1969,1969,high,0.035206,billboard_ye_1970#4;grammy_hof;tsort_5000#347
+509,Q72008699,Don't Start Now,Dua Lipa,,2019,2019,high,0.035042,billboard_ye_2020#4;spotify_top#43
+510,Q1174634,What a Fool Believes,The Doobie Brothers,,1978,1978,high,0.034998,billboard_ye_1979#19;grammy_hof;rs500_2021#343;tsort_5000#732
+511,Q1631676,How High the Moon,Les Paul and Mary Ford,Alfred Drake,1940,1951,medium,0.034984,billboard_ye_1951#3;grammy_hof;tsort_5000#576
+512,Q10532748,I've Been Thinking About You,Londonbeat,,1990,1990,high,0.034893,billboard_ye_1991#31;tsort_5000#191
+513,Q737813,Bye Bye Love,The Everly Brothers,,1957,1957,high,0.034757,billboard_ye_1957#11;grammy_hof;rs500_2004#207;tsort_5000#1245
+514,Q15427702,All of Me,John Legend,,2013,2013,high,0.034755,billboard_ye_2014#3;spotify_top#54;tsort_5000#4424
+515,Q3914117,Let Her Go,Passenger,,2012,2012,high,0.034692,billboard_ye_2013#97;billboard_ye_2014#19;spotify_top#88;tsort_5000#2730
+516,Q208837,1999,Prince,,1982,1982,high,0.034618,billboard_ye_1983#41;rs500_2021#339;rs500_2004#212;tsort_5000#1578
+517,Q623177,Aquarius/Let the Sunshine In,The 5th Dimension,,1969,1969,high,0.034604,billboard_ye_1969#2;grammy_hof;tsort_5000#380
+518,Q2915804,Stranger in Paradise,Tony Bennett,The Four Aces,1953,1954,high,0.034596,billboard_ye_1954#19;tsort_5000#682
+519,Q677927,Wonderful World,Sam Cooke,,1960,1960,high,0.034516,billboard_ye_1960#80;billboard_ye_1965#67;grammy_hof;rs500_2004#373;tsort_5000#716
+520,Q5248905,"December, 1963 (Oh, What a Night)",The Four Seasons,,1975,1976,high,0.034458,billboard_ye_1976#4;billboard_ye_1994#89;tsort_5000#435
+521,Q926435,Beautiful Day,U2,,2000,2000,high,0.034434,billboard_ye_2001#75;tsort_5000#162
+522,Q13654208,Now Is the Hour,Bing Crosby with Ken Darby,,1948,1948,high,0.034347,billboard_ye_1948#3;tsort_5000#1725
+523,Q2093639,"Say You, Say Me",Lionel Richie,,1985,1985,high,0.034311,billboard_ye_1986#2;tsort_5000#270
+524,Q1331169,Where Did Our Love Go,The Supremes,,1964,1964,high,0.034302,billboard_ye_1964#10;grammy_hof;rs500_2004#472;tsort_5000#569
+525,Q1150506,Mony Mony,Tommy James and the Shondells,,1968,1968,high,0.034245,billboard_ye_1968#13;billboard_ye_1987#19;tsort_5000#1072
+526,Q978391,Kashmir,Led Zeppelin,,1975,1975,high,0.034231,rs500_2021#148;rs500_2004#140
+527,Q2394444,Stop! In the Name of Love,The Supremes,,1965,1965,high,0.034227,billboard_ye_1965#20;grammy_hof;rs500_2021#254;tsort_5000#1386
+528,Q59297929,"Thank U, Next",Arianna Grande,,2018,2019,high,0.034193,billboard_ye_2019#12;rs500_2021#137
+529,Q1995973,Centrefold,J Geils Band,,1981,1982,high,0.034193,billboard_ye_1982#5;tsort_5000#259
+530,Q277342,99 Red Balloons,Nena,,1983,1983,high,0.034177,billboard_ye_1984#28;tsort_5000#203
+531,Q24278887,Treat You Better,Shawn Mendes,,2016,2016,high,0.034072,billboard_ye_2016#28;billboard_ye_2017#92;spotify_top#64
+532,Q1394529,Spirit in the Sky,Norman Greenbaum,,1969,1970,high,0.034056,billboard_ye_1970#22;rs500_2004#333;tsort_5000#409
+533,Q139916563,Say My Name,Destiny's Child,,1999,1999,high,0.034010,billboard_ye_2000#6;rs500_2021#285;tsort_5000#766
+534,Q685457,Four Minutes,Madonna & Justin Timberlake,,2008,2008,high,0.033946,billboard_ye_2008#23;tsort_5000#214
+535,Q7480014,When I Was Your Man,Bruno Mars,,2012,2012,high,0.033937,billboard_ye_2013#8;spotify_top#44
+536,Q166904,Someone Like You,Adele,,2011,2011,high,0.033934,billboard_ye_2011#24;billboard_ye_2012#43;tsort_5000#427
+537,Q7715876,The Battle of New Orleans,Johnny Horton,,1959,1959,high,0.033811,billboard_ye_1959#1;grammy_hof;tsort_5000#417
+538,Q3965934,Spanish Harlem,Ben E. King,,1960,1960,high,0.033810,billboard_ye_1961#64;billboard_ye_1971#49;grammy_hof;rs500_2004#349;tsort_5000#2181
+539,Q16170910,Wichita Lineman,Glen Campbell,,1968,1968,high,0.033792,grammy_hof;rs500_2021#206;rs500_2004#192;tsort_5000#2923
+540,Q385974,Kiss from a Rose,Seal,,1994,1995,high,0.033752,billboard_ye_1995#4;tsort_5000#271
+541,Q3128962,He Stopped Loving Her Today,George Jones,,1980,1980,high,0.033732,grammy_hof;rs500_2021#142;rs500_2004#270
+542,Q3586050,To Be with You,Mr. Big,,1991,1991,high,0.033691,billboard_ye_1992#12;tsort_5000#243
+543,Q2081392,Bad Day,Daniel Powter,,2005,2005,high,0.033685,billboard_ye_2006#1;tsort_5000#287
+544,Q1072075,That's the Way Love Goes,Janet Jackson,,1993,1993,high,0.033643,billboard_ye_1993#4;tsort_5000#273
+545,Q2333324,Get the Party Started,Pink,,2001,2002,high,0.033565,billboard_ye_2002#24;tsort_5000#217
+546,Q47915404,God's Plan,Drake,,2018,2018,high,0.033487,billboard_ye_2018#1;spotify_top#57
+547,Q1507812,It Must Have Been Love,Roxette,,1987,1990,medium,0.033470,billboard_ye_1990#2;tsort_5000#286
+548,Q5976540,"I Can Dream, Can't I?",The Andrews Sisters and Gordon Jenkins,,1937,1949,medium,0.033449,billboard_ye_1949#6;billboard_ye_1950#19;tsort_5000#1004
+549,Q449736,Always on My Mind,Willie Nelson,,1972,1982,medium,0.033424,billboard_ye_1982#22;billboard_ye_1988#80;grammy_hof;tsort_5000#778
+550,Q2363966,Loser,Beck,,1991,1991,review,0.033410,billboard_ye_1994#50;rs500_2021#458;rs500_2004#200;tsort_5000#1126
+551,Q2322896,My Sharona,The Knack,,1979,1979,high,0.033391,billboard_ye_1979#1;tsort_5000#293
+552,Q32503,Waterloo,ABBA,,1974,1974,high,0.033368,billboard_ye_1974#49;tsort_5000#188
+553,Q17332360,Photograph,Ed Sheeran,,2014,2014,high,0.033366,billboard_ye_2015#34;spotify_top#28
+554,Q17151064,Riptide,Vance Joy,,2013,2013,high,0.033275,billboard_ye_2015#71;spotify_top#18
+555,Q2261813,The Wanderer,Dion,,1961,1961,high,0.033272,billboard_ye_1962#12;grammy_hof;rs500_2004#239;tsort_5000#1270
+556,Q5190005,Cruising Down the River,Russ Morgan Orchestra,,1949,1949,high,0.033253,billboard_ye_1949#7;tsort_5000#2691
+557,Q166791,Grenade,Bruno Mars,,2010,2010,high,0.033224,billboard_ye_2011#6;tsort_5000#272
+558,Q2321252,Crocodile Rock,Elton John,,1972,1972,high,0.033162,billboard_ye_1973#7;tsort_5000#269
+559,Q3435464,Don't Fence Me In,Bing Crosby and The Andrews Sisters,,1934,1944,medium,0.033141,grammy_hof;tsort_5000#152
+560,Q5977107,I Fall to Pieces,Patsy Cline,,1961,1961,high,0.033123,billboard_ye_1961#2;grammy_hof;rs500_2004#238;tsort_5000#2813
+561,Q521234,You Oughta Know,Alanis Morisette,,1995,1995,high,0.033040,billboard_ye_1996#29;rs500_2021#103;tsort_5000#2022
+562,Q2282618,Smack That,Akon featuring Eminem,,2006,2006,high,0.033012,billboard_ye_2006#66;billboard_ye_2007#15;tsort_5000#451
+563,Q475057,Rhythm Is a Dancer,Snap!,,1992,1992,high,0.032997,billboard_ye_1992#75;billboard_ye_1993#25;tsort_5000#374
+564,Q3437290,Cry,Johnnie Ray (with The Four Lads),,1951,1951,high,0.032982,billboard_ye_1952#3;grammy_hof;tsort_5000#429
+565,Q943285,Promiscuous,Nelly Furtado & Timbaland,,2006,2006,high,0.032967,billboard_ye_2006#3;tsort_5000#291
+566,Q3632419,"Baby, I Love Your Way",Big Mountain,Peter Frampton,1975,1994,high,0.032961,billboard_ye_1976#89;billboard_ye_1994#21;tsort_5000#645
+567,Q19627479,Lean On,Major Lazer and DJ Snake featuring MØ,,2015,2015,high,0.032958,billboard_ye_2015#16;billboard_ye_2016#85;spotify_top#95
+568,Q2558068,Don't Let the Sun Go Down on Me,George Michael and Elton John,,1974,1974,high,0.032956,billboard_ye_1974#78;billboard_ye_1992#26;tsort_5000#477
+569,Q21198638,Sorry,Justin Bieber,,2015,2015,high,0.032955,billboard_ye_2016#2;spotify_top#71;tsort_5000#3790
+570,Q326835,Call Me Maybe,Carly Rae Jepsen,,2011,2012,high,0.032940,billboard_ye_2012#2;rs500_2021#436;tsort_5000#626
+571,Q786778,Twist and Shout,The Isley Brothers,The Top Notes,1961,1962,high,0.032937,billboard_ye_1962#38;billboard_ye_1964#40;grammy_hof;tsort_5000#961
+572,Q210482,Come Together,The Beatles,,1969,1969,high,0.032875,billboard_ye_1969#85;rs500_2004#202;tsort_5000#353
+573,Q979584,I Got You Babe,Sonny & Cher,,1965,1965,high,0.032852,billboard_ye_1965#16;grammy_hof;rs500_2004#444;tsort_5000#903
+574,Q859298,Celebration,Kool & the Gang,,1980,1980,high,0.032811,billboard_ye_1981#6;grammy_hof;tsort_5000#408
+575,Q3596307,You Make Me Feel Like a Natural Woman,Aretha Franklin,,1967,1967,high,0.032707,grammy_hof;rs500_2021#90;tsort_5000#4934
+576,Q950244,Shout,Tears for Fears,,1984,1985,high,0.032685,billboard_ye_1985#21;tsort_5000#235
+577,Q1318118,Last Christmas,Wham!,,1984,1985,high,0.032646,billboard_ye_2023#84;billboard_ye_2024#74;billboard_ye_2025#65;tsort_5000#526
+578,Q2545027,Hero,Enrique Iglesias,,2001,2001,high,0.032635,billboard_ye_2001#99;billboard_ye_2002#22;tsort_5000#364
+579,Q145269,In the Year 2525,Zager & Evans,,1969,1969,high,0.032607,billboard_ye_1969#26;tsort_5000#226
+580,Q135219411,How Soon,Vaughn Monroe,,1947,1947,medium,0.032508,billboard_ye_1947#20;billboard_ye_1948#38
+581,Q480274,Love is All Around,Wet Wet Wet,The Troggs,1967,1994,high,0.032507,billboard_ye_1968#40;tsort_5000#227
+582,Q4851614,Ballerina,Vaughn Monroe,,1947,1947,high,0.032500,billboard_ye_1947#11;billboard_ye_1948#13;tsort_5000#1212
+583,Q75219631,Watermelon Sugar,Harry Styles,,2019,2019,high,0.032500,billboard_ye_2020#20;spotify_top#40
+584,Re98ff6bc7cfd,Tik-Toc,Ke$ha,,2010,2010,medium,0.032432,tsort_5000#125
+585,Q2527256,Mockin' Bird Hill,Les Paul and Mary Ford,Patti Page,1951,1951,high,0.032393,billboard_ye_1951#13;tsort_5000#1098
+586,Q7501113,Shop Around,The Miracles,,1960,1960,high,0.032388,billboard_ye_1961#24;billboard_ye_1976#63;grammy_hof;rs500_2004#495;tsort_5000#2785
+587,Q597864,How to Save a Life,The Fray,,2005,2006,high,0.032368,billboard_ye_2006#27;billboard_ye_2007#24;tsort_5000#609
+588,Q19851006,Stressed Out,Twenty One Pilots,,2015,2015,high,0.032334,billboard_ye_2016#5;spotify_top#58
+589,Q1137622,Papa Don't Preach,Madonna,,1986,1986,high,0.032289,billboard_ye_1986#29;tsort_5000#225
+590,Q20992398,Hotline Bling,Drake,,2015,2015,high,0.032254,billboard_ye_2015#30;billboard_ye_2016#24;rs500_2021#373
+591,Q3637364,Because of You,Tony Bennett with Percy Faith,,1951,1951,high,0.032228,billboard_ye_1951#2;tsort_5000#1143
+592,Q1129536,Family Affair,Mary J. Blige,,2001,2001,high,0.032218,billboard_ye_2001#31;billboard_ye_2002#17;tsort_5000#668
+593,Q581952,Space Oddity,David Bowie,,1969,1969,high,0.032178,billboard_ye_1973#97;grammy_hof;rs500_2021#189;tsort_5000#1163
+594,Q1641812,Boulevard of Broken Dreams,Green Day,,2004,2004,high,0.032167,billboard_ye_2005#7;tsort_5000#288
+595,Q3372814,Singing the Blues,Guy Mitchell,Marty Robbins,1955,1956,high,0.032120,billboard_ye_1956#40;billboard_ye_1957#7;tsort_5000#774
+596,Q2018005,Stronger,Kanye West,,2007,2007,high,0.032090,billboard_ye_2007#27;rs500_2021#500;tsort_5000#386
+597,Q797868,Baby Love,The Supremes,,1964,1964,high,0.032037,billboard_ye_1964#33;rs500_2021#499;rs500_2004#324;tsort_5000#890
+598,Q122332978,Lose Control,Teddy Swims,,2023,2023,high,0.032018,billboard_ye_2024#1;billboard_ye_2025#4
+599,Q125755174,A Bar Song (Tipsy),Shaboozey,,2024,2024,high,0.032002,billboard_ye_2024#2;billboard_ye_2025#3
+600,Q157767,Only Girl (In the World),Rihanna,,2010,2010,high,0.031951,billboard_ye_2010#47;billboard_ye_2011#40;tsort_5000#416
+601,Q786292,The Way I Are,Timbaland featuring Keri Hilson,,2007,2007,high,0.031943,billboard_ye_2007#18;billboard_ye_2008#96;tsort_5000#412
+602,Q2707288,Both Sides Now,Joni Mitchell,Judy Collins,1966,1969,high,0.031917,grammy_hof;rs500_2021#225;rs500_2004#170
+603,Q375632,The Ketchup Song (Asereje),Las Ketchup,,2002,2002,high,0.031915,tsort_5000#128
+604,Q19875767,Let Me Love You,Mario,,2004,2004,high,0.031873,billboard_ye_2005#3;tsort_5000#315
+605,Q5598500,Grazing in the Grass,Hugh Masekela,,1968,1968,high,0.031839,billboard_ye_1968#18;billboard_ye_1969#17;grammy_hof;tsort_5000#4972
+606,Q985995,Nothing's Gonna Stop Us Now,Jefferson Starship,,1987,1987,high,0.031823,billboard_ye_1987#5;tsort_5000#305
+607,Q738895,Payphone,Maroon 5 and Wiz Khalifa,,2012,2012,high,0.031723,billboard_ye_2012#4;spotify_top#91;tsort_5000#2043
+608,Q54805365,I Like It,"Cardi B, Bad Bunny and J Balvin",,2018,2018,high,0.031686,billboard_ye_2018#7;billboard_ye_2019#69;rs500_2021#384
+609,Q390134,Against All Odds (Take a Look at Me Now),Phil Collins,,1984,1984,high,0.031674,billboard_ye_1984#5;tsort_5000#348
+610,Q1138776,Don't Stop the Music,Rihanna,,2007,2007,high,0.031621,billboard_ye_2008#17;tsort_5000#262
+611,Q5966472,I'm Looking over a Four Leaf Clover,Art Mooney,,1927,1948,medium,0.031596,billboard_ye_1948#10;tsort_5000#797
+612,Q942781,Freedom! '90,George Michael,,1990,1990,high,0.031541,billboard_ye_1991#95;rs500_2021#126;tsort_5000#1614
+613,Q1788333,You Can't Hurry Love,The Supremes,,1966,1966,high,0.031452,billboard_ye_1966#13;billboard_ye_1983#37;tsort_5000#1174
+614,Q2236784,You Make Me Wanna...,Usher,,1997,1997,high,0.031441,billboard_ye_1997#14;billboard_ye_1998#15;tsort_5000#1246
+615,Q300973,You Are Not Alone,Michael Jackson,,1995,1995,high,0.031096,billboard_ye_1995#21;tsort_5000#260
+616,Q3713449,Don't Leave Me This Way,Thelma Houston,Harold Melvin & the Blue Notes,1975,1976,high,0.031087,billboard_ye_1977#7;rs500_2021#355;tsort_5000#1364
+617,Q1135259,Last Kiss,J. Frank Wilson and the Cavaliers,Wayne Cochran,1961,1964,high,0.031081,billboard_ye_1964#9;billboard_ye_1999#23;tsort_5000#2042
+618,Q7768721,The Thing,Phil Harris with Walter Scharf,,1950,1950,high,0.031077,billboard_ye_1950#15;billboard_ye_1951#29;tsort_5000#862
+619,Q1756406,Jingle Bell Rock,Bobby Helms,,1957,1958,high,0.031064,billboard_ye_2022#86;billboard_ye_2023#68;billboard_ye_2024#68;billboard_ye_2025#81;tsort_5000#3948
+620,Q1253170,Down Under,Men at Work,,1980,1982,medium,0.031049,billboard_ye_1983#4;tsort_5000#329
+621,Q922104,I Say a Little Prayer,Aretha Franklin,Dionne Warwick,1967,1968,high,0.031040,billboard_ye_1968#93;rs500_2021#117;tsort_5000#3089
+622,Q687924,All Night Long (All Night),Lionel Richie,,1983,1983,high,0.031032,billboard_ye_1984#12;tsort_5000#290
+623,Q725537,"Say, Say, Say",Paul McCartney and Michael Jackson,,1983,1983,high,0.031025,billboard_ye_1984#3;tsort_5000#336
+624,Q2454853,Quit Playing Games (With My Heart),Backstreet Boys,,1996,1997,high,0.031015,billboard_ye_1997#11;billboard_ye_1998#62;tsort_5000#627
+625,Q2531764,Lonely,Akon,,2005,2005,high,0.030968,billboard_ye_2005#44;tsort_5000#221
+626,Q17035665,Love and Happiness,Al Green,,1972,1972,high,0.030963,rs500_2021#274;rs500_2004#98
+627,Q654353,All the Things She Said,t.A.T.u.,,2002,2003,high,0.030928,tsort_5000#134
+628,Q956305,Just Like Heaven,The Cure,,1987,1987,high,0.030877,rs500_2021#108;rs500_2004#483;tsort_5000#3829
+629,Q928282,(They Long to Be) Close to You,The Carpenters,Richard Chamberlain,1963,1970,high,0.030772,billboard_ye_1970#2;grammy_hof;tsort_5000#552
+630,Q991121,Brown Sugar,The Rolling Stones,,1971,1971,high,0.030758,billboard_ye_1971#16;rs500_2004#490;tsort_5000#434
+631,Q5978247,I Love You Always Forever,Donna Lewis,,1996,1996,high,0.030676,billboard_ye_1996#8;billboard_ye_1997#64;tsort_5000#699
+632,Q4357239,MacArthur Park,Donna Summer,Richard Harris,1967,1978,high,0.030671,billboard_ye_1968#51;billboard_ye_1979#12;tsort_5000#1197
+633,Q813449,Beautiful,Christina Aguilera,,2002,2002,high,0.030651,billboard_ye_2003#16;tsort_5000#283
+634,Q22906390,Another Night,Real McCoy,,1993,1994,high,0.030608,billboard_ye_1994#63;billboard_ye_1995#6;tsort_5000#759
+635,Q4354015,There Goes My Baby,The Drifters,,1959,1959,high,0.030601,billboard_ye_1959#29;grammy_hof;rs500_2004#193;tsort_5000#2188
+636,Q6745220,Mam'selle,Art Lund,,1947,1947,high,0.030593,billboard_ye_1947#12;tsort_5000#1991
+637,Q853621,Disturbia,Rihanna,,2008,2008,high,0.030592,billboard_ye_2008#16;billboard_ye_2009#77;tsort_5000#532
+638,Q6842824,Midnight Train to Georgia,Gladys Knight & the Pips,,1973,1973,high,0.030575,billboard_ye_1973#49;grammy_hof;rs500_2021#470;rs500_2004#432;tsort_5000#1997
+639,Q1006895,Red Roses for a Blue Lady,Vaughn Monroe,Bert Kaempfert,1948,1949,high,0.030568,billboard_ye_1949#21;billboard_ye_1965#32
+640,Q1188494,Do They Know It's Christmas?,Band Aid,,1984,1984,high,0.030544,tsort_5000#175
+641,Q1990281,California Love,2Pac featuring K-Ci and JoJo / 2Pac featuring Dr. Dre and Roger Troutman,,1995,1995,high,0.030544,billboard_ye_1996#17;rs500_2021#320;rs500_2004#346;tsort_5000#918
+642,Q864783,Can't Buy Me Love,The Beatles,,1964,1964,high,0.030540,billboard_ye_1964#52;rs500_2004#289;tsort_5000#401
+643,Q929637,Paperback Writer,The Beatles,,1966,1966,high,0.030525,billboard_ye_1966#57;tsort_5000#213
+644,Q5610352,Groovin',The Young Rascals,,1967,1967,high,0.030520,billboard_ye_1967#9;grammy_hof;tsort_5000#1601
+645,Q15635928,Jump,Kris Kross,,1992,1992,high,0.030472,billboard_ye_1992#3;tsort_5000#351
+646,Q542497,Like a Virgin,Madonna,,1984,1984,high,0.030449,billboard_ye_1985#2;tsort_5000#359
+647,Q3410904,Puppy Love,Donny Osmond,Paul Anka,1960,1972,high,0.030438,billboard_ye_1960#23;billboard_ye_1972#67;tsort_5000#691
+648,Q752942,At Last,Etta James,Glenn Miller and His Orchestra,1942,1960,high,0.030396,grammy_hof;rs500_2021#115;tsort_5000#2162
+649,Q125873211,I Had Some Help,Post Malone featuring Morgan Wallen,,2024,2024,high,0.030331,billboard_ye_2024#4;billboard_ye_2025#8
+650,Q2540869,Wake Up Little Susie,The Everly Brothers,,1957,1957,high,0.030238,billboard_ye_1957#19;grammy_hof;rs500_2004#311;tsort_5000#1229
+651,Q5215317,Dance to the Music,Sly and the Family Stone,,1968,1968,high,0.030237,billboard_ye_1968#20;grammy_hof;rs500_2004#223;tsort_5000#2551
+652,Q3364732,"Music, Music, Music",Teresa Brewer,,1949,1950,high,0.030227,billboard_ye_1950#6;tsort_5000#338
+653,Q3753942,F**k it (I Don't Want You Back),Eamon,,2003,2003,high,0.030189,billboard_ye_2004#63;tsort_5000#212
+654,Q1880395,If I Had a Hammer,Trini Lopez,"Peter, Paul and Mary",1962,1963,high,0.030179,billboard_ye_1962#98;billboard_ye_1963#30;tsort_5000#411
+655,Q959812,Ticket to Ride,The Beatles,,1964,1965,high,0.030142,billboard_ye_1965#31;rs500_2004#384;tsort_5000#424
+656,Q313351,Frozen,Madonna,,1998,1998,high,0.030100,billboard_ye_1998#32;tsort_5000#252
+657,Q2333404,Because the Night,"10,000 Maniacs",Patti Smith,1978,1993,high,0.030099,billboard_ye_1978#72;billboard_ye_1994#40;rs500_2021#358;tsort_5000#3832
+658,Q1852653,The Power of Love,Celine Dion,Jennifer Rush,1983,1993,high,0.030093,billboard_ye_1994#4;tsort_5000#715
+659,Q1968128,Run It!,Chris Brown featuring Juelz Santana,,2005,2005,high,0.030088,billboard_ye_2005#42;billboard_ye_2006#16;tsort_5000#782
+660,Q22668404,Formation,Beyonce,,2016,2016,high,0.030075,rs500_2021#73
+661,Q2006225,The Times They Are a-Changing,Bob Dylan,,1963,1964,high,0.030049,grammy_hof;rs500_2004#59
+662,Q2563251,Too Much Heaven,Bee Gees,,1978,1978,high,0.030042,billboard_ye_1979#11;tsort_5000#316
+663,Q2295592,It Wasn't Me,Shaggy & Ricardo 'RikRok' Ducent,,2000,2000,high,0.030018,billboard_ye_2001#12;tsort_5000#312
+664,Q29352319,Humble,Kendrick Lamar,,2017,2017,high,0.030013,billboard_ye_2017#4;spotify_top#79
+665,Q1639216,"Monday, Monday",The Mamas & the Papas,,1966,1966,high,0.029989,billboard_ye_1966#24;grammy_hof;tsort_5000#393
+666,Q944632,What a Wonderful World,Louis Armstrong,,1967,1967,high,0.029967,grammy_hof;rs500_2021#171;tsort_5000#708
+667,Q391559,Right Here Waiting,Richard Marx,,1989,1989,high,0.029958,billboard_ye_1989#11;tsort_5000#318
+668,Q2574754,‘Son of a Preacher Man,Dusty Springfield,,1968,1968,high,0.029957,rs500_2021#168;rs500_2004#240;tsort_5000#2426
+669,Q98073193,Dynamite,BTS,,2020,2020,high,0.029957,billboard_ye_2020#38;billboard_ye_2021#41;rs500_2021#346
+670,Q791683,Beautiful Liar,Beyoncé and Shakira,,2007,2007,high,0.029936,billboard_ye_2007#62;tsort_5000#216
+671,Q2828126,Ain't No Mountain High Enough,Diana Ross,Marvin Gaye & Tammi Terrell,1967,1970,high,0.029911,billboard_ye_1967#87;billboard_ye_1970#6;grammy_hof;tsort_5000#3665
+672,Q24506,(I've Had) The Time of My Life,Bill Medley and Jennifer Warnes,,1987,1987,high,0.029899,billboard_ye_1987#27;tsort_5000#266
+673,Q736799,Please Please Me,The Beatles,,1963,1964,high,0.029897,billboard_ye_1964#16;rs500_2004#184;tsort_5000#1290
+674,Q2584225,Please Don't Go,KC and the Sunshine Band,,1979,1979,high,0.029873,billboard_ye_1980#19;billboard_ye_1992#47;tsort_5000#996
+675,Q1631057,She Drives Me Crazy,Fine Young Cannibals,,1989,1989,high,0.029866,billboard_ye_1989#18;tsort_5000#292
+676,Q1419707,Joyride,Roxette,,1991,1991,high,0.029852,billboard_ye_1991#23;tsort_5000#277
+677,Q944039,Rapper's Delight,The Sugarhill Gang,,1979,1979,high,0.029843,grammy_hof;rs500_2021#427;rs500_2004#248;tsort_5000#791
+678,Q778913,Wipe Out,The Surfaris,,1963,1963,high,0.029841,billboard_ye_1963#14;billboard_ye_1966#55;grammy_hof;tsort_5000#2088
+679,Q1067025,Hollaback Girl,Gwen Stefani,,2005,2005,high,0.029828,billboard_ye_2005#2;tsort_5000#378
+680,Q683257,Sex Machine,James Brown,,1970,1970,high,0.029808,grammy_hof;rs500_2021#196;rs500_2004#326;tsort_5000#3755
+681,Q178905,Crazy Little Thing Called Love,Queen,,1979,1979,high,0.029786,billboard_ye_1980#6;tsort_5000#350
+682,Q3785180,Here Comes the Hotstepper,Ini Kamoze,,1994,1994,high,0.029770,billboard_ye_1994#85;billboard_ye_1995#24;tsort_5000#487
+683,Q7203086,Play That Funky Music,Wild Cherry,,1976,1976,high,0.029763,billboard_ye_1976#5;billboard_ye_1991#57;tsort_5000#1340
+684,Q2313776,The Look,Roxette,,1988,1988,high,0.029747,billboard_ye_1989#17;tsort_5000#298
+685,Q5071889,Change the World,Eric Clapton,,1996,1996,high,0.029693,billboard_ye_1996#19;billboard_ye_1997#67;tsort_5000#595
+686,Q2342150,Living for the City,Stevie Wonder,,1973,1973,high,0.029689,billboard_ye_1974#45;rs500_2004#104;tsort_5000#3144
+687,Q3432205,Ring My Bell,Anita Ward,,1979,1979,high,0.029683,billboard_ye_1979#9;tsort_5000#335
+688,Q11680820,Common People,Pulp,,1995,1996,high,0.029630,rs500_2021#75
+689,Q1641864,I'm Not in Love,10cc,,1975,1975,high,0.029605,billboard_ye_1975#43;billboard_ye_1991#83;tsort_5000#405
+690,Q848739,If You Had My Love,Jennifer Lopez,,1999,1999,high,0.029596,billboard_ye_1999#12;tsort_5000#322
+691,Q65034919,Truth Hurts,Lizzo,,2017,2017,high,0.029576,billboard_ye_2019#13;billboard_ye_2020#55;rs500_2021#497
+692,Q4646099,96 Tears,? and the Mysterians,,1966,1966,high,0.029544,billboard_ye_1966#2;rs500_2004#210;tsort_5000#2544
+693,Q439005,Maria Maria,Santana featuring The Product G&B,,2000,2000,high,0.029540,billboard_ye_2000#3;tsort_5000#379
+694,Q3642293,Boombastic,Shaggy,,1994,1994,high,0.029487,billboard_ye_1995#18;tsort_5000#300
+695,Q56770393,Shallow,Lady Gaga and Bradley Cooper,,2018,2018,high,0.029465,billboard_ye_2019#19;spotify_top#59
+696,Q1319686,Heaven,Bryan Adams,,1985,1985,high,0.029459,billboard_ye_1985#24;billboard_ye_2002#31;tsort_5000#1626
+697,Q635446,Say It Right,Nelly Furtado,,2006,2006,high,0.029455,billboard_ye_2007#9;tsort_5000#341
+698,Q529026,Yellow,Coldplay,,2000,2000,high,0.029451,spotify_top#14;tsort_5000#2415
+699,Q2096323,Spoonful,Howlin’ Wolf,,1960,1960,high,0.029444,rs500_2021#154;rs500_2004#219
+700,Q6297345,Joy to the World,Three Dog Night,,1970,1971,high,0.029437,billboard_ye_1971#1;tsort_5000#400
+701,Q2389029,Ice Ice Baby,Vanilla Ice,,1990,1990,high,0.029391,billboard_ye_1990#45;tsort_5000#242
+702,Q7997610,Whoomp! (There It Is),Tag Team,,1993,1993,high,0.029379,billboard_ye_1993#2;billboard_ye_1994#42;tsort_5000#1681
+703,Q1165917,Fireflies,Owl City,,2009,2009,high,0.029362,billboard_ye_2009#60;billboard_ye_2010#30;tsort_5000#545
+704,Q2555191,I Can't Make You Love Me,Bonnie Raitt,,1991,1991,high,0.029358,billboard_ye_1992#100;grammy_hof;rs500_2021#372;rs500_2004#331;tsort_5000#4426
+705,Q1267483,"Hello, Dolly!",Louis Armstrong,,1964,1964,high,0.029345,billboard_ye_1964#3;grammy_hof;tsort_5000#635
+706,Q21123,Empire State of Mind,Jay-Z featuring Alicia Keys,,2009,2009,high,0.029314,billboard_ye_2009#62;billboard_ye_2010#21;tsort_5000#624
+707,Q115706733,Kill Bill,SZA,,2022,2022,high,0.029296,billboard_ye_2023#3;spotify_top#89
+708,Q2101755,Please Forgive Me,Bryan Adams,,1993,1993,high,0.029246,billboard_ye_1994#27;tsort_5000#278
+709,Q8056992,"You Can't Be True, Dear",Ken Griffin and Jerry Wayne,,1948,1948,high,0.029241,billboard_ye_1948#6;tsort_5000#4131
+710,Q1629279,Leader of the Pack,The Shangri-Las,,1964,1964,high,0.029217,billboard_ye_1964#69;rs500_2021#316;rs500_2004#447;tsort_5000#1162
+711,Q11975306,Hey There,Rosemary Clooney with Buddy Cole,,1954,1954,high,0.029127,billboard_ye_1954#3;grammy_hof;tsort_5000#653
+712,Q2312462,Miss You,The Rolling Stones,,1978,1978,high,0.029080,billboard_ye_1978#16;rs500_2004#496;tsort_5000#510
+713,Q2081319,Lose My Breath,Destiny's Child,,2004,2004,high,0.029054,billboard_ye_2004#58;billboard_ye_2005#86;tsort_5000#377
+714,Q1995194,Somebody That I Used to Know,Gotye featuring Kimbra,,2011,2012,high,0.029052,billboard_ye_2012#1;tsort_5000#414
+715,Q4176192,Angel of the Morning,Merrilee Rush,Evie Sands,1967,1968,high,0.029033,billboard_ye_1968#28;billboard_ye_1981#25;tsort_5000#1804
+716,Q1946997,Listen to Your Heart,Roxette,,1989,1989,high,0.028998,billboard_ye_1989#22;billboard_ye_2005#35;tsort_5000#1200
+717,Q7549445,So Much in Love,The Tymes,,1963,1963,high,0.028992,billboard_ye_1963#11;billboard_ye_1994#28;tsort_5000#3212
+718,Q2069260,Cat's in the Cradle,Harry Chapin,,1974,1974,high,0.028987,billboard_ye_1975#39;billboard_ye_1993#61;grammy_hof;tsort_5000#1525
+719,Q387838,Knock on Wood,Amii Stewart,Eddie Floyd,1966,1979,high,0.028962,billboard_ye_1979#22;grammy_hof;tsort_5000#443
+720,Q3192672,Forever and Ever,Russ Morgan,,1940,1949,medium,0.028947,billboard_ye_1949#14;tsort_5000#2797
+721,Q1603052,Hello,Lionel Richie,,1983,1984,high,0.028944,billboard_ye_1984#7;tsort_5000#368
+722,Q1138361,White Rabbit,Jefferson Airplane,,1967,1967,high,0.028930,billboard_ye_1967#81;grammy_hof;rs500_2021#455;rs500_2004#478;tsort_5000#1581
+723,Q1113842,Come On Eileen,Dexys Midnight Runners,,1982,1982,high,0.028927,billboard_ye_1983#13;tsort_5000#334
+724,Q2251382,More Than Words,Extreme,,1991,1991,high,0.028911,billboard_ye_1991#7;tsort_5000#369
+725,Q49818,Rock with You,Michael Jackson,,1979,1979,high,0.028852,billboard_ye_1980#4;rs500_2021#354;tsort_5000#1623
+726,Q798670,Ain't That a Shame,Pat Boone,,1955,1955,high,0.028833,billboard_ye_1955#9;grammy_hof;rs500_2004#431;tsort_5000#2769
+727,Q1067893,Somethin' Stupid,Frank & Nancy Sinatra,,1967,1967,high,0.028832,billboard_ye_1967#7;tsort_5000#504
+728,Q4993398,Rags to Riches,Tony Bennett with Percy Faith,,1953,1953,high,0.028829,billboard_ye_1953#19;billboard_ye_1954#27;tsort_5000#1223
+729,Q7379357,Rumors Are Flying,Frankie Carle,,1946,1946,high,0.028812,billboard_ye_1946#5;tsort_5000#1933
+730,Q149244,Independent Women Part I,Destiny's Child,,2000,2000,high,0.028785,billboard_ye_2000#97;billboard_ye_2001#10;tsort_5000#678
+731,Q957761,Back to Black,Amy Winehouse,,2006,2006,high,0.028777,rs500_2021#79
+732,Q12207092,Blurred Lines,Robin Thicke featuring T.I. and Pharrell Williams,,2013,2013,high,0.028714,billboard_ye_2013#2;billboard_ye_2014#83;tsort_5000#1013
+733,Q139824580,Drivers License,Olivia Rodrigo,,2021,2021,high,0.028692,billboard_ye_2021#8;spotify_top#83
+734,Q568065,Another One Bites the Dust,Queen,,1980,1980,high,0.028690,billboard_ye_1981#65;tsort_5000#230
+735,Q1172469,Angel,Shaggy featuring Rayvon,,2000,2000,high,0.028653,billboard_ye_2001#17;tsort_5000#323
+736,Q2287863,Ironic,Alanis Morissette,,1996,1996,high,0.028624,billboard_ye_1996#13;tsort_5000#342
+737,Q60200417,7 Rings,Ariana Grande,,2019,2019,high,0.028624,billboard_ye_2019#7;spotify_top#86
+738,Q17489280,All About That Bass,Meghan Trainor,,2014,2014,high,0.028587,billboard_ye_2014#8;billboard_ye_2015#28;tsort_5000#2323
+739,Q1050301,Together Again,Janet,,1997,1997,high,0.028574,billboard_ye_1998#6;tsort_5000#387
+740,Q1460009,Hit the Road Jack,Ray Charles,,1960,1961,high,0.028534,billboard_ye_1961#19;grammy_hof;rs500_2004#377;tsort_5000#1378
+741,Q30603129,Unforgettable,French Montana and Swae Lee,,2017,2017,high,0.028485,billboard_ye_2017#15;spotify_top#72
+742,Q428251,I Got You (I Feel Good),James Brown,,1965,1965,high,0.028468,grammy_hof;rs500_2004#78;tsort_5000#3114
+743,Q2263965,Take a Bow,Madonna,,1994,1994,high,0.028467,billboard_ye_1995#8;tsort_5000#376
+744,Q7821409,Tonight's the Night (Gonna Be Alright),Rod Stewart,,1976,1976,high,0.028466,billboard_ye_1977#1;tsort_5000#437
+745,Q3392431,Landslide,Fleetwood Mac,,1975,1975,high,0.028464,billboard_ye_2003#35;rs500_2021#163
+746,Q2219037,A Thousand Miles,Vanessa Carlton,,2002,2002,high,0.028455,billboard_ye_2002#6;tsort_5000#391
+747,Ra0b4a7550c28,Sexy Chick (sexy Bitch),David Guetta & Akon,,2009,2009,high,0.028436,tsort_5000#151
+748,Q597783,U Can't Touch This,MC Hammer,,1990,1990,high,0.028432,billboard_ye_1990#55;tsort_5000#244
+749,Q2016244,That's All Right,Elvis Presley,Arthur Crudup,1946,1954,high,0.028427,grammy_hof;rs500_2004#112;tsort_5000#4529
+750,Q1086635,St. Louis Blues March,Tex Beneke,,1914,1948,medium,0.028397,billboard_ye_1948#31;grammy_hof;tsort_5000#2015
+751,Q11977630,It's Only Make Believe,Conway Twitty,,1958,1958,high,0.028384,billboard_ye_1958#11;billboard_ye_1970#99;tsort_5000#689
+752,Q593415,Blaze of Glory,Jon Bon Jovi,,1990,1990,high,0.028370,billboard_ye_1990#10;tsort_5000#366
+753,Q3430697,My Foolish Heart,Billy Eckstine,,1949,1950,high,0.028307,billboard_ye_1950#22;tsort_5000#1673
+754,Q2702943,Daydream Believer,The Monkees,,1967,1967,high,0.028302,billboard_ye_1967#94;billboard_ye_1980#61;tsort_5000#383
+755,Q1478079,Nature Boy,Nat King Cole,,1947,1947,high,0.028286,billboard_ye_1948#14;grammy_hof;tsort_5000#544
+756,Q614076,Drop It Like It's Hot,Snoop Dogg featuring Pharrell,,2004,2004,high,0.028229,billboard_ye_2004#71;billboard_ye_2005#23;tsort_5000#642
+757,Q2560178,Bennie and the Jets,Elton John,,1973,1973,high,0.028208,billboard_ye_1974#9;rs500_2021#371;tsort_5000#1293
+758,Q6691507,Love Will Keep Us Together,Captain & Tennille,,1975,1975,high,0.028181,billboard_ye_1975#1;tsort_5000#449
+759,Q105085558,I Wanna Be Yours,Arctic Monkeys,,2013,2013,high,0.028169,spotify_top#11
+760,Q935373,My Boo,Usher and Alicia Keys,,2004,2004,high,0.028149,billboard_ye_2004#24;billboard_ye_2005#54;tsort_5000#743
+761,Q2275365,Down,Jay Sean featuring Lil Wayne,,2009,2009,high,0.028143,billboard_ye_2009#20;billboard_ye_2010#41;tsort_5000#985
+762,Q125778683,Not Like Us,Kendrick Lamar,,2024,2024,high,0.028139,billboard_ye_2024#6;billboard_ye_2025#17
+763,Q3647850,"Bye, Bye, Bye",N Sync,,2000,2000,high,0.028135,billboard_ye_2000#21;tsort_5000#320
+764,Q2892667,Tequila,The Champs,,1958,1958,high,0.028128,billboard_ye_1958#8;grammy_hof;tsort_5000#639
+765,Q139831467,Hello,Adele,,2015,2015,high,0.028127,billboard_ye_2015#35;billboard_ye_2016#7;tsort_5000#2183
+766,Q17544624,Shake It Off,Taylor Swift,,2014,2014,high,0.028114,billboard_ye_2014#13;billboard_ye_2015#18;tsort_5000#3702
+767,Q577182,My Love,Justin Timberlake featuring T.I.,,2006,2006,high,0.028112,billboard_ye_2006#61;billboard_ye_2007#26;tsort_5000#670
+768,Q2291989,Kiss Me,Sixpence None the Richer,,1998,1998,high,0.028110,billboard_ye_1999#6;tsort_5000#403
+769,Q650415,My Humps,The Black Eyed Peas,,2005,2005,high,0.028081,billboard_ye_2005#32;billboard_ye_2006#42;tsort_5000#750
+770,Q6551343,Linda,Ray Noble Orchestra and Buddy Clark,Jan and Dean,1946,1947,high,0.027999,billboard_ye_1947#4;tsort_5000#2580
+771,Q4544813,(It's No) Sin,Eddy Howard,,1951,1951,high,0.027993,billboard_ye_1951#16;tsort_5000#2350
+772,Q1050753,Live Your Life,T.I. featuring Rihanna,,2008,2008,high,0.027972,billboard_ye_2008#37;billboard_ye_2009#18;tsort_5000#1179
+773,Q769652,Sealed with a Kiss,Brian Hyland,The Four Voices,1960,1962,high,0.027971,billboard_ye_1962#29;billboard_ye_1968#95;billboard_ye_1972#87;tsort_5000#3351
+774,Q835192,Teenage Dream,Katy Perry,,2010,2010,high,0.027923,billboard_ye_2010#17;billboard_ye_2011#75;tsort_5000#737
+775,Q2004511,Sexy and I Know It,LMFAO,,2011,2011,high,0.027901,billboard_ye_2011#57;billboard_ye_2012#13;tsort_5000#1001
+776,Q3496378,Stagger Lee,Lloyd Price,Muse,1911,1958,medium,0.027893,billboard_ye_1959#13;grammy_hof;rs500_2004#456;tsort_5000#1634
+777,Q1577694,Woman,John Lennon,,1981,1981,high,0.027850,billboard_ye_1981#21;tsort_5000#327
+778,Q547539,Red Red Wine,UB40,Neil Diamond,1967,1983,high,0.027800,billboard_ye_1988#39;tsort_5000#279
+779,Q1394467,Gonna Make You Sweat (Everybody Dance Now),C+C Music Factory,,1990,1990,high,0.027778,billboard_ye_1991#3;tsort_5000#444
+780,Q116824945,Last Night,Morgan Wallen,,2023,2023,high,0.027757,billboard_ye_2023#1;billboard_ye_2024#28
+781,Q19973,Numb,Linkin Park,,2003,2003,high,0.027706,billboard_ye_2004#33;spotify_top#87;tsort_5000#1732
+782,Q1472381,Summer in the City,The Lovin' Spoonful,,1966,1966,high,0.027702,billboard_ye_1966#35;grammy_hof;rs500_2004#393;tsort_5000#990
+783,Q586931,"Don't Worry, Be Happy",Bobby McFerrin,,1988,1988,high,0.027701,billboard_ye_1988#37;tsort_5000#285
+784,Q3521920,The Most Beautiful Girl in the World,Prince,,1994,1994,high,0.027696,billboard_ye_1994#19;tsort_5000#339
+785,Q3960364,"Signed, Sealed, Delivered I'm Yours",Stevie Wonder,,1970,1970,high,0.027687,billboard_ye_1970#31;rs500_2021#203;tsort_5000#3969
+786,Q155586,California Gurls,Katy Perry featuring Snoop Dogg,,2010,2010,high,0.027673,billboard_ye_2010#4;tsort_5000#438
+787,Q4563385,Bewitched,Bill Snyder,,1941,1950,medium,0.027609,billboard_ye_1950#24;tsort_5000#1412
+788,Q2331516,Don't Phunk with My Heart,The Black Eyed Peas,,2005,2005,high,0.027588,billboard_ye_2005#13;tsort_5000#372
+789,Q7697482,Tell Me Why,The Four Aces featuring Al Alberts,,1951,1952,high,0.027550,billboard_ye_1952#13;tsort_5000#2352
+790,Q550158,What Is Love,Haddaway,,1992,1993,high,0.027529,billboard_ye_1993#82;billboard_ye_1994#97;tsort_5000#365
+791,Q860724,Chain of Fools,Aretha Franklin,,1967,1967,high,0.027491,grammy_hof;rs500_2021#306;rs500_2004#249;tsort_5000#2919
+792,Q5307437,Drift Away,Dobie Gray,,1973,1973,high,0.027470,billboard_ye_1973#17;billboard_ye_2003#19;tsort_5000#3228
+793,Q7992023,Wheel of Fortune,Kay Starr,,1952,1952,high,0.027468,billboard_ye_1952#2;grammy_hof;tsort_5000#863
+794,Q3434475,Love Letters in the Sand,Pat Boone,,1931,1957,medium,0.027428,billboard_ye_1957#2;tsort_5000#471
+795,Q1813448,You've Got a Friend,James Taylor,,1971,1971,high,0.027423,billboard_ye_1971#17;grammy_hof;tsort_5000#1201
+796,Q1371048,Eternal Flame,The Bangles,,1989,1989,high,0.027353,billboard_ye_1989#32;tsort_5000#304
+797,Q2481971,All the Young Dudes,Mott the Hoople,,1972,1972,high,0.027284,rs500_2021#166;rs500_2004#253
+798,Q2560535,It's All Coming Back to Me Now,Celine Dion,,1989,1996,medium,0.027278,billboard_ye_1996#18;billboard_ye_1997#50;tsort_5000#1058
+799,Q108072305,Cold Heart (Pnau Remix),Elton John and Dua Lipa,,2021,2021,high,0.027273,billboard_ye_2022#10;spotify_top#94
+800,Q281911,"Hello, Goodbye",The Beatles,,1967,1967,high,0.027273,tsort_5000#160
+801,Q5893394,Honey,Bobby Goldsboro,,1968,1968,high,0.027258,billboard_ye_1968#3;tsort_5000#467
+802,Q507537,She Will Be Loved,Maroon 5,,2004,2004,high,0.027230,billboard_ye_2004#35;billboard_ye_2005#61;tsort_5000#651
+803,Q1790356,Tell It Like It Is,Aaron Neville,,1966,1966,high,0.027229,billboard_ye_1967#76;billboard_ye_1981#87;grammy_hof;rs500_2004#381;tsort_5000#4130
+804,Q4729092,All My Friends,LCD Soundsystem,,2007,2007,high,0.027211,rs500_2021#87
+805,Q251304,Free Bird,Lynyrd Skynyrd,,1973,1973,high,0.027168,grammy_hof;rs500_2021#407;rs500_2004#191;tsort_5000#3251
+806,Q1764379,Love Story,Taylor Swift,,2008,2008,high,0.027114,billboard_ye_2008#81;billboard_ye_2009#5;tsort_5000#1234
+807,Q5092449,Cherry Pink And Apple Blossom White,Perez Prado,,1950,1955,medium,0.027108,billboard_ye_1955#1;tsort_5000#500
+808,Q6417062,Kiss and Say Goodbye,The Manhattans,,1976,1976,high,0.027104,billboard_ye_1976#6;tsort_5000#442
+809,Q7354619,Rock On,David Essex,,1973,1973,high,0.027096,billboard_ye_1974#17;billboard_ye_1989#45;tsort_5000#2396
+810,Q169453,On the Floor,Jennifer Lopez featuring Pitbull,,2011,2011,high,0.027072,billboard_ye_2011#11;tsort_5000#402
+811,Q6417047,Kiss You All Over,Exile,,1978,1978,high,0.027058,billboard_ye_1978#5;tsort_5000#454
+812,Q107341752,Bad Habits,Ed Sheeran,,2021,2021,high,0.027032,billboard_ye_2021#15;billboard_ye_2022#13
+813,Q1983429,Real Love,Mary J. Blige,,1992,1992,high,0.027030,billboard_ye_1992#85;billboard_ye_1993#58;rs500_2021#327;tsort_5000#4475
+814,Q2112698,Silly Love Songs,Wings,,1976,1976,high,0.027013,billboard_ye_1976#1;tsort_5000#505
+815,Q2608289,Bad Moon Rising,Creedence Clearwater Revival,,1969,1969,high,0.026997,billboard_ye_1969#24;rs500_2004#355;tsort_5000#703
+816,Q117842122,Snooze,SZA,,2022,2022,high,0.026993,billboard_ye_2023#9;billboard_ye_2024#20
+817,Q804380,Baker Street,Gerry Rafferty,,1978,1978,high,0.026934,billboard_ye_1978#26;tsort_5000#332
+818,Q9136676,99 Problems,Jay-Z,,2003,2003,high,0.026880,rs500_2021#96;tsort_5000#4781
+819,Q14559271,Roar,Katy Perry,,2013,2013,high,0.026838,billboard_ye_2013#10;billboard_ye_2014#46;tsort_5000#1864
+820,Q6652242,Little Things Mean a Lot,Kitty Kallen with Jack Pleis,,1954,1954,high,0.026828,billboard_ye_1954#1;tsort_5000#515
+821,Q1281320,Mrs. Robinson,Simon & Garfunkel,,1968,1968,high,0.026813,billboard_ye_1968#9;grammy_hof;tsort_5000#742
+822,Q539119,White Flag,Dido,,2003,2003,high,0.026765,billboard_ye_2004#36;tsort_5000#307
+823,Q5654644,Harbor Lights,Sammy Kaye,Frances Langford,1937,1950,medium,0.026753,billboard_ye_1950#9;billboard_ye_1960#50;tsort_5000#1833
+824,Q19573059,Moonglow and Theme from Picnic,Morris Stoloff,,1956,1956,high,0.026742,billboard_ye_1956#11;tsort_5000#3536
+825,Q2079896,Rock & Roll Music,Chuck Berry,,1957,1957,medium,0.026720,billboard_ye_1976#62;rs500_2004#128;tsort_5000#2278
+826,Q8057588,You Were Meant for Me,Jewel,,1996,1997,high,0.026682,billboard_ye_1997#2;billboard_ye_1998#87;tsort_5000#779
+827,Q1408106,Something About the Way You Look Tonight,Elton John,,1997,1997,high,0.026681,billboard_ye_1997#1;billboard_ye_1998#8;tsort_5000#479
+828,Q130364790,Too Fat Polka,Arthur Godfrey,,1947,1947,high,0.026635,billboard_ye_1947#21;billboard_ye_1948#23;tsort_5000#2617
+829,Q3510189,Ignition (Remix),R. Kelly,,2002,2002,high,0.026600,billboard_ye_2003#2;tsort_5000#513
+830,Q1392942,Ghostbusters,Ray Parker Jr.,,1983,1984,high,0.026590,billboard_ye_1984#9;tsort_5000#436
+831,Q47460492,All the Stars,Kendrick Lamar and SZA,,2018,2018,high,0.026587,billboard_ye_2018#47;spotify_top#56
+832,Q2891348,"Walk, Don't Run",The Ventures,,1960,1960,high,0.026580,billboard_ye_1960#25;billboard_ye_1964#90;grammy_hof;tsort_5000#1753
+833,Q2564517,I'm Too Sexy,Right Said Fred,,1991,1991,high,0.026547,billboard_ye_1992#13;tsort_5000#407
+834,Q29998244,There's Nothing Holdin' Me Back,Shawn Mendes,,2017,2017,high,0.026541,billboard_ye_2017#23;spotify_top#78
+835,Q2604122,What's Up?,Four Non Blondes,,1993,1993,high,0.026533,billboard_ye_1993#50;tsort_5000#284
+836,Q546425,In the Air Tonight,Phil Collins,,1981,1981,high,0.026509,rs500_2021#291;tsort_5000#337
+837,Q4019435,Where Do You Go,No Mercy,,1996,1996,high,0.026509,billboard_ye_1996#26;billboard_ye_1997#52;tsort_5000#948
+838,Q3036415,The First Time Ever I Saw Your Face,Roberta Flack,,1957,1972,medium,0.026494,billboard_ye_1972#1;tsort_5000#534
+839,Rc4861ca56fc0,Int’l Players Anthem (I Choose You),UKG,,2007,2007,medium,0.026490,rs500_2021#91
+840,Q41642884,Girls Like You,Maroon 5 featuring Cardi B,,2011,2018,medium,0.026481,billboard_ye_2018#10;billboard_ye_2019#22
+841,Q653189,Footloose,Kenny Loggins,,1984,1984,high,0.026475,billboard_ye_1984#4;tsort_5000#493
+842,Q7440100,Sea of Love,Phil Phillips,,1959,1959,high,0.026474,billboard_ye_1959#21;billboard_ye_1985#34;tsort_5000#3139
+843,Q3045853,You're Still the One,Shania Twain,,1997,1998,high,0.026436,billboard_ye_1998#3;tsort_5000#508
+844,Q2081516,I'm Yours,Jason Mraz,,2008,2008,high,0.026420,billboard_ye_2008#27;billboard_ye_2009#7
+845,Q724859,It's a Heartache,Bonnie Tyler,,1977,1978,high,0.026398,billboard_ye_1978#24;tsort_5000#354
+846,Q106830344,Good 4 U,Olivia Rodrigo,,2021,2021,high,0.026374,billboard_ye_2021#5;billboard_ye_2022#31
+847,Q147713,Baby Boy,Beyoncé featuring Sean Paul,,2003,2003,high,0.026365,billboard_ye_2003#12;billboard_ye_2004#69;tsort_5000#1210
+848,Q514797,Again,Janet Jackson,,1993,1993,high,0.026356,billboard_ye_1993#74;billboard_ye_1994#12;tsort_5000#1139
+849,Q268440,I Feel Fine,The Beatles,,1964,1964,high,0.026316,tsort_5000#168
+850,Q54869031,The Night We Met,Lord Huron,,2015,2015,high,0.026316,spotify_top#16
+851,Q1676210,I'm Sorry,Brenda Lee,,1960,1960,high,0.026280,billboard_ye_1960#6;grammy_hof;tsort_5000#894
+852,Q2773212,This Guy's in Love with You,Herb Alpert,,1968,1968,high,0.026237,billboard_ye_1968#7;billboard_ye_1969#64;tsort_5000#1788
+853,Q7460506,Shadow Dancing,Andy Gibb,,1978,1978,high,0.026230,billboard_ye_1978#1;tsort_5000#550
+854,Q256085,If I Ain't Got You,Alicia Keys,,2003,2003,high,0.026220,billboard_ye_2004#3;rs500_2021#440;tsort_5000#2496
+855,Q90599924,Levitating,Dua Lipa,,2020,2020,high,0.026197,billboard_ye_2021#1;billboard_ye_2022#42
+856,Q2624339,The Boys Are Back in Town,Thin Lizzy,,1976,1976,high,0.026197,billboard_ye_1976#87;rs500_2021#272;rs500_2004#499;tsort_5000#2972
+857,Q163412,Firework,Katy Perry,,2010,2010,high,0.026182,billboard_ye_2011#3;tsort_5000#522
+858,Q1426427,Love Me Tender,Elvis Presley,,1956,1956,high,0.026066,billboard_ye_1956#15;rs500_2004#437;tsort_5000#836
+859,Q943316,Puttin' on the Ritz,Taco,"Harry Richman (with Earl Burtnett & his Los Angeles Biltmore Hotel Orchestra),",1929,1983,high,0.026060,billboard_ye_1983#31;grammy_hof;tsort_5000#897
+860,Q860467,Soul Man,Sam & Dave,,1967,1967,high,0.026027,billboard_ye_1967#19;grammy_hof;rs500_2004#458;tsort_5000#2131
+861,Q4543164,September Gurls,Big Star,,1974,1974,high,0.025983,rs500_2021#239;rs500_2004#178
+862,Q139928718,Born This Way,Lady Gaga,,2010,2010,high,0.025978,billboard_ye_2011#18;tsort_5000#396
+863,Q2533658,Whatever You Like,T.I.,,2008,2008,high,0.025968,billboard_ye_2008#15;billboard_ye_2009#40;tsort_5000#2217
+864,Q1631664,How Am I Supposed to Live Without You,Michael Bolton,Laura Branigan,1983,1989,high,0.025948,billboard_ye_1983#61;billboard_ye_1990#12;tsort_5000#1521
+865,Q1360239,Here in My Heart,Al Martino,,1952,1952,high,0.025943,billboard_ye_1952#9;tsort_5000#464
+866,Q6746747,"Managua, Nicaragua",Freddy Martin,,1946,1947,high,0.025879,billboard_ye_1947#12;tsort_5000#2955
+867,Q18441355,Blank Space,Taylor Swift,,2014,2014,high,0.025851,billboard_ye_2015#7;rs500_2021#357;tsort_5000#4441
+868,Q2552843,Bubbly,Colbie Caillat,,2007,2007,high,0.025832,billboard_ye_2007#67;billboard_ye_2008#21;tsort_5000#1009
+869,Q28451977,Goosebumps,Travis Scott and Kendrick Lamar,,2016,2016,high,0.025831,billboard_ye_2017#68;spotify_top#51
+870,Q2567279,Bizarre Love Triangle,New Order,,1986,1986,high,0.025780,rs500_2021#220;rs500_2004#201
+871,Q139799477,"Get Up, Stand Up",Bob Marley and the Wailers,,1973,1973,high,0.025766,grammy_hof;rs500_2021#260;rs500_2004#296
+872,Q787812,Baba O’Riley,The Who,,1971,1971,high,0.025765,rs500_2021#159;rs500_2004#340
+873,Q2449704,"Sugar, We're Goin Down",Fall Out Boy,,2005,2005,high,0.025765,billboard_ye_2005#40;billboard_ye_2006#68;rs500_2021#443
+874,Q1777153,Gimme Some Lovin',The Spencer Davis Group,,1966,1966,high,0.025744,billboard_ye_1967#68;grammy_hof;rs500_2004#244;tsort_5000#1801
+875,Q7072040,O-o-h Child,Five Stairsteps,,1970,1970,high,0.025740,billboard_ye_1970#21;billboard_ye_1993#88;rs500_2004#392
+876,Q1437885,Roll Over Beethoven,Chuck Berry,,1956,1956,high,0.025730,grammy_hof;rs500_2004#97;tsort_5000#3306
+877,Q2704739,Take Care,Drake featuring Rihanna,,2011,2011,high,0.025720,billboard_ye_2012#23;rs500_2021#267;tsort_5000#4107
+878,Q4181494,Semi-Charmed Life,Third Eye Blind,,1997,1997,high,0.025718,billboard_ye_1997#17;billboard_ye_1998#57;tsort_5000#1374
+879,Q139917974,Money for Nothing,Dire Straits,,1985,1985,high,0.025715,billboard_ye_1985#8;tsort_5000#485
+880,Q289679,"Get Outta My Dreams, Get into My Car",Billy Ocean,,1988,1988,high,0.025704,billboard_ye_1988#15;tsort_5000#425
+881,Q6945602,My Guy,Mary Wells,,1964,1964,high,0.025699,billboard_ye_1964#7;grammy_hof;tsort_5000#951
+882,Q10657769,Runaround Sue,Dion,,1961,1961,high,0.025696,billboard_ye_1961#46;grammy_hof;rs500_2004#342;tsort_5000#1455
+883,Q2256262,The Sweet Escape,Gwen Stefani featuring Akon,,2006,2006,high,0.025693,billboard_ye_2007#3;tsort_5000#551
+884,Q3939706,Rock Lobster,B-52s,,1978,1978,high,0.025674,rs500_2021#300;rs500_2004#146
+885,Q7281218,Radioactive,Imagine Dragons,,2012,2012,high,0.025647,billboard_ye_2013#3;billboard_ye_2014#57;tsort_5000#4830
+886,Q2806356,Heat Wave,Martha and the Vandellas,,1963,1963,high,0.025641,billboard_ye_1963#26;rs500_2021#257;tsort_5000#4241
+887,Q7710474,Thank You (Falettinme Be Mice Elf Agin),Sly & the Family Stone,,1969,1969,high,0.025629,billboard_ye_1970#19;grammy_hof;rs500_2004#402;tsort_5000#3601
+888,Q746218,Pop Muzik,M,,1979,1979,high,0.025625,billboard_ye_1980#40;tsort_5000#324
+889,Q210452,One More Night,Maroon 5,,2012,2012,high,0.025624,billboard_ye_2012#18;billboard_ye_2013#38;tsort_5000#2248
+890,Q593978,Sledgehammer,Peter Gabriel,,1986,1986,high,0.025623,billboard_ye_1986#23;tsort_5000#382
+891,Q5688562,He'll Have to Go,Jim Reeves,,1959,1959,high,0.025612,billboard_ye_1960#2;grammy_hof;tsort_5000#1232
+892,Q7765230,The Song from Moulin Rouge,Percy Faith featuring Felicia Sanders,,1953,1953,high,0.025596,billboard_ye_1953#1;tsort_5000#592
+893,Q1458640,Into the Groove,Madonna,,1985,1985,high,0.025590,rs500_2021#161;tsort_5000#741
+894,Q323991,Womanizer,Britney Spears,,2008,2008,high,0.025589,billboard_ye_2008#80;billboard_ye_2009#39;tsort_5000#659
+895,Q11973896,Handy Man,Jimmy Jones,,1959,1959,high,0.025558,billboard_ye_1960#8;billboard_ye_1977#46;tsort_5000#4172
+896,Q3572753,You Light Up My Life,Debby Boone,,1977,1977,high,0.025488,billboard_ye_1978#3;tsort_5000#564
+897,Q2320274,All by Myself,Eric Carmen,,1975,1975,high,0.025459,billboard_ye_1976#40;billboard_ye_1997#49;tsort_5000#1849
+898,Q2452405,Use Somebody,Kings of Leon,,2008,2008,high,0.025436,billboard_ye_2009#14;billboard_ye_2010#87;tsort_5000#1112
+899,Q2292413,Nights in White Satin,The Moody Blues,,1967,1967,high,0.025433,billboard_ye_1972#32;grammy_hof;tsort_5000#557
+900,Q1322307,I Can’t Stand the Rain,Ann Peebles,,1973,1973,high,0.025425,billboard_ye_1978#95;rs500_2021#197;tsort_5000#1700
+901,Q112182488,You Proof,Morgan Wallen,,2022,2022,high,0.025383,billboard_ye_2022#27;billboard_ye_2023#12
+902,Q868569,Because of You,Kelly Clarkson,,2004,2005,high,0.025349,billboard_ye_2005#72;billboard_ye_2006#39;tsort_5000#722
+903,Q1623037,I Saw Her Standing There,The Beatles,,1963,1964,high,0.025341,billboard_ye_1964#95;rs500_2004#139;tsort_5000#1513
+904,Q195326,Hey There Delilah,Plain White T's,,2006,2007,high,0.025306,billboard_ye_2007#7;tsort_5000#518
+905,Q2675434,Whatcha Say,Jason Derulo,,2009,2009,high,0.025298,billboard_ye_2009#34;billboard_ye_2010#43;tsort_5000#1152
+906,Q5574716,Go Away Little Girl,Donny Osmond,Steve Lawrence,1962,1971,high,0.025275,billboard_ye_1963#80;billboard_ye_1971#7;tsort_5000#3151
+907,Q4854254,Band of Gold,Freda Payne,,1970,1970,high,0.025263,billboard_ye_1970#10;rs500_2004#391;tsort_5000#1327
+908,Q15741198,Help Me,Joni Mitchell,,1974,1974,high,0.025255,billboard_ye_1974#53;rs500_2021#464;rs500_2004#282
+909,Q4820309,"Auf Wiederseh'n, Sweetheart",Vera Lynn with Her Majesty's Forces and Roland Shaw,,1952,1952,high,0.025237,billboard_ye_1952#5;tsort_5000#549
+910,Q767632,You Belong with Me,Taylor Swift,,2008,2008,high,0.025233,billboard_ye_2009#11;billboard_ye_2010#57;tsort_5000#2246
+911,Q733931,Oops!... I Did It Again,Britney Spears,,1999,2000,high,0.025225,billboard_ye_2000#55;tsort_5000#303
+912,Q5417736,Everybody Loves Somebody,Dean Martin,Frank Sinatra,1947,1964,high,0.025217,billboard_ye_1964#6;grammy_hof;tsort_5000#1088
+913,Q881342,Blame It on the Rain,Milli Vanilli,,1989,1989,high,0.025173,billboard_ye_1989#21;billboard_ye_1990#46;tsort_5000#1708
+914,Q3359463,Under the Boardwalk,The Drifters,,1964,1964,high,0.025165,billboard_ye_1964#20;grammy_hof;rs500_2004#487;tsort_5000#2502
+915,Q1953769,Ruby Tuesday,The Rolling Stones,,1966,1967,high,0.025107,billboard_ye_1967#24;rs500_2004#303;tsort_5000#1155
+916,Q5291755,Don't Let the Stars Get in Your Eyes,Perry Como,Slim Willet,1952,1953,high,0.025093,billboard_ye_1953#9;tsort_5000#506
+917,Q107619633,Industry Baby,Lil Nas X and Jack Harlow,,2021,2021,high,0.025063,billboard_ye_2021#24;billboard_ye_2022#16
+918,Q909801,Dreamlover,Mariah Carey,,1993,1993,high,0.025033,billboard_ye_1993#8;tsort_5000#521
+919,Q1413414,Jambalaya (On the Bayou),Jo Stafford with Paul Weston and The Norman Luboff Choir,,1952,1952,high,0.025021,billboard_ye_1952#15;billboard_ye_1973#86;grammy_hof
+920,Q898945,You're Makin' Me High,Toni Braxton,,1996,1996,high,0.025018,billboard_ye_1996#9;billboard_ye_1997#98;tsort_5000#1370
+921,Q59771981,Lovely,Billie Eilish and Khalid,,2018,2018,high,0.025000,spotify_top#20
+922,Q2776435,Speedy Gonzales,Pat Boone,,1961,1962,high,0.024988,billboard_ye_1962#45;tsort_5000#328
+923,Q606884,Give Me Everything,"Pitbull featuring Ne-Yo, Afrojack and Nayer",,2011,2011,high,0.024985,billboard_ye_2011#5;tsort_5000#565
+924,Q97691641,Mood,24kGoldn featuring Iann Dior,,2020,2020,high,0.024971,billboard_ye_2020#47;billboard_ye_2021#4
+925,Q4980576,Kryptonite,3 Doors Down,,2000,2000,high,0.024957,billboard_ye_2000#15;billboard_ye_2001#44;tsort_5000#2927
+926,Q7801639,Tighten Up,Archie Bell & the Drells,,1968,1968,high,0.024957,billboard_ye_1968#10;rs500_2004#265;tsort_5000#4104
+927,Q865086,Unforgettable,"Nat ""King"" Cole",,1951,1951,high,0.024946,grammy_hof;tsort_5000#421
+928,Q125482649,Too Sweet,Hozier,,2024,2024,high,0.024924,billboard_ye_2024#10;billboard_ye_2025#34
+929,Q4728675,All Cried Out,Allure featuring 112,Lisa Lisa & Cult Jam,1985,1997,high,0.024918,billboard_ye_1986#61;billboard_ye_1997#43;billboard_ye_1998#84
+930,Q1032020,Here Without You,3 Doors Down,,2003,2003,high,0.024912,billboard_ye_2003#62;billboard_ye_2004#15;tsort_5000#1714
+931,Q1581031,Lust for Life,Iggy Pop,,1977,1977,high,0.024882,rs500_2021#325;rs500_2004#147
+932,Q607626,Maps,Yeah Yeah Yeahs,,2003,2003,high,0.024845,rs500_2021#101
+933,Q16326586,Stay with Me,Sam Smith,,2014,2014,high,0.024843,billboard_ye_2014#10;billboard_ye_2015#58;tsort_5000#2821
+934,Q2733482,Happy Together,The Turtles,,1967,1967,high,0.024836,billboard_ye_1967#8;grammy_hof;tsort_5000#1074
+935,Q2467189,Hungry Like the Wolf,Duran Duran,,1982,1982,high,0.024834,billboard_ye_1983#17;rs500_2021#398;tsort_5000#1867
+936,Q2921155,Come and Get Your Love,Redbone,,1973,1974,high,0.024830,billboard_ye_1974#4;billboard_ye_1995#69;tsort_5000#4068
+937,Q3523013,The Thrill Is Gone,B.B. King,,1969,1969,high,0.024804,billboard_ye_1970#98;grammy_hof;rs500_2004#183;tsort_5000#4591
+938,Q917976,Groove Is in the Heart,Deee-Lite,,1990,1990,high,0.024776,billboard_ye_1991#91;rs500_2021#233;tsort_5000#1273
+939,Q139917998,Wrecking Ball,Miley Cyrus,,2013,2013,high,0.024768,billboard_ye_2013#18;billboard_ye_2014#44;tsort_5000#2513
+940,Q643167,Comfortably Numb,Pink Floyd,,1979,1979,high,0.024758,rs500_2021#179;rs500_2004#314
+941,Q1631481,Venus,Frankie Avalon,,1959,1959,high,0.024744,billboard_ye_1959#4;tsort_5000#598
+942,Q5909991,Hot Fun in the Summertime,Sly and the Family Stone,,1969,1969,high,0.024697,billboard_ye_1969#7;rs500_2004#247
+943,Q7096435,"Open the Door, Richard!",Count Basie,Jack McVea,1946,1947,high,0.024644,billboard_ye_1947#35;tsort_5000#1854
+944,Q384691,Vision of Love,Mariah Carey,,1990,1990,high,0.024615,billboard_ye_1990#6;tsort_5000#574
+945,Q2568183,Save the Best for Last,Vanessa Williams,,1992,1992,high,0.024607,billboard_ye_1992#4;tsort_5000#608
+946,Q1163830,Need You Tonight,INXS,,1987,1987,high,0.024604,billboard_ye_1988#2;tsort_5000#648
+947,Q2557137,Boom Boom,John Lee Hooker,,1962,1962,high,0.024595,grammy_hof;rs500_2021#463;rs500_2004#218;tsort_5000#4495
+948,Q6549879,Knock Three Times,Tony Orlando and Dawn,,1970,1970,high,0.024577,billboard_ye_1971#10;tsort_5000#523
+949,Q636399,Smoke on the Water,Deep Purple,,1973,1973,high,0.024577,billboard_ye_1973#50;grammy_hof;rs500_2004#426;tsort_5000#1281
+950,Q4346021,The Ballroom Blitz,Sweet,,1975,1975,high,0.024570,billboard_ye_1975#17;tsort_5000#458
+951,Q55196213,Better Now,Post Malone,,2018,2018,high,0.024568,billboard_ye_2018#13;billboard_ye_2019#32
+952,Q1055002,Memories Are Made of This,Dean Martin,,1955,1956,high,0.024543,billboard_ye_1956#9;tsort_5000#537
+953,Q728791,Grease,Frankie Valli,,1978,1978,high,0.024537,billboard_ye_1978#11;tsort_5000#514
+954,Q717891,Can't Fight the Moonlight,LeAnn Rimes,,1999,2000,high,0.024536,billboard_ye_2002#56;tsort_5000#317
+955,Q2548927,War,Edwin Starr,,1970,1970,high,0.024512,billboard_ye_1970#5;grammy_hof;tsort_5000#1339
+956,Q2198962,Just My Imagination (Running Away with Me),The Temptations,,1971,1971,high,0.024476,billboard_ye_1971#9;rs500_2004#389;tsort_5000#1757
+957,Q11976680,I Can Help,Billy Swan,,1974,1974,high,0.024467,billboard_ye_1975#44;tsort_5000#344
+958,Q5602478,Green Door,Jim Lowe,,1956,1956,high,0.024451,billboard_ye_1956#19;billboard_ye_1957#44;tsort_5000#2696
+959,Q19756862,See You Again,Wiz Khalifa featuring Charlie Puth,,2015,2015,high,0.024424,billboard_ye_2015#3;billboard_ye_2016#99;tsort_5000#2593
+960,Q129711,The Tide Is High,Blondie,The Paragons,1967,1980,high,0.024423,billboard_ye_1981#17;tsort_5000#723
+961,Q1208770,Diana,Paul Anka,,1957,1957,high,0.024405,billboard_ye_1957#24;tsort_5000#420
+962,Q2003581,The Night They Drove Old Dixie Down,Joan Baez,The Band,1969,1971,medium,0.024388,billboard_ye_1971#20;rs500_2004#245;tsort_5000#2864
+963,Q1139281,Crazy for You,Madonna,,1985,1985,high,0.024377,billboard_ye_1985#9;tsort_5000#547
+964,Q719712,Super Bass,Nicki Minaj,,2010,2010,high,0.024370,billboard_ye_2011#8;rs500_2021#426;tsort_5000#4126
+965,Q3135094,Hey Paula,Paul & Paula,,1962,1962,high,0.024368,billboard_ye_1963#6;tsort_5000#591
+966,Q2318793,I Can See Clearly Now,Johnny Nash,,1972,1972,high,0.024362,billboard_ye_1972#47;billboard_ye_1994#66;tsort_5000#1059
+967,Q2493693,I Just Want to Be Your Everything,Andy Gibb,,1977,1977,high,0.024359,billboard_ye_1977#2;tsort_5000#669
+968,Q167469,Rush Rush,Paula Abdul,,1991,1991,high,0.024346,billboard_ye_1991#4;tsort_5000#628
+969,Q7797869,Three Times a Lady,Commodores,,1978,1978,high,0.024319,billboard_ye_1978#10;tsort_5000#538
+970,Q692708,I Fought the Law,The Bobby Fuller Four,The Crickets,1959,1965,medium,0.024316,billboard_ye_1966#89;grammy_hof;rs500_2004#175
+971,Q5979427,I Wanna Sex You Up,Color Me Badd,,1991,1991,high,0.024315,billboard_ye_1991#2;tsort_5000#673
+972,Q654263,All for You,Janet,,2001,2001,high,0.024300,billboard_ye_2001#3;tsort_5000#652
+973,Q56145698,Sicko Mode,Travis Scott,,2018,2018,high,0.024297,billboard_ye_2018#42;billboard_ye_2019#9
+974,Q104175596,Relax,Frankie Goes To Hollywood,,1983,1984,high,0.024291,tsort_5000#187
+975,Q2077201,Life on Mars?,David Bowie,,1971,1971,high,0.024242,rs500_2021#105
+976,Q7621561,Stranger on the Shore,Acker Bilk,,1961,1962,high,0.024196,billboard_ye_1962#1;tsort_5000#709
+977,Q4957886,Brass in Pocket,The Pretenders,,1979,1980,high,0.024196,billboard_ye_1980#41;rs500_2021#389;tsort_5000#1054
+978,Q1242318,Don't Let Me Be Misunderstood,Santa Esmerelda,Nina Simone,1964,1977,high,0.024138,billboard_ye_1978#80;rs500_2004#315;tsort_5000#607
+979,Q5966918,I'm Yours,Eddie Fisher with Hugo Winterhalter,,1952,1952,high,0.024128,billboard_ye_1952#20
+980,Q978636,Marquee Moon,Television,,1977,1977,high,0.024112,rs500_2021#173;rs500_2004#372
+981,Q1060895,I Get Around,The Beach Boys,,1964,1964,high,0.024104,billboard_ye_1964#5;grammy_hof;tsort_5000#1486
+982,Q5285108,Dizzy,Tommy Roe,,1969,1969,high,0.024093,billboard_ye_1969#6;tsort_5000#611
+983,Q720678,Bad Girls,Donna Summer,,1979,1979,high,0.024076,billboard_ye_1979#2;tsort_5000#695
+984,Q602095,More Than a Feeling,Boston,,1976,1976,high,0.024042,rs500_2021#212;rs500_2004#500;tsort_5000#1448
+985,Q2447506,Candy Shop,50 Cent featuring Olivia,,2005,2005,high,0.024008,billboard_ye_2005#8;tsort_5000#585
+986,Q27623,Fernando,Abba,,1976,1976,high,0.024000,tsort_5000#190
+987,Q2615492,Hanging by a Moment,Lifehouse,,2000,2001,high,0.023979,billboard_ye_2001#1;tsort_5000#731
+988,Q461833,Mr. Vain,Culture Beat,,1993,1993,high,0.023973,billboard_ye_1994#76;tsort_5000#301
+989,Q279097,Enjoy the Silence,Depeche Mode,,1990,1990,high,0.023952,billboard_ye_1990#66;rs500_2021#415;tsort_5000#730
+990,Q286807,C.R.E.A.M.,Wu-Tang Clan,,1994,1994,high,0.023952,rs500_2021#107
+991,Q4880395,Beg Your Pardon,Francis Craig,,1947,1948,high,0.023932,billboard_ye_1948#18
+992,Q2551462,Radio Free Europe,R.E.M.,,1981,1983,medium,0.023928,rs500_2021#174;rs500_2004#379
+993,Q2697907,Some Nights,Fun,,2012,2012,high,0.023913,billboard_ye_2012#14;billboard_ye_2013#58;tsort_5000#3057
+994,Q85768540,I Hope,Gabby Barrett featuring Charlie Puth,,2019,2020,high,0.023889,billboard_ye_2020#12;billboard_ye_2021#40
+995,Q2430567,Subterranean Homesick Blues,Bob Dylan,,1965,1965,high,0.023847,rs500_2021#187;rs500_2004#332
+996,Q2061766,Feel Good Inc.,Gorillaz,,2005,2005,high,0.023847,billboard_ye_2005#37;billboard_ye_2006#97;tsort_5000#777
+997,Q3492735,Chapel of Love,The Dixie Cups,,1963,1964,high,0.023837,billboard_ye_1964#21;rs500_2004#279;tsort_5000#2211
+998,Q125688795,"Good Luck, Babe!",Chappell Roan,,2024,2024,high,0.023810,billboard_ye_2024#18;billboard_ye_2025#31
+999,Q16758395,Another Love,Tom Odell,,2012,2012,high,0.023810,spotify_top#24
+1000,Q7809188,Tired of Being Alone,Al Green,,1971,1971,high,0.023804,billboard_ye_1971#12;rs500_2004#293;tsort_5000#4175
+1001,Q628972,Mmm Mmm Mmm Mmm,Crash Test Dummies,,1993,1994,high,0.023801,billboard_ye_1994#35;tsort_5000#392
+1002,Q112317018,Something in the Orange,Zach Bryan,,2022,2022,high,0.023800,billboard_ye_2022#39;billboard_ye_2023#13
+1003,Q11510350,Get Lucky,Daft Punk featuring Pharrell Williams,,2013,2013,high,0.023784,billboard_ye_2013#14;rs500_2021#465;tsort_5000#2203
+1004,Q5582716,Good Lovin',The Young Rascals,,1965,1966,high,0.023757,billboard_ye_1966#11;rs500_2004#325;tsort_5000#3131
+1005,Q7245818,Prisoner of Love,Perry Como,,1931,1946,medium,0.023746,billboard_ye_1946#1;tsort_5000#756
+1006,Q3434522,Breaking Up Is Hard to Do,Neil Sedaka,,1962,1962,high,0.023746,billboard_ye_1962#15;billboard_ye_1976#91;tsort_5000#1523
+1007,Q499282,I Shot the Sheriff,Eric Clapton,Bob Marley & The Wailers,1973,1974,high,0.023722,billboard_ye_1974#76;grammy_hof;rs500_2004#443;tsort_5000#1018
+1008,Q24032253,Can't Stop the Feeling!,Justin Timberlake,,2016,2016,high,0.023667,billboard_ye_2016#9;billboard_ye_2017#49
+1009,Q62587323,Old Town Road,Lil Nas X featuring Billy Ray Cyrus,,2018,2019,high,0.023666,billboard_ye_2019#1;rs500_2021#490
+1010,Q121811402,Thinkin' Bout Me,Morgan Wallen,,2023,2023,high,0.023647,billboard_ye_2023#19;billboard_ye_2024#31
+1011,Q1031911,Can You Feel the Love Tonight,Elton John,,1994,1994,high,0.023631,billboard_ye_1994#18;tsort_5000#495
+1012,Q685575,God Save the Queen,The Sex Pistols,,1977,1977,high,0.023586,rs500_2021#365;rs500_2004#173;tsort_5000#4560
+1013,Q832799,Yellow Submarine,The Beatles,,1966,1966,high,0.023568,billboard_ye_1966#90;tsort_5000#295
+1014,Q1025916,Paparazzi,Lady Gaga,,2009,2009,high,0.023551,billboard_ye_2009#53;billboard_ye_2010#64;tsort_5000#844
+1015,Q326487,We Will Rock You,Queen,,1977,1978,high,0.023539,billboard_ye_1978#25;rs500_2004#330;tsort_5000#1410
+1016,Q6498164,Laughing on the Outside (Crying on the Inside),Dinah Shore,,1946,1946,high,0.023533,billboard_ye_1946#24
+1017,Q5464703,Follow Me,Uncle Kracker,,2001,2001,high,0.023528,billboard_ye_2001#19;tsort_5000#492
+1018,Q1723915,Kansas City,Wilbert Harrison,,1952,1959,medium,0.023524,billboard_ye_1959#9;grammy_hof;tsort_5000#1371
+1019,Q4734394,Alone Again (Naturally),Gilbert O'Sullivan,,1972,1972,high,0.023518,billboard_ye_1972#2;tsort_5000#752
+1020,Q1743755,Kiss Kiss,Chris Brown featuring T-Pain,,2007,2007,high,0.023517,billboard_ye_2007#93;billboard_ye_2008#19;tsort_5000#1328
+1021,Q688252,Amazed,Lonestar,,1999,1999,high,0.023502,billboard_ye_1999#85;billboard_ye_2000#8;tsort_5000#3098
+1022,Q910912,Paranoid,Black Sabbath,,1970,1970,high,0.023494,rs500_2021#338;rs500_2004#250;tsort_5000#1533
+1023,Q3290822,We've Only Just Begun,The Carpenters,,1970,1970,high,0.023492,billboard_ye_1970#65;grammy_hof;rs500_2004#405;tsort_5000#1368
+1024,Q4708097,We Gotta Get Out of This Place,The Animals,,1965,1965,high,0.023478,billboard_ye_1965#86;grammy_hof;rs500_2004#233;tsort_5000#3809
+1025,Q1981082,Sadeness (Part I),Enigma,,1990,1991,high,0.023475,billboard_ye_1991#63;tsort_5000#331
+1026,Q890,Gangnam Style,Psy,,2012,2012,high,0.023462,billboard_ye_2012#47;billboard_ye_2013#55;tsort_5000#1047
+1027,Q2454066,Goodbye Yellow Brick Road,Elton John,,1973,1973,high,0.023444,billboard_ye_1974#72;rs500_2004#380;tsort_5000#603
+1028,Q1729759,Take a Bow,Rihanna,,2008,2008,high,0.023443,billboard_ye_2008#12;tsort_5000#568
+1029,Q3993337,Too Close,Next,,1997,1998,high,0.023436,billboard_ye_1998#1;tsort_5000#792
+1030,Q124842525,End of Beginning,Djo,Joe Keery,2002,2022,medium,0.023430,billboard_ye_2024#47;spotify_top#82
+1031,Q2547964,Temperature,Sean Paul,,2006,2006,high,0.023428,billboard_ye_2006#2;tsort_5000#762
+1032,Q240211,Wild Horses,Rolling Stones,,1971,1971,high,0.023424,rs500_2021#193;rs500_2004#334
+1033,Q6544906,Life Is a Highway,Tom Cochrane,,1991,1992,high,0.023422,billboard_ye_1992#18;billboard_ye_2006#76;tsort_5000#1787
+1034,Q821033,Girl I'm Gonna Miss You,Milli Vanilli,,1989,1989,high,0.023414,billboard_ye_1989#16;tsort_5000#525
+1035,Q5249810,Dedicated to the One I Love,The Shirelles,,1959,1959,high,0.023411,billboard_ye_1961#14;billboard_ye_1967#62;tsort_5000#3468
+1036,Q8052722,"Yes, I'm Ready",Teri DeSario & KC,Barbara Mason,1965,1979,high,0.023399,billboard_ye_1965#27;billboard_ye_1980#24
+1037,Q19875576,Cotton Eye Joe,Rednex,,1994,1994,high,0.023390,billboard_ye_1995#93;tsort_5000#296
+1038,Q2606509,Children,Robert Miles,,1995,1996,high,0.023385,billboard_ye_1996#65;tsort_5000#330
+1039,Q2521798,Drops of Jupiter (Tell Me),Train,,2001,2001,high,0.023337,billboard_ye_2001#4;tsort_5000#718
+1040,Q942797,It's All in the Game,Tommy Edwards,,1951,1958,medium,0.023335,billboard_ye_1958#9;tsort_5000#729
+1041,Q2292419,Little Wing,Jimi Hendrix,,1967,1967,high,0.023323,rs500_2021#188;rs500_2004#357
+1042,Q49469,Rockin' Robin,Bobby Day,,1958,1958,high,0.023294,billboard_ye_1958#23;billboard_ye_1972#41;tsort_5000#4401
+1043,Q20888483,What Do You Mean?,Justin Bieber,,2015,2015,high,0.023285,billboard_ye_2015#33;billboard_ye_2016#31;tsort_5000#3828
+1044,Q2577524,Buffalo Stance,Neneh Cherry,,1988,1988,high,0.023277,billboard_ye_1989#36;rs500_2021#412;tsort_5000#1308
+1045,Q2191286,The Lady in Red,Chris de Burgh,,1986,1986,high,0.023275,billboard_ye_1987#21;tsort_5000#489
+1046,Q2329163,Crank That (Soulja Boy),Soulja Boy Tell 'Em,,2007,2007,high,0.023244,billboard_ye_2007#20;billboard_ye_2008#54;tsort_5000#2982
+1047,Q253739,SOS,Rihanna,,2006,2006,high,0.023240,billboard_ye_2006#19;tsort_5000#507
+1048,Q4591724,Rhinestone Cowboy,Glen Campbell,,1975,1975,high,0.023230,billboard_ye_1975#2;tsort_5000#785
+1049,Q5002911,Butterfly,Andy Williams,,1957,1957,high,0.023225,billboard_ye_1957#31;tsort_5000#3238
+1050,Q1856876,Replay,Iyaz,,2009,2009,high,0.023215,billboard_ye_2009#83;billboard_ye_2010#25;tsort_5000#1286
+1051,Q2447864,Memphis,Johnny Rivers,,1959,1964,review,0.023190,billboard_ye_1963#48;billboard_ye_1964#41;tsort_5000#1429
+1052,Q16961558,Cissy Strut,The Meters,,1969,1969,high,0.023187,grammy_hof;rs500_2021#158
+1053,Q2801222,Ooo Baby Baby,Smokey Robinson,The Miracles,1965,1965,high,0.023152,billboard_ye_1965#93;billboard_ye_1979#77;rs500_2004#262
+1054,Q3434335,Personality,Lloyd Price,,1959,1959,high,0.023146,billboard_ye_1959#3;tsort_5000#765
+1055,Q924220,Popcorn,Hot Butter,,1969,1972,medium,0.023128,billboard_ye_1972#28;tsort_5000#450
+1056,Q7797393,Three Coins in the Fountain,The Four Aces featuring Al Alberts and Jack Pleis,,1954,1954,high,0.023125,billboard_ye_1954#8;tsort_5000#1017
+1057,Q2469978,One of Us,Joan Osborne,,1994,1994,high,0.023111,billboard_ye_1996#30;tsort_5000#440
+1058,Q6304661,Judy in Disguise (With Glasses),John Fred & His Playboy Band,,1967,1968,high,0.023107,billboard_ye_1968#25;tsort_5000#469
+1059,Q5288643,Doin' What Comes Natur'lly,Dinah Shore with the Spade Cooley Orchestra,,1946,1946,high,0.023065,billboard_ye_1946#22
+1060,Q45862,Never Can Say Goodbye,The Jackson 5,,1971,1971,high,0.023042,billboard_ye_1971#40;billboard_ye_1975#72;tsort_5000#1576
+1061,Q848721,Love Don't Cost a Thing,Jennifer Lopez,,2000,2000,high,0.023035,billboard_ye_2001#26;tsort_5000#466
+1062,Q2079853,It's a Man's Man's Man's World,James Brown,,1966,1966,high,0.023030,grammy_hof;rs500_2004#123;tsort_5000#3278
+1063,Q2282976,Get Low,Lil Jon & The East Side Boyz featuring Ying Yang Twins,,2003,2003,high,0.023024,billboard_ye_2003#11;billboard_ye_2004#70;tsort_5000#4749
+1064,Q1576265,Straight Up,Paula Abdul,,1988,1988,high,0.023023,billboard_ye_1989#4;tsort_5000#751
+1065,Q730527,Heaven Is a Place on Earth,Belinda Carlisle,,1987,1987,high,0.023023,billboard_ye_1988#7;tsort_5000#681
+1066,Q3754433,She's a Lady,Tom Jones,Paul Anka,1970,1971,high,0.023001,billboard_ye_1971#25;tsort_5000#474
+1067,Q27890330,Bad and Boujee,Migos featuring Lil Uzi Vert,,2016,2016,high,0.022979,billboard_ye_2017#6;rs500_2021#451
+1068,Q6671664,Lonely Teardrops,Jackie Wilson,,1958,1958,high,0.022975,billboard_ye_1959#56;grammy_hof;rs500_2004#308;tsort_5000#4341
+1069,Q1538709,Got My Mind Set on You,George Harrison,,1987,1987,high,0.022965,billboard_ye_1988#3;tsort_5000#786
+1070,Q2152463,Baby I Need Your Loving,Four Tops,,1964,1964,high,0.022963,billboard_ye_1964#57;billboard_ye_1967#95;rs500_2004#390;tsort_5000#4564
+1071,Q1159364,Dancing in the Dark,Bruce Springsteen,,1984,1984,high,0.022962,billboard_ye_1984#14;tsort_5000#575
+1072,Q1473839,Hot in Herre,Nelly,,2002,2002,high,0.022940,billboard_ye_2002#3;tsort_5000#789
+1073,Q2069502,Hold On,Wilson Phillips,,1990,1990,high,0.022908,billboard_ye_1990#1;tsort_5000#861
+1074,Q17035096,Lonely Boy,Paul Anka,,1959,1959,high,0.022894,billboard_ye_1959#5;tsort_5000#739
+1075,Q139732097,Golden Earrings,Peggy Lee with Dave Barbour,,1947,1947,high,0.022884,billboard_ye_1947#46;billboard_ye_1948#22;tsort_5000#4722
+1076,Q2274905,ABC,The Jackson 5,,1970,1970,high,0.022878,billboard_ye_1970#15;grammy_hof;tsort_5000#1215
+1077,Q3626101,Never Ever,All Saints,,1997,1998,high,0.022876,billboard_ye_1998#42;tsort_5000#399
+1078,Q7858505,Twisted,Keith Sweat,,1996,1996,high,0.022872,billboard_ye_1996#10;billboard_ye_1997#93;tsort_5000#2867
+1079,Q934249,Theme from Shaft,Isaac Hayes,,1971,1971,high,0.022871,billboard_ye_1971#89;grammy_hof;tsort_5000#470
+1080,Q4993366,Surrender,Elvis Presley,,1961,1961,high,0.022866,billboard_ye_1961#51;tsort_5000#373
+1081,Q648157,San Francisco (Be Sure to Wear Flowers in Your Hair),Scott McKenzie,,1967,1967,high,0.022865,billboard_ye_1967#48;tsort_5000#381
+1082,Q3772309,Time of the Season,The Zombies,,1968,1968,high,0.022862,billboard_ye_1969#39;rs500_2021#349;tsort_5000#1953
+1083,Q4646459,9 To 5,Dolly Parton,,1980,1980,high,0.022861,billboard_ye_1981#9;tsort_5000#657
+1084,Q7453167,Serenade of the Bells,Sammy Kaye,,1947,1947,high,0.022855,billboard_ye_1948#27;tsort_5000#4702
+1085,Q139823000,Bitter Sweet Symphony,The Verve,,1997,1997,high,0.022831,billboard_ye_1998#79;rs500_2004#382;tsort_5000#618
+1086,Q880611,Black Velvet,Alannah Myles,,1989,1990,high,0.022821,billboard_ye_1990#18;tsort_5000#540
+1087,Q1471428,The Way You Look Tonight,Fred Astaire,,1936,1936,high,0.022807,billboard_ye_1961#58;grammy_hof;tsort_5000#572
+1088,Q1068050,Chasing Cars,Snow Patrol,,2006,2006,high,0.022779,billboard_ye_2006#29;billboard_ye_2007#61;tsort_5000#1770
+1089,Q64731233,No Guidance,Chris Brown featuring Drake,,2019,2019,high,0.022762,billboard_ye_2019#21;billboard_ye_2020#36
+1090,Q96379628,Go Crazy,Chris Brown and Young Thug,,2020,2020,high,0.022759,billboard_ye_2020#39;billboard_ye_2021#19
+1091,Q74038,Diamonds,Rihanna,,2012,2012,high,0.022731,billboard_ye_2012#94;billboard_ye_2013#27;tsort_5000#1205
+1092,Q6092076,It Takes Two,Rob Base and DJ E-Z Rock,,1988,1988,high,0.022727,rs500_2021#116
+1093,Q2093786,The Power of Love,Huey Lewis and the News,,1985,1985,high,0.022723,billboard_ye_1985#15;tsort_5000#579
+1094,Q2722509,Burn,Usher,,2004,2004,high,0.022722,billboard_ye_2004#2;tsort_5000#850
+1095,Q7514891,Silhouettes,Herman's Hermits,The Rays,1957,1965,high,0.022721,billboard_ye_1957#35;billboard_ye_1965#22
+1096,Q1507073,No Air,Jordin Sparks and Chris Brown,,2008,2008,high,0.022708,billboard_ye_2008#6;tsort_5000#734
+1097,Q16740380,Patricia,Perez Prado,,1958,1958,high,0.022702,billboard_ye_1958#5;tsort_5000#760
+1098,Q20160275,Can't Feel My Face,The Weeknd,,2015,2015,high,0.022701,billboard_ye_2015#12;billboard_ye_2016#72;tsort_5000#4792
+1099,Q1636231,In the Ghetto,Elvis Presley,,1969,1969,high,0.022697,billboard_ye_1969#35;tsort_5000#433
+1100,Q2084865,Sentimental Journey,Les Brown & Doris Day,,1944,1945,high,0.022696,grammy_hof;tsort_5000#276
+1101,Q2548022,Get Busy,Sean Paul,,2003,2003,high,0.022683,billboard_ye_2003#3;tsort_5000#821
+1102,Q7761026,The River of Dreams,Billy Joel,,1993,1993,high,0.022678,billboard_ye_1993#26;tsort_5000#483
+1103,Q3833240,Lips of an Angel,Hinder,,2006,2006,high,0.022643,billboard_ye_2006#30;billboard_ye_2007#46;tsort_5000#2800
+1104,Q547537,Party in the U.S.A.,Miley Cyrus,,2009,2009,high,0.022623,billboard_ye_2009#29;billboard_ye_2010#67;tsort_5000#1648
+1105,Q1142735,Don't Turn Around,Ace of Base,Tina Turner,1986,1994,high,0.022619,billboard_ye_1994#10;tsort_5000#660
+1106,Q1714123,Just the Way You Are,Billy Joel,,1977,1977,high,0.022607,billboard_ye_1978#17;grammy_hof;tsort_5000#1195
+1107,Q6926317,Mouth,Merril Bainbridge,,1994,1996,medium,0.022539,billboard_ye_1996#53;billboard_ye_1997#42;tsort_5000#1484
+1108,Q1655165,I Feel for You,Chaka Khan,,1984,1984,high,0.022519,billboard_ye_1985#5;tsort_5000#781
+1109,Q3788333,I've Been Loving You Too Long,Otis Redding,,1965,1965,high,0.022486,grammy_hof;rs500_2004#110
+1110,Q2630128,With Arms Wide Open,Creed,,2000,2000,high,0.022486,billboard_ye_2000#36;billboard_ye_2001#39;tsort_5000#2989
+1111,Q20058686,Stitches,Shawn Mendes,,2015,2015,high,0.022465,billboard_ye_2015#36;billboard_ye_2016#23
+1112,Q2628024,Don't Matter,Akon,,2007,2007,high,0.022464,billboard_ye_2007#11;tsort_5000#656
+1113,Q6649732,Little Darlin',The Diamonds,,1957,1957,high,0.022459,billboard_ye_1957#3;tsort_5000#851
+1114,Q943552,Welcome to the Jungle,Guns N' Roses,,1987,1987,high,0.022459,billboard_ye_1989#74;rs500_2021#491;rs500_2004#467;tsort_5000#2875
+1115,Q120682483,Seven,Jung Kook and Latto,,2023,2023,high,0.022427,billboard_ye_2023#82;spotify_top#70
+1116,Q5966869,I'm Walking Behind You,Eddie Fisher with Hugo Winterhalter,,1953,1953,high,0.022420,billboard_ye_1953#4;tsort_5000#823
+1117,Q5286317,Do You Believe in Magic,The Lovin' Spoonful,,1965,1965,high,0.022420,billboard_ye_1965#89;grammy_hof;rs500_2004#216
+1118,Q2397570,Bring the Noise,Public Enemy,,1987,1987,high,0.022389,rs500_2021#397;rs500_2004#160
+1119,Q7968152,Wanted,Perry Como with Hugo Winterhalter,,1952,1954,medium,0.022366,billboard_ye_1954#2;tsort_5000#902
+1120,Q584740,This Used to Be My Playground,Madonna,,1992,1992,high,0.022362,billboard_ye_1992#21;tsort_5000#539
+1121,Q2300731,Crush,Jennifer Paige,,1998,1998,high,0.022312,billboard_ye_1998#21;tsort_5000#542
+1122,Q3316414,Photograph,Nickelback,,2005,2005,high,0.022311,billboard_ye_2005#43;billboard_ye_2006#38;tsort_5000#2442
+1123,Q3434612,That Lucky Old Sun,Frankie Laine,,1949,1949,high,0.022308,billboard_ye_1949#2;tsort_5000#911
+1124,Q57655857,Happier,Marshmello and Bastille,,2018,2018,high,0.022294,billboard_ye_2018#80;billboard_ye_2019#6
+1125,Q139919108,Fuck the Police,N.W.A.,,1988,1988,high,0.022289,rs500_2021#190;rs500_2004#417
+1126,Q107182489,Need to Know,Doja Cat,,2021,2021,high,0.022254,billboard_ye_2021#46;billboard_ye_2022#18
+1127,Q126415085,Please Please Please,Sabrina Carpenter,,2024,2024,high,0.022249,billboard_ye_2024#16;billboard_ye_2025#50
+1128,Q810741,Batdance,Prince,,1989,1989,high,0.022247,billboard_ye_1989#44;tsort_5000#415
+1129,Q7080447,Oh Girl,The Chi-Lites,,1972,1972,high,0.022243,billboard_ye_1972#13;billboard_ye_1990#84;tsort_5000#3691
+1130,Q1578134,Sweet Little Sixteen,Chuck Berry,,1958,1958,high,0.022230,billboard_ye_1958#29;rs500_2004#272;tsort_5000#3005
+1131,Q2309808,This Land Is Your Land,Woody Guthrie,,1944,1944,high,0.022228,grammy_hof;rs500_2021#229;tsort_5000#1631
+1132,Q968916,Unbelievable,EMF,,1991,1991,high,0.022227,billboard_ye_1991#6;tsort_5000#788
+1133,Q7080415,Oh Bondage! Up Yours!,X-Ray Spex,,1977,1977,high,0.022222,rs500_2021#120
+1134,Q2264484,Walk Away Renée,The Left Banke,,1966,1966,high,0.022209,billboard_ye_1966#27;rs500_2004#220
+1135,Q2642607,(Now and Then There's) A Fool Such as I,Elvis Presley,,1952,1959,medium,0.022199,billboard_ye_1959#34;tsort_5000#459
+1136,Q1574701,Somebody to Love,Jefferson Airplane,,1967,1967,high,0.022195,billboard_ye_1967#33;rs500_2004#274;tsort_5000#2379
+1137,Q3746896,Fly Like an Eagle,Steve Miller Band,,1976,1976,high,0.022191,billboard_ye_1977#28;billboard_ye_1997#79;tsort_5000#2996
+1138,Q1116206,DJ Got Us Fallin' in Love,Usher featuring Pitbull,,2010,2010,high,0.022160,billboard_ye_2010#22;billboard_ye_2011#65;tsort_5000#2993
+1139,Q7710965,That's My Desire,Sammy Kaye,,1931,1947,medium,0.022127,billboard_ye_1947#10;grammy_hof;tsort_5000#1938
+1140,Q147734,Halo,Beyoncé,,2009,2009,high,0.022126,billboard_ye_2009#24;tsort_5000#527
+1141,Q579766,King of the Road,Roger Miller,,1964,1965,high,0.022116,billboard_ye_1965#12;grammy_hof;tsort_5000#1711
+1142,Q180128,The Boxer,Simon and Garfunkel,,1969,1969,high,0.022101,rs500_2004#105;tsort_5000#1471
+1143,Q7747908,The Living Years,Mike + The Mechanics,,1988,1989,high,0.022100,billboard_ye_1989#31;tsort_5000#480
+1144,Q5582744,Good Luck Charm,Elvis Presley,,1961,1962,high,0.022085,billboard_ye_1962#20;tsort_5000#566
+1145,Q1800071,Lady,Kenny Rogers,,1980,1980,high,0.022084,billboard_ye_1981#3;tsort_5000#906
+1146,Q8771239,I Need to Know,Marc Anthony,,1999,1999,high,0.022082,billboard_ye_1999#79;billboard_ye_2000#23;tsort_5000#2053
+1147,Q4050078,Stay (I Missed You),Lisa Loeb and Nine Stories,,1994,1994,high,0.022040,billboard_ye_1994#6;tsort_5000#811
+1148,Q2406780,Shining Star,"Earth, Wind & Fire",,1975,1975,high,0.022038,billboard_ye_1975#7;grammy_hof;tsort_5000#2579
+1149,Q35282195,Havana,Camila Cabello featuring Young Thug,,2017,2017,high,0.022035,billboard_ye_2017#96;billboard_ye_2018#4
+1150,Q1230583,Paper Doll,Mills Brothers,,1930,1943,medium,0.022031,grammy_hof;tsort_5000#289
+1151,Q107524963,Fancy Like,Walker Hayes,,2021,2021,high,0.022021,billboard_ye_2021#27;billboard_ye_2022#35
+1152,Q107654239,Scream,Michael Jackson and Janet Jackson,,1995,1995,high,0.022014,billboard_ye_1995#56;tsort_5000#388
+1153,Q7045937,Nobody,Keith Sweat featuring Athena Cage,,1996,1996,high,0.022002,billboard_ye_1996#73;billboard_ye_1997#16;tsort_5000#4467
+1154,Q1509118,Who's That Girl,Madonna,,1987,1987,high,0.021999,billboard_ye_1987#42;tsort_5000#432
+1155,Q622086,American Woman,The Guess Who,,1970,1970,high,0.021983,billboard_ye_1970#3;tsort_5000#922
+1156,Q121972390,I Remember Everything,Zach Bryan featuring Kacey Musgraves,,2023,2023,high,0.021955,billboard_ye_2023#74;billboard_ye_2024#9
+1157,Q1750952,Basket Case,Green Day,,1994,1994,high,0.021949,rs500_2021#150;tsort_5000#2008
+1158,Q1444614,I Don't Wanna Know,Mario Winans featuring Enya and P. Diddy,,2004,2004,high,0.021943,billboard_ye_2004#7;tsort_5000#795
+1159,Q4027888,(How Much Is) That Doggie in the Window?,Patti Page,,1953,1953,high,0.021921,billboard_ye_1953#3;tsort_5000#932
+1160,Q753923,The Lion Sleeps Tonight,Robert John,Solomon Linda and The Evening Birds,1939,1972,high,0.021914,billboard_ye_1972#21;grammy_hof;tsort_5000#2000
+1161,Q2706376,Young Americans,David Bowie,,1975,1975,high,0.021911,rs500_2021#204;rs500_2004#481;tsort_5000#4881
+1162,Q2064725,Up Where We Belong,Joe Cocker and Jennifer Warnes,,1982,1982,high,0.021911,billboard_ye_1983#27;tsort_5000#516
+1163,Q1526754,Girl You Know It's True,Milli Vanilli,,1988,1988,high,0.021909,billboard_ye_1989#8;tsort_5000#773
+1164,Q2052938,Mystery Train,Elvis Presley,,1953,1953,medium,0.021898,rs500_2004#77
+1165,Q6690020,Love's Theme,Love Unlimited Orchestra,,1973,1973,high,0.021879,billboard_ye_1974#3;tsort_5000#939
+1166,Q139916792,All Around the World,Lisa Stansfield,,1989,1989,high,0.021869,billboard_ye_1990#21;tsort_5000#570
+1167,Q1049942,Runaway,Janet Jackson,,1995,1995,high,0.021864,billboard_ye_1995#29;billboard_ye_1996#84;tsort_5000#1569
+1168,Q65952857,This Must Be the Place (Naïve Melody),Talking Heads,,1983,1983,high,0.021858,rs500_2021#123
+1169,Q712308,Arthur's Theme (Best That You Can Do),Christopher Cross,,1981,1981,high,0.021856,billboard_ye_1981#64;billboard_ye_1982#98;tsort_5000#744
+1170,Q1804373,Money (That's What I Want),Barrett Strong,,1959,1960,high,0.021839,billboard_ye_1960#97;billboard_ye_1964#86;rs500_2004#288
+1171,Q276136,Love Song,Sara Bareilles,,2007,2007,high,0.021838,billboard_ye_2008#7;tsort_5000#808
+1172,Q4839215,Back at One,Brian McKnight,,1999,1999,high,0.021837,billboard_ye_1999#82;billboard_ye_2000#20;tsort_5000#2555
+1173,Q7637266,Summer Babe (Winter Version),Pavement,,1992,1992,high,0.021828,rs500_2021#244;rs500_2004#286
+1174,Q1710303,Wooden Heart,Joe Dowell,Elvis Presley,1960,1961,high,0.021823,billboard_ye_1961#10;tsort_5000#736
+1175,Q139917193,Kiss Me More,Doja Cat featuring SZA,,2021,2021,high,0.021818,billboard_ye_2021#6;billboard_ye_2022#90
+1176,Q6505842,"Rudolph, the Red-Nosed Reindeer",Gene Autry,,1949,1949,high,0.021793,grammy_hof;tsort_5000#345
+1177,Q10377910,Take Me to the River,Al Green,,1974,1974,high,0.021788,grammy_hof;rs500_2004#117
+1178,Q3364750,Blue Tango,Leroy Anderson,,1952,1952,high,0.021765,billboard_ye_1952#1;tsort_5000#1057
+1179,Q4646460,Morning Train (Nine to Five),Sheena Easton,,1981,1981,high,0.021763,billboard_ye_1981#12;tsort_5000#702
+1180,Q124967,E.T.,Katy Perry featuring Kanye West,,2010,2010,high,0.021754,billboard_ye_2011#4;tsort_5000#919
+1181,Q4729118,All My Life,K-Ci & JoJo,,1998,1998,high,0.021751,billboard_ye_1998#7;tsort_5000#819
+1182,Q3016327,Let It Be Me,The Everly Brothers,,1957,1960,medium,0.021749,billboard_ye_1960#30;billboard_ye_1964#34
+1183,Q594711,Just a Dream,Nelly,,2010,2010,high,0.021748,billboard_ye_2010#35;billboard_ye_2011#52;tsort_5000#2556
+1184,Q2358646,Return to Innocence,Enigma,,1994,1994,high,0.021742,billboard_ye_1994#33;tsort_5000#486
+1185,Q1979569,Desire,U2,,1988,1988,high,0.021721,billboard_ye_1988#56;tsort_5000#398
+1186,Q933978,Hero,Mariah Carey,,1993,1993,high,0.021720,billboard_ye_1994#5;tsort_5000#887
+1187,Q2219875,Ho Hey,The Lumineers,,2012,2012,high,0.021701,billboard_ye_2012#68;billboard_ye_2013#12
+1188,Q682132,The Winner Takes It All,ABBA,,1980,1980,high,0.021694,billboard_ye_1981#23;tsort_5000#562
+1189,Q6799161,Mañana (Is Soon Enough for Me),Peggy Lee with Dave Barbour,,1947,1948,high,0.021685,billboard_ye_1948#2;tsort_5000#1020
+1190,Q1068280,Love is Blue,Paul Mauriat,Vicky Leandros,1967,1968,high,0.021659,billboard_ye_1968#2;tsort_5000#1025
+1191,Q945932,Love in This Club,Usher featuring Young Jeezy,,2008,2008,high,0.021658,billboard_ye_2008#8;tsort_5000#803
+1192,Q3375516,Roses Are Red (My Love),Bobby Vinton,,1962,1962,high,0.021655,billboard_ye_1962#4;tsort_5000#935
+1193,Q430858,Harper Valley PTA,Jeannie C. Riley,,1968,1968,high,0.021634,billboard_ye_1968#11;grammy_hof;tsort_5000#2153
+1194,Q787102,The Greatest Love of All,Whitney Houston,George Benson,1977,1986,high,0.021632,billboard_ye_1986#11;tsort_5000#735
+1195,Q729815,Dani California,Red Hot Chili Peppers,,2006,2006,high,0.021618,billboard_ye_2006#23;tsort_5000#567
+1196,Q6887821,Mockingbird,Inez and Charlie Foxx,,1963,1963,high,0.021587,billboard_ye_1963#19;billboard_ye_1974#52
+1197,Q281624,Earth Angel (Will You Be Mine),The Penguins,,1954,1954,high,0.021585,grammy_hof;rs500_2004#151;tsort_5000#2313
+1198,Q1418324,Pump Up the Jam,Technotronic,,1989,1989,high,0.021583,billboard_ye_1990#13;tsort_5000#701
+1199,Q3899333,People,Barbra Streisand,,1964,1964,high,0.021578,billboard_ye_1964#11;grammy_hof;tsort_5000#2200
+1200,Q7317606,Reunited,Peaches & Herb,,1978,1979,high,0.021577,billboard_ye_1979#5;tsort_5000#909
+1201,Q3052485,This Ole House,Rosemary Clooney with Buddy Cole,,1954,1954,high,0.021539,billboard_ye_1954#12;tsort_5000#1160
+1202,Q1982114,This Love,Maroon 5,,2004,2004,high,0.021536,billboard_ye_2004#4;tsort_5000#955
+1203,Q2097859,Alone,Heart,i‐Ten,1983,1987,high,0.021525,billboard_ye_1987#2;tsort_5000#1052
+1204,Q1025631,The Reason,Hoobastank,,2004,2004,high,0.021514,billboard_ye_2004#6;tsort_5000#883
+1205,Q3853416,Me and Mrs. Jones,Billy Paul,,1972,1972,high,0.021494,billboard_ye_1973#15;grammy_hof;tsort_5000#1746
+1206,Q256098,Dream Lover,Bobby Darin,,1959,1959,high,0.021494,billboard_ye_1959#6;tsort_5000#886
+1207,Q832948,Moon River,Henry Mancini,,1960,1961,high,0.021493,billboard_ye_1962#60;grammy_hof;tsort_5000#1663
+1208,Q7740935,The Humpty Dance,Digital Underground,,1990,1990,high,0.021486,billboard_ye_1990#62;rs500_2021#241
+1209,Q3436994,Love Is a Many-Splendored Thing,The Four Aces,,1955,1955,high,0.021476,billboard_ye_1955#7;tsort_5000#856
+1210,Q5313004,Duke of Earl,Gene Chandler,,1961,1961,high,0.021468,billboard_ye_1962#13;grammy_hof;tsort_5000#1987
+1211,Q113383823,Bad Habit,Steve Lacy,,2022,2022,high,0.021465,billboard_ye_2022#28;billboard_ye_2023#39
+1212,Q20648595,Watch Me,Silentó,,2015,2015,high,0.021463,billboard_ye_2015#8;billboard_ye_2016#88
+1213,Q4915848,Bird Dog,The Everly Brothers,,1958,1958,high,0.021461,billboard_ye_1958#13;tsort_5000#713
+1214,Q11330953,Beautiful Sunday,Daniel Boone,,1972,1972,high,0.021454,billboard_ye_1972#42;tsort_5000#455
+1215,Q408972,Airplanes,B.o.B featuring Hayley Williams,,2010,2010,high,0.021454,billboard_ye_2010#6;tsort_5000#892
+1216,Q1969724,If You Don't Know Me by Now,Simply Red,Harold Melvin & The Bluenotes,1972,1989,high,0.021446,billboard_ye_1989#24;tsort_5000#711
+1217,Q3854600,Men in Black,Will Smith,,1997,1997,high,0.021429,tsort_5000#220
+1218,Q1408525,Creep,TLC,,1994,1994,high,0.021418,billboard_ye_1995#3;tsort_5000#1022
+1219,Q666168,Breakaway,Kelly Clarkson,,2004,2004,high,0.021418,billboard_ye_2004#74;billboard_ye_2005#27;tsort_5000#2378
+1220,Q2037068,The Power,Snap!,,1990,1990,high,0.021416,billboard_ye_1990#26;tsort_5000#553
+1221,Q1923082,OMG,Usher featuring will.i.am,,2010,2010,high,0.021403,billboard_ye_2010#5;tsort_5000#937
+1222,Q7773891,The Way You Love Me,Faith Hill,,2000,2000,high,0.021395,billboard_ye_2000#41;billboard_ye_2001#27
+1223,Q836565,Hooked on a Feeling,Blue Swede,B.J. Thomas,1968,1974,high,0.021378,billboard_ye_1969#99;billboard_ye_1974#20;tsort_5000#2258
+1224,Q89019004,Savage,Megan Thee Stallion featuring Beyoncé,,2020,2020,high,0.021365,billboard_ye_2020#15;rs500_2021#438
+1225,Q2069388,Secret,Madonna,,1994,1994,high,0.021365,billboard_ye_1994#84;billboard_ye_1995#71;tsort_5000#824
+1226,Q4896966,Best of My Love,The Emotions,,1977,1977,high,0.021362,billboard_ye_1977#3;tsort_5000#1033
+1227,Q1514030,Uptown Girl,Billy Joel,,1983,1983,high,0.021356,billboard_ye_1984#39;tsort_5000#593
+1228,Q5253913,Delicado,Percy Faith with Stan Freeman,,1952,1952,high,0.021320,billboard_ye_1952#10;tsort_5000#793
+1229,Q925895,Broken Wings,Mr. Mister,,1985,1985,high,0.021302,billboard_ye_1986#5;tsort_5000#954
+1230,Q121167968,Paint the Town Red,Doja Cat,,2023,2023,high,0.021274,billboard_ye_2023#52;billboard_ye_2024#21
+1231,Q2575429,Philadelphia Freedom,Elton John,,1975,1975,high,0.021264,billboard_ye_1975#3;tsort_5000#1053
+1232,Q6933898,Mule Train,Frankie Laine,,1949,1949,high,0.021257,billboard_ye_1949#9;tsort_5000#827
+1233,Q1982870,Let It Rock,Kevin Rudolf featuring Lil Wayne,,2008,2008,high,0.021249,billboard_ye_2008#65;billboard_ye_2009#32;tsort_5000#2462
+1234,Q6946287,My Prayer,The Platters,,1956,1956,high,0.021227,billboard_ye_1956#4;tsort_5000#1011
+1235,Q4018646,We Are Family,Sister Sledge,,1979,1979,high,0.021207,billboard_ye_1979#53;grammy_hof;tsort_5000#738
+1236,R190bc347f482,I Beg Your Pardon (I Never Promised You a Rose Garden),Lynn Anderson,,1971,1971,medium,0.021201,tsort_5000#223
+1237,Q7400132,Sail Away,Randy Newman,,1972,1972,high,0.021200,rs500_2021#275;rs500_2004#264
+1238,Q4986404,Build Me Up Buttercup,The Foundations,,1968,1969,high,0.021197,billboard_ye_1969#9;tsort_5000#835
+1239,Q54869051,Youngblood,5 Seconds of Summer,,2018,2018,high,0.021169,billboard_ye_2018#36;billboard_ye_2019#33
+1240,Q2023632,On My Own,Patti LaBelle and Michael McDonald,,1986,1986,high,0.021165,billboard_ye_1986#4;tsort_5000#1023
+1241,Q705473,"Take Me Home, Country Roads",John Denver,,1971,1971,high,0.021164,billboard_ye_1971#8;grammy_hof;tsort_5000#3646
+1242,Q1543022,Star Dust,Artie Shaw & his Orchestra (featuring Billy Butterfield on trumpet),Hoagy Carmichael & his Pals,1927,1940,high,0.021138,grammy_hof;tsort_5000#1572
+1243,Q20718329,679,Fetty Wap featuring Remy Boyz,,2015,2015,high,0.021118,billboard_ye_2015#21;billboard_ye_2016#54
+1244,Q4657772,A Little Bird Told Me,Evelyn Knight and the Stardusters,,1947,1949,medium,0.021102,billboard_ye_1949#8;tsort_5000#878
+1245,Q2543006,I Knew I Loved You,Savage Garden,,1999,1999,high,0.021098,billboard_ye_2000#7;tsort_5000#912
+1246,Q111953729,Wait for U,Future featuring Drake and Tems,,2022,2022,high,0.021078,billboard_ye_2022#11;billboard_ye_2023#83
+1247,Q4875545,Be My Love,Mario Lanza with Ray Sinatra and Jeff Alexander,,1951,1951,high,0.021077,billboard_ye_1951#5;tsort_5000#994
+1248,Q1116733,My Love Is Your Love,Whitney Houston,,1999,1999,high,0.021075,billboard_ye_1999#73;billboard_ye_2000#47;tsort_5000#1365
+1249,Q683801,Blue Eyes Crying in the Rain,Willie Nelson,,1975,1975,high,0.021067,rs500_2021#253;rs500_2004#302
+1250,Q5180414,Cracklin' Rosie,Neil Diamond,,1970,1970,high,0.021041,billboard_ye_1970#17;tsort_5000#685
+1251,Q2008360,Oh! My Pa-Pa,Eddie Fisher with Hugo Winterhalter,Erna Lenser,1939,1954,medium,0.021040,billboard_ye_1954#6;tsort_5000#959
+1252,Q6404378,Kicks,Paul Revere & the Raiders,,1966,1966,high,0.021014,billboard_ye_1966#9;rs500_2004#400
+1253,Q25078000,Daddy's Home,Shep and the Limelites,,1961,1961,high,0.021008,billboard_ye_1961#41;billboard_ye_1973#44;tsort_5000#3962
+1254,Q1414733,Justify My Love,Madonna,,1990,1990,high,0.020991,billboard_ye_1991#21;tsort_5000#634
+1255,Q157355,Wind of Change,Scorpions,,1991,1991,high,0.020990,billboard_ye_1991#39;tsort_5000#491
+1256,Q965926,Norwegian Wood (This Bird Has Flown),The Beatles,,1965,1965,medium,0.020979,rs500_2004#83
+1257,Q750794,Pon de Replay,Rihanna,,2005,2005,high,0.020973,billboard_ye_2005#18;tsort_5000#676
+1258,Q2292256,I'll Remember,Madonna,,1994,1994,high,0.020954,billboard_ye_1994#13;tsort_5000#767
+1259,Q1775897,Ain't No Other Man,Christina Aguilera,,2006,2006,high,0.020954,billboard_ye_2006#32;tsort_5000#535
+1260,Q7711220,That Lady,The Isley Brothers,,1964,1973,medium,0.020952,billboard_ye_1973#21;rs500_2004#348;tsort_5000#4728
+1261,Q1143166,Maneater,Daryl Hall & John Oates,,1982,1982,high,0.020907,billboard_ye_1983#7;tsort_5000#943
+1262,Q522215,Born in the U.S.A.,Bruce Springsteen,,1984,1984,high,0.020887,billboard_ye_1985#92;rs500_2004#275;tsort_5000#1061
+1263,Q1459516,Like a G6,Far East Movement featuring The Cataracs and Dev,,2010,2010,high,0.020882,billboard_ye_2010#37;billboard_ye_2011#72;tsort_5000#1942
+1264,Q8057669,You and Me,Lifehouse,,2005,2005,high,0.020882,billboard_ye_2005#12;billboard_ye_2006#83
+1265,Q785013,Opposites Attract,Paula Abdul,,1989,1990,high,0.020875,billboard_ye_1990#14;tsort_5000#755
+1266,Q112860785,Rock and a Hard Place,Bailey Zimmerman,,2022,2022,high,0.020850,billboard_ye_2022#70;billboard_ye_2023#16
+1267,Q5245017,Deacon Blues,Steely Dan,,1977,1977,high,0.020849,billboard_ye_1978#100;rs500_2021#214
+1268,Q3602517,A Holly Jolly Christmas,Burl Ives,,1964,2017,medium,0.020839,billboard_ye_2022#89;billboard_ye_2023#71;billboard_ye_2024#94
+1269,Q13563351,Paid in Full,Eric B. and Rakim,,1987,1987,high,0.020833,rs500_2021#132
+1270,Q149099,Survivor,Destiny's Child,,2001,2001,high,0.020833,billboard_ye_2001#23;tsort_5000#623
+1271,Q24664844,Heathens,Twenty One Pilots,,2016,2016,high,0.020820,billboard_ye_2016#21;billboard_ye_2017#58
+1272,Q1410491,Sincerely,The McGuire Sisters,The Moonglows,1954,1955,high,0.020813,billboard_ye_1955#8;grammy_hof;tsort_5000#4670
+1273,Q4728878,All I Wanna Do Is Make Love to You,Heart,,1990,1990,high,0.020801,billboard_ye_1990#16;tsort_5000#725
+1274,Q5463062,"Fly, Robin, Fly",Silver Convention,,1975,1975,high,0.020795,billboard_ye_1976#14;tsort_5000#764
+1275,Q28452669,Redbone,Childish Gambino,,2016,2016,high,0.020794,billboard_ye_2017#25;rs500_2021#383
+1276,Q2574626,Runaway Train,Soul Asylum,,1993,1993,high,0.020791,billboard_ye_1993#22;tsort_5000#638
+1277,Q7045925,Nobody's Supposed to Be Here,Deborah Cox,,1998,1998,high,0.020782,billboard_ye_1998#99;billboard_ye_1999#9
+1278,Q7658639,Swing the Mood,Jive Bunny and the Mastermixers,,1989,1989,high,0.020758,billboard_ye_1990#97;tsort_5000#357
+1279,Q119452,We Are Young,Fun featuring Janelle Monáe,,2011,2011,high,0.020743,billboard_ye_2012#3;tsort_5000#1172
+1280,Q2024042,One More Try,George Michael,,1988,1988,high,0.020736,billboard_ye_1988#11;tsort_5000#842
+1281,Q1737746,Keep on Loving You,REO Speedwagon,,1980,1980,high,0.020696,billboard_ye_1981#10;tsort_5000#876
+1282,Q957341,Meet Me Halfway,The Black Eyed Peas,,2009,2009,high,0.020695,billboard_ye_2010#58;tsort_5000#431
+1283,Q3047554,Edge of Seventeen,Stevie Nicks,,1981,1981,high,0.020690,billboard_ye_1982#100;rs500_2021#217
+1284,Q8057376,You Make Me Feel Like Dancing,Leo Sayer,,1976,1976,high,0.020683,billboard_ye_1977#13;tsort_5000#799
+1285,Q1981958,My Immortal,Evanescence,,2003,2004,high,0.020680,billboard_ye_2004#19;tsort_5000#688
+1286,Q33101546,Bodak Yellow,Cardi B,,2017,2017,high,0.020677,billboard_ye_2017#24;billboard_ye_2018#54
+1287,Q4838190,Baby Baby,Amy Grant,,1991,1991,high,0.020642,billboard_ye_1991#10;tsort_5000#884
+1288,Q262640,We Don't Talk Anymore,Cliff Richard,,1979,1979,high,0.020614,billboard_ye_1980#45;tsort_5000#481
+1289,Q2349439,Say You'll Be There,Spice Girls,,1996,1996,high,0.020594,billboard_ye_1997#28;tsort_5000#590
+1290,Q4019475,Wherever You Will Go,The Calling,,2001,2001,high,0.020570,billboard_ye_2002#5;tsort_5000#1097
+1291,Q449698,Always Be My Baby,Mariah Carey,,1996,1996,high,0.020561,billboard_ye_1996#5;tsort_5000#1099
+1292,Q4956526,Brand New Key,Melanie,,1971,1971,high,0.020553,billboard_ye_1972#9;tsort_5000#930
+1293,Q51546867,One Kiss,Calvin Harris and Dua Lipa,,2018,2018,high,0.020551,billboard_ye_2018#68;spotify_top#97
+1294,Q826459,My Prerogative,Bobby Brown,,1988,1988,high,0.020548,billboard_ye_1989#2;tsort_5000#2330
+1295,Q5351760,El Paso,Marty Robbins,,1959,1959,high,0.020545,billboard_ye_1960#15;grammy_hof;tsort_5000#2468
+1296,Q2916924,To Sir With Love,Lulu,,1967,1967,high,0.020520,billboard_ye_1967#1;tsort_5000#1394
+1297,Q3294827,Young Girl,Gary Puckett & The Union Gap,,1968,1968,high,0.020519,billboard_ye_1968#15;tsort_5000#775
+1298,Q3299189,Over and Over,Nelly featuring Tim McGraw,,2004,2004,high,0.020504,billboard_ye_2004#96;billboard_ye_2005#48;tsort_5000#1181
+1299,Q2300072,Turn the Beat Around,Vicki Sue Robinson,,1976,1976,high,0.020503,billboard_ye_1976#38;billboard_ye_1995#87;tsort_5000#3208
+1300,Q1242376,Don't You (Forget About Me),Simple Minds,,1985,1985,high,0.020466,billboard_ye_1985#16;tsort_5000#761
+1301,Q4019600,Who Do You Love?,Bo Diddley,,1956,1956,high,0.020464,grammy_hof;rs500_2004#132
+1302,Q3136430,Suite: Judy Blue Eyes,"Crosby, Stills & Nash",,1969,1969,high,0.020461,rs500_2021#222;rs500_2004#418
+1303,Q6674987,Look Away,Chicago,,1988,1988,high,0.020453,billboard_ye_1989#1;tsort_5000#1418
+1304,Q2468250,"Hey, Soul Sister",Train,,2009,2009,high,0.020446,billboard_ye_2010#3;tsort_5000#1252
+1305,Q7093015,One Nation Under a Groove,Funkadelic,,1978,1978,high,0.020433,rs500_2021#210;rs500_2004#474
+1306,Q1130223,Wish You Were Here,Pink Floyd,,1975,1975,high,0.020425,rs500_2021#302;rs500_2004#316;tsort_5000#4237
+1307,Q2411072,Stereo Hearts,Gym Class Heroes featuring Adam Levine,,2011,2011,high,0.020418,billboard_ye_2011#36;billboard_ye_2012#61;tsort_5000#3395
+1308,Q49816,Don't Stop 'til You Get Enough,Michael Jackson,,1978,1979,high,0.020416,billboard_ye_1979#91;tsort_5000#375
+1309,Q113876065,Unholy,Sam Smith and Kim Petras,,2022,2022,high,0.020414,billboard_ye_2022#98;billboard_ye_2023#11
+1310,Q1124978,Gettin' Jiggy wit It,Will Smith,,1998,1998,high,0.020371,billboard_ye_1998#14;tsort_5000#815
+1311,Q765675,I Know You Want Me (Calle Ocho),Pitbull,,2009,2009,high,0.020367,billboard_ye_2009#17;tsort_5000#753
+1312,Q4045782,On Bended Knee,Boyz II Men,,1994,1994,high,0.020339,billboard_ye_1995#5;tsort_5000#1151
+1313,Q5965516,I'd Die Without You,P.M. Dawn,,1992,1992,high,0.020333,billboard_ye_1992#51;billboard_ye_1993#43;tsort_5000#3654
+1314,Q2215554,Exhale (Shoop Shoop),Whitney Houston,,1995,1995,high,0.020332,billboard_ye_1996#14;tsort_5000#820
+1315,Q57897076,Eastside,"Benny Blanco, Halsey and Khalid",,2018,2018,high,0.020286,billboard_ye_2018#77;billboard_ye_2019#17
+1316,Q931000,Rhythm Nation,Janet Jackson,,1989,1989,high,0.020279,billboard_ye_1990#38;rs500_2021#475;tsort_5000#2249
+1317,Q171260,Maniac,Michael Sembello,,1983,1983,high,0.020279,billboard_ye_1983#9;tsort_5000#977
+1318,Q1714785,Rapture,Blondie,,1981,1981,high,0.020278,billboard_ye_1981#15;tsort_5000#804
+1319,Q30595883,Feel It Still,Portugal. The Man,,2017,2017,high,0.020276,billboard_ye_2017#45;billboard_ye_2018#33
+1320,Q2422852,Shut Up,The Black Eyed Peas,,2003,2003,high,0.020270,tsort_5000#236
+1321,Q17060232,You're Breaking My Heart,Vic Damone,,1948,1949,high,0.020256,billboard_ye_1949#3;tsort_5000#1309
+1322,Q2378859,Baby It's You,Smith,The Shirelles,1961,1969,high,0.020254,billboard_ye_1962#44;billboard_ye_1969#34
+1323,Q1068790,Check on It,Beyoncé featuring Slim Thug and Bun B,,2005,2005,high,0.020250,billboard_ye_2006#10;tsort_5000#946
+1324,Q352920,Addicted to Love,Robert Palmer,,1986,1986,high,0.020232,billboard_ye_1986#10;tsort_5000#949
+1325,Q1077678,Try Again,Aaliyah,,2000,2000,high,0.020218,billboard_ye_2000#12;tsort_5000#888
+1326,Q4919127,When I Need You,Leo Sayer,,1977,1977,high,0.020204,billboard_ye_1977#24;tsort_5000#663
+1327,Q1463257,The Real Slim Shady,Eminem,,2000,2000,high,0.020203,billboard_ye_2000#51;tsort_5000#476
+1328,Q2816950,4 Seasons of Loneliness,Boyz II Men,,1997,1997,high,0.020187,billboard_ye_1997#30;billboard_ye_1998#96;tsort_5000#2191
+1329,Q1091275,Owner of a Lonely Heart,Yes,,1983,1983,high,0.020185,billboard_ye_1984#8;tsort_5000#1035
+1330,Q5978553,I Need You Now,Eddie Fisher with Hugo Winterhalter,,1954,1954,high,0.020171,billboard_ye_1954#13;tsort_5000#867
+1331,Q7768953,The Three Bells,The Browns,,1959,1959,high,0.020161,billboard_ye_1959#7;tsort_5000#1086
+1332,Q3372501,Come Go with Me,The Del-Vikings,,1957,1957,high,0.020148,billboard_ye_1957#18;rs500_2004#441;tsort_5000#4420
+1333,Q1630775,Running Bear,Johnny Preston,,1959,1959,high,0.020140,billboard_ye_1960#4;tsort_5000#1269
+1334,Q29394,What Goes Around... Comes Around,Justin Timberlake,,2006,2006,high,0.020121,billboard_ye_2007#22;tsort_5000#697
+1335,Q4544920,(You're the) Devil in Disguise,Elvis Presley,,1963,1963,high,0.020102,billboard_ye_1963#58;tsort_5000#456
+1336,Q7627468,Stuck on You,Elvis Presley,,1960,1960,high,0.020100,billboard_ye_1960#9;tsort_5000#1010
+1337,Q954934,Don't Cry for Me Argentina,Madonna,Julie Covington,1976,1997,high,0.020093,billboard_ye_1997#87;tsort_5000#745
+1338,Q7092644,One Fine Day,The Chiffons,,1963,1963,high,0.020091,billboard_ye_1963#87;billboard_ye_1980#73;rs500_2004#460
+1339,Q5417548,Every Morning,Sugar Ray,,1999,1999,high,0.020049,billboard_ye_1999#8;tsort_5000#1063
+1340,Q97184995,For the Night,Pop Smoke featuring Lil Baby and DaBaby,,2020,2020,high,0.020044,billboard_ye_2020#49;billboard_ye_2021#32
+1341,Q2307699,Bitch,Meredith Brooks,,1997,1997,high,0.020022,billboard_ye_1997#15;tsort_5000#837
+1342,Q512704,Miss You Much,Janet Jackson,,1989,1989,high,0.020000,billboard_ye_1989#5;tsort_5000#1240
+1343,Q188770,Telephone,Lady Gaga featuring Beyoncé,,2009,2009,high,0.019992,billboard_ye_2010#16;tsort_5000#818
+1344,Q7768217,The Tears of a Clown,Smokey Robinson & the Miracles,,1967,1967,high,0.019981,grammy_hof;rs500_2021#313;tsort_5000#1298
+1345,Q5291716,Don't Let Go (Love),En Vogue,,1996,1996,high,0.019959,billboard_ye_1997#7;tsort_5000#1132
+1346,Q612069,Breathe Again,Toni Braxton,,1993,1993,high,0.019934,billboard_ye_1994#7;tsort_5000#1138
+1347,Q5286260,Do That to Me One More Time,Captain & Tennille,,1979,1979,high,0.019934,billboard_ye_1980#5;tsort_5000#1259
+1348,Q1550581,Self Control,Laura Branigan,,1984,1984,high,0.019926,billboard_ye_1984#20;tsort_5000#748
+1349,Q6730566,Magic,Olivia Newton-John,,1980,1980,high,0.019916,billboard_ye_1980#3;tsort_5000#1424
+1350,Q584993,I Try,Macy Gray,,1999,2000,high,0.019915,billboard_ye_2000#26;tsort_5000#664
+1351,Q1058134,I'm Real (Murder Remix),Jennifer Lopez featuring Ja Rule,,2001,2001,high,0.019913,billboard_ye_2001#5;tsort_5000#1265
+1352,Q944096,Suga Suga,Baby Bash featuring Frankie J,,2003,2003,high,0.019888,billboard_ye_2003#77;billboard_ye_2004#46;tsort_5000#1842
+1353,Q4019788,Wild Wild West,Will Smith featuring Dru Hill and Kool Moe Dee,,1999,1999,high,0.019885,billboard_ye_1999#33;tsort_5000#597
+1354,Q17151241,Some Enchanted Evening,Perry Como,,1949,1949,high,0.019880,billboard_ye_1949#4;tsort_5000#1350
+1355,Q1605189,That's Amore,Dean Martin,,1953,1953,high,0.019877,billboard_ye_1954#16;tsort_5000#833
+1356,Q568987,The Logical Song,Supertramp,,1979,1979,high,0.019863,billboard_ye_1979#27;tsort_5000#958
+1357,Q2401291,Baby Face,Art Mooney,Bing Crosby,1926,1948,medium,0.019861,billboard_ye_1948#23;billboard_ye_1976#68
+1358,Q139882771,Happy,Pharrell Williams,,2013,2013,high,0.019854,billboard_ye_2014#1;tsort_5000#1674
+1359,Q1142455,Mannish Boy,Muddy Waters,,1955,1955,high,0.019852,rs500_2021#425;rs500_2004#229;tsort_5000#4842
+1360,Q6090976,It's Your Thing,The Isley Brothers,,1969,1969,high,0.019814,billboard_ye_1969#21;rs500_2004#420;tsort_5000#4864
+1361,Q500010,Need You Now,Lady Antebellum,,2009,2009,high,0.019808,billboard_ye_2010#2;tsort_5000#1571
+1362,Q1198149,2 Become 1,Spice Girls,,1996,1997,high,0.019800,billboard_ye_1997#35;tsort_5000#587
+1363,Q1116520,Stand Up,Ludacris featuring Shawnna,,2003,2003,high,0.019798,billboard_ye_2003#51;billboard_ye_2004#45;tsort_5000#4681
+1364,Q2882040,Yakety Yak,The Coasters,,1958,1958,high,0.019794,billboard_ye_1958#21;grammy_hof;tsort_5000#2239
+1365,Q66057605,Enter Sandman,Metallica,,1991,1991,high,0.019792,rs500_2021#390;rs500_2004#399;tsort_5000#1314
+1366,Q1437262,Forever,Chris Brown,,2008,2008,high,0.019790,billboard_ye_2008#10;tsort_5000#1030
+1367,Q252718,I Believe,Frankie Laine with Paul Weston,,1952,1953,high,0.019780,billboard_ye_1953#10;tsort_5000#1032
+1368,Q7033371,Night Moves,Bob Seger,,1976,1976,high,0.019776,billboard_ye_1977#55;rs500_2021#301
+1369,Q6110900,Jack & Diane,John Cougar,,1982,1982,high,0.019772,billboard_ye_1982#7;tsort_5000#1178
+1370,Q1635376,Thank You,Dido,,2000,2001,high,0.019769,billboard_ye_2001#8;tsort_5000#1125
+1371,Q1991060,Love Lockdown,Kanye West,,2008,2008,high,0.019765,billboard_ye_2008#74;billboard_ye_2009#44;tsort_5000#2173
+1372,Q2598707,Do Wah Diddy Diddy,Manfred Mann,,1963,1964,high,0.019764,billboard_ye_1964#15;tsort_5000#873
+1373,Q2708325,Never Tear Us Apart,INXS,,1988,1988,high,0.019719,billboard_ye_1988#95;rs500_2021#282;tsort_5000#3759
+1374,Q139827923,Don't Dream It's Over,Crowded House,,1986,1986,high,0.019711,billboard_ye_1987#13;tsort_5000#938
+1375,Q3299911,Achy Breaky Heart,Billy Ray Cyrus,,1992,1992,high,0.019710,billboard_ye_1992#15;tsort_5000#881
+1376,Q4656737,A Fifth of Beethoven,Walter Murphy & The Big Apple Band,,1976,1976,high,0.019701,billboard_ye_1976#10;tsort_5000#1048
+1377,Q3431409,Tammy,Debbie Reynolds,,1957,1957,high,0.019692,billboard_ye_1957#12;tsort_5000#974
+1378,Q2354136,"Please, Please, Please",James Brown,,1956,1956,high,0.019690,grammy_hof;rs500_2004#142
+1379,Q2733942,Oh Happy Day,Edwin Hawkins Singers,,1967,1969,high,0.019685,billboard_ye_1969#93;grammy_hof;tsort_5000#662
+1380,Q3868870,My Lovin' (You're Never Gonna Get It),En Vogue,,1992,1992,high,0.019676,billboard_ye_1992#7;tsort_5000#1203
+1381,Q2687802,"When the Going Gets Tough, the Tough Get Going",Billy Ocean,,1985,1985,high,0.019672,billboard_ye_1986#31;tsort_5000#631
+1382,Q119451063,Vampire,Olivia Rodrigo,,2023,2023,high,0.019658,billboard_ye_2023#30;billboard_ye_2024#57
+1383,Q8056765,"You, You, You",Ames Brothers with Hugo Winterhalter,,1953,1953,high,0.019649,billboard_ye_1953#5;tsort_5000#1347
+1384,Q161567,"1, 2 Step",Ciara featuring Missy Elliott,,2004,2004,high,0.019643,billboard_ye_2005#5;tsort_5000#1349
+1385,Q8027615,Wishing Well,Terence Trent D'Arby,,1987,1987,high,0.019636,billboard_ye_1988#12;tsort_5000#984
+1386,Q221314,We Built This City,Starship,,1985,1985,high,0.019636,billboard_ye_1985#14;tsort_5000#920
+1387,Q1435990,Foolish,Ashanti,,2002,2002,high,0.019607,billboard_ye_2002#2;tsort_5000#1665
+1388,Q2112923,I Never Loved a Man (The Way I Love You),Aretha Franklin,,1967,1967,high,0.019603,billboard_ye_1967#75;rs500_2004#186
+1389,Q940822,Big Poppa,The Notorious B.I.G.,,1994,1994,high,0.019602,billboard_ye_1995#47;rs500_2021#330
+1390,Q6760187,Margaritaville,Jimmy Buffett,,1977,1977,high,0.019590,billboard_ye_1977#14;grammy_hof;tsort_5000#4787
+1391,Q1784379,London Bridge,Fergie,,2006,2006,high,0.019566,billboard_ye_2006#22;tsort_5000#754
+1392,Q1475653,With You,Chris Brown,,2007,2007,high,0.019560,billboard_ye_2008#9;tsort_5000#1124
+1393,Q17092313,Paralyzer,Finger Eleven,,2007,2007,high,0.019558,billboard_ye_2007#98;billboard_ye_2008#25;tsort_5000#4039
+1394,Q2056214,Break Your Heart,Taio Cruz featuring Ludacris,,2009,2010,high,0.019544,billboard_ye_2010#10;tsort_5000#1081
+1395,Q7094262,Only Wanna Be with You,Hootie & the Blowfish,,1995,1995,high,0.019543,billboard_ye_1995#33;billboard_ye_1996#99;tsort_5000#2339
+1396,Q380825,Thriller,Michael Jackson,,1982,1984,medium,0.019541,billboard_ye_1984#78;tsort_5000#428
+1397,Q2276505,Shake You Down,Gregory Abbott,,1986,1986,high,0.019525,billboard_ye_1987#3;tsort_5000#1583
+1398,Q3021136,Deep Purple,Donny & Marie Osmond,Nino Tempo & April Stevens,1963,1975,high,0.019522,billboard_ye_1963#62;billboard_ye_1976#42;tsort_5000#3885
+1399,Q129540090,Taste,Sabrina Carpenter,,2024,2024,high,0.019508,billboard_ye_2024#86;billboard_ye_2025#19
+1400,Q1452945,Let Me Blow Ya Mind,Eve featuring Gwen Stefani,,2001,2001,high,0.019478,billboard_ye_2001#7;tsort_5000#1258
+1401,Q942405,Two Hearts,Phil Collins,,1988,1988,high,0.019477,billboard_ye_1989#20;tsort_5000#800
+1402,Q545718,Instant Karma!,John Lennon,,1970,1970,high,0.019462,billboard_ye_1970#34;tsort_5000#620
+1403,Q1934656,The Yellow Rose of Texas,Mitch Miller,Gene Autry and Jimmy Long,1933,1955,medium,0.019459,billboard_ye_1955#3;tsort_5000#1613
+1404,Q550510,Fame,Irene Cara,,1980,1980,high,0.019453,billboard_ye_1980#66;tsort_5000#461
+1405,Q1590273,I Wanna Love You,Akon featuring Snoop Dogg,,2006,2006,high,0.019453,billboard_ye_2007#8;tsort_5000#1204
+1406,Q2633886,Sunny,Bobby Hebb,,1965,1966,high,0.019445,billboard_ye_1966#14;tsort_5000#1406
+1407,Q1821029,Let Your Love Flow,The Bellamy Brothers,,1975,1975,high,0.019439,billboard_ye_1976#36;tsort_5000#605
+1408,Q507541,Band on the Run,Paul McCartney and Wings,,1973,1974,high,0.019433,billboard_ye_1974#22;tsort_5000#769
+1409,Q3196791,Thrift Shop,Macklemore & Ryan Lewis featuring Wanz,,2012,2012,high,0.019425,billboard_ye_2013#1;tsort_5000#1919
+1410,Q98410692,Laugh Now Cry Later,Drake featuring Lil Durk,,2020,2020,high,0.019425,billboard_ye_2020#41;billboard_ye_2021#45
+1411,Q7513022,Signs,Five Man Electrical Band,,1971,1971,high,0.019424,billboard_ye_1971#24;billboard_ye_1991#73
+1412,Q7045968,Nobody Knows,The Tony Rich Project,,1995,1995,high,0.019422,billboard_ye_1996#4;tsort_5000#1520
+1413,Q50130685,Love Lies,Khalid and Normani,,2018,2018,high,0.019415,billboard_ye_2018#19;billboard_ye_2019#88
+1414,Q1757932,Case of the Ex (Whatcha Gonna Do),Mýa,,2000,2000,high,0.019380,billboard_ye_2000#72;billboard_ye_2001#40;tsort_5000#3266
+1415,Q1498615,The Joker,Steve Miller Band,,1973,1973,high,0.019360,billboard_ye_1974#40;tsort_5000#581
+1416,Q7545803,Smoke! Smoke! Smoke! (That Cigarette),Tex Williams,,1947,1947,high,0.019355,billboard_ye_1947#5;tsort_5000#1451
+1417,Q4392233,Wind Beneath My Wings,Bette Midler,,1983,1989,high,0.019350,billboard_ye_1989#7;tsort_5000#1296
+1418,Q5896453,Honky Tonk,Bill Doggett,,1956,1956,high,0.019315,billboard_ye_1956#21;grammy_hof;tsort_5000#2756
+1419,Q904020,Breathe,Faith Hill,,1999,1999,high,0.019315,billboard_ye_2000#1;tsort_5000#1994
+1420,Q149038,Sweet Dreams,Beyoncé,,2009,2009,high,0.019311,billboard_ye_2009#66;billboard_ye_2010#86;tsort_5000#1266
+1421,Q6009358,In Dreams,Roy Orbison,,1963,1963,high,0.019309,billboard_ye_1963#49;rs500_2004#312;tsort_5000#2839
+1422,Q2302917,Everybody (Backstreet's Back),Backstreet Boys,,1997,1997,high,0.019304,billboard_ye_1998#22;tsort_5000#784
+1423,Q7827879,Tossin' and Turnin',Bobby Lewis,,1961,1961,high,0.019286,billboard_ye_1961#1;tsort_5000#2014
+1424,Q2708096,Last Train to Clarksville,The Monkees,,1966,1966,high,0.019286,billboard_ye_1966#4;tsort_5000#1579
+1425,Q6495453,Lately,Divine,,1998,1998,high,0.019253,billboard_ye_1998#61;billboard_ye_1999#31
+1426,Q2553608,Tha Crossroads,Bone Thugs-n-Harmony,,1996,1996,high,0.019245,billboard_ye_1996#7;tsort_5000#1329
+1427,Q1353906,Lady Madonna,The Beatles,,1968,1968,high,0.019242,billboard_ye_1968#60;tsort_5000#490
+1428,Q5005800,C'est La Vie,Robbie Nevil,,1986,1986,high,0.019239,billboard_ye_1987#6;tsort_5000#1408
+1429,Q107304751,You Right,Doja Cat and the Weeknd,,2021,2021,high,0.019233,billboard_ye_2021#43;billboard_ye_2022#45
+1430,Q3772414,Gloria,Laura Branigan,Umberto Tozzi,1979,1982,medium,0.019225,billboard_ye_1982#75;billboard_ye_1983#56;tsort_5000#1817
+1431,Q1982129,Makes Me Wonder,Maroon 5,,2007,2007,high,0.019218,billboard_ye_2007#13;tsort_5000#1027
+1432,Q3435271,You Don't Have to Say You Love Me,Dusty Springfield,,1966,1966,high,0.019216,billboard_ye_1966#21;rs500_2004#491;tsort_5000#4148
+1433,Q2627000,My Love,Paul McCartney & Wings,,1973,1973,high,0.019204,billboard_ye_1973#5;tsort_5000#1511
+1434,Q2057197,I Put a Spell on You,Jay Hawkins,,1956,1956,high,0.019185,rs500_2021#299;rs500_2004#313
+1435,Q3115187,Sweet Caroline,Neil Diamond,,1969,1969,high,0.019177,billboard_ye_1969#22;grammy_hof;tsort_5000#2739
+1436,Q288281,Fame,David Bowie,,1975,1975,high,0.019167,billboard_ye_1975#8;tsort_5000#1285
+1437,Q1330295,Everybody's Somebody's Fool,Connie Francis,,1960,1960,high,0.019156,billboard_ye_1960#11;tsort_5000#1123
+1438,Q300610,A View to a Kill,Duran Duran,,1985,1985,high,0.019147,billboard_ye_1985#35;tsort_5000#636
+1439,Q472648,Remember the Time,Michael Jackson,,1992,1992,high,0.019145,billboard_ye_1992#19;tsort_5000#865
+1440,Q1070253,Cherish,Kool & the Gang,,1984,1985,high,0.019135,billboard_ye_1985#17;tsort_5000#916
+1441,Q1524153,I Can't Go for That (No Can Do),Daryl Hall & John Oates,,1981,1981,high,0.019125,billboard_ye_1982#15;tsort_5000#976
+1442,Q2415033,"The Wallflower (Dance with Me, Henry)",Georgia Gibbs,,1955,1955,high,0.019124,billboard_ye_1955#10;grammy_hof
+1443,Q908980,Don't Worry Baby,The Beach Boys,,1964,1964,high,0.019122,billboard_ye_1977#96;rs500_2004#176
+1444,Q6315760,Just Another Day,Jon Secada,,1992,1992,high,0.019117,billboard_ye_1992#10;tsort_5000#1182
+1445,Q991260,Escapade,Janet Jackson,,1990,1990,high,0.019103,billboard_ye_1990#15;tsort_5000#980
+1446,Q5872779,You Ain't Seen Nothing Yet,Bachman–Turner Overdrive,,1974,1974,high,0.019095,billboard_ye_1975#98;tsort_5000#410
+1447,Q174195,Coming Up,Paul McCartney,,1980,1980,high,0.019095,billboard_ye_1980#7;tsort_5000#1379
+1448,Q3905803,Pistol Packin' Mama,Al Dexter & his Troopers,,1942,1943,high,0.019088,grammy_hof;tsort_5000#496
+1449,Q1123388,Nothin' on You,B.o.B featuring Bruno Mars,,2010,2010,high,0.019085,billboard_ye_2010#11;tsort_5000#1140
+1450,Q2337036,Emotion,Samantha Sang,,1977,1977,high,0.019076,billboard_ye_1978#14;tsort_5000#1596
+1451,Q2725862,So Sick,Ne-Yo,,2005,2005,high,0.019060,billboard_ye_2006#17;tsort_5000#928
+1452,Q1342432,Live to Tell,Madonna,,1986,1986,high,0.019049,billboard_ye_1986#35;tsort_5000#644
+1453,Q2165252,Sir Duke,Stevie Wonder,,1977,1977,high,0.019045,billboard_ye_1977#18;tsort_5000#904
+1454,Q2817167,50 Ways to Leave Your Lover,Paul Simon,,1975,1975,high,0.019044,billboard_ye_1976#8;tsort_5000#1323
+1455,Q112323717,I Like You (A Happier Song),Post Malone featuring Doja Cat,,2022,2022,high,0.019035,billboard_ye_2022#26;billboard_ye_2023#75
+1456,Q4802885,As I Lay Me Down,Sophie B. Hawkins,,1995,1995,high,0.019020,billboard_ye_1995#39;billboard_ye_1996#76;tsort_5000#3771
+1457,Q5688582,He's Got the Whole World in His Hands,Laurie London,,1927,1958,medium,0.019014,billboard_ye_1958#18;grammy_hof;tsort_5000#4369
+1458,Q700740,The Time (Dirty Bit),The Black Eyed Peas,,2010,2010,high,0.019005,billboard_ye_2011#37;tsort_5000#630
+1459,Q5692535,Heartaches,Ted Weems,Patsy Cline,1931,1947,medium,0.019001,billboard_ye_1947#3;tsort_5000#1858
+1460,Q7802195,Till I Waltz Again with You,Teresa Brewer with Jack Pleis,,1952,1953,high,0.018988,billboard_ye_1953#6;tsort_5000#1504
+1461,Q2546602,TSOP (The Sound of Philadelphia),MFSB & The Three Degrees,,1974,1974,high,0.018974,billboard_ye_1974#7;tsort_5000#1422
+1462,Q2050811,Car Wash,Rose Royce,,1976,1976,high,0.018963,billboard_ye_1977#26;tsort_5000#758
+1463,Q935832,(Let Me Be Your) Teddy Bear,Elvis Presley,,1957,1957,high,0.018938,billboard_ye_1957#14;tsort_5000#1046
+1464,Q762235,Ma Baker,Boney M,,1977,1977,high,0.018927,tsort_5000#257
+1465,Q1532156,Glory of Love,Peter Cetera,,1986,1986,high,0.018924,billboard_ye_1986#14;tsort_5000#1049
+1466,Q3792112,If It Makes You Happy,Sheryl Crow,,1996,1996,high,0.018923,billboard_ye_1996#75;billboard_ye_1997#55;tsort_5000#2068
+1467,Q3432456,Half as Much,Rosemary Clooney with Percy Faith,,1951,1952,high,0.018920,billboard_ye_1952#6;tsort_5000#1532
+1468,Q1983076,Give It to Me,Timbaland featuring Nelly Furtado and Justin Timberlake,,2007,2007,high,0.018917,billboard_ye_2007#21;tsort_5000#853
+1469,Q4812400,At Seventeen,Janis Ian,,1975,1975,high,0.018902,billboard_ye_1975#20;grammy_hof;tsort_5000#3777
+1470,Q4942869,Boogie Oogie Oogie,A Taste of Honey,,1978,1978,high,0.018898,billboard_ye_1978#9;tsort_5000#1302
+1471,Q11121791,Love Hurts,Nazareth,The Everly Brothers,1960,1975,high,0.018898,billboard_ye_1976#23;tsort_5000#816
+1472,Q2414013,Sweet Jane,Velvet Underground,,1970,1970,high,0.018894,rs500_2021#294;rs500_2004#335
+1473,Q3391429,Planet Rock,Afrika Bambaataa and the Soul Sonic Force,,1982,1982,high,0.018892,rs500_2021#395;rs500_2004#237
+1474,Q1780691,Without You,David Guetta featuring Usher,,2011,2011,high,0.018880,billboard_ye_2011#73;billboard_ye_2012#50;tsort_5000#2583
+1475,Q1138861,The Reflex,Duran Duran,,1983,1984,high,0.018878,billboard_ye_1984#16;tsort_5000#989
+1476,Q1049293,Honey,Mariah Carey,,1997,1997,high,0.018870,billboard_ye_1997#32;tsort_5000#690
+1477,Q4838295,Baby Got Back,Sir Mix-a-Lot,,1992,1992,high,0.018854,billboard_ye_1992#2;tsort_5000#2142
+1478,Q4878477,Because I Love You (The Postman Song),Stevie B,,1990,1990,high,0.018852,billboard_ye_1991#12;tsort_5000#1149
+1479,Q3607139,Waiting for a Girl Like You,Foreigner,,1981,1981,high,0.018844,billboard_ye_1982#19;tsort_5000#910
+1480,Q17006108,Make Love to Me,Jo Stafford with Paul Weston,,1954,1954,high,0.018837,billboard_ye_1954#5;tsort_5000#1678
+1481,Q7741159,The Hustle,Van McCoy & the Soul City Symphony,,1975,1975,high,0.018825,billboard_ye_1975#22;tsort_5000#845
+1482,Q7315869,Respect Yourself,The Staple Singers,,1971,1971,high,0.018815,billboard_ye_1987#89;grammy_hof;rs500_2004#462;tsort_5000#3892
+1483,Q3868833,My Band,D12,,2004,2004,high,0.018802,billboard_ye_2004#59;tsort_5000#517
+1484,Q229553,3,Britney Spears,,2009,2009,high,0.018801,billboard_ye_2009#87;billboard_ye_2010#69;tsort_5000#1353
+1485,Q15728450,Jessie's Girl,Rick Springfield,,1981,1981,high,0.018788,billboard_ye_1981#5;tsort_5000#1703
+1486,Q1617897,Higher Love,Steve Winwood,,1986,1986,high,0.018783,billboard_ye_1986#20;tsort_5000#895
+1487,Rcd1d03a4fc86,Super Freak,James Brown,,1981,1981,medium,0.018779,rs500_2021#153
+1488,Q2552835,U Got It Bad,Usher,,2001,2001,high,0.018772,billboard_ye_2002#9;tsort_5000#1342
+1489,Q5979736,I Went to Your Wedding,Patti Page,,1952,1952,high,0.018763,billboard_ye_1952#8;tsort_5000#1419
+1490,Q5990273,If,Perry Como with Mitchell Ayres,,1950,1951,high,0.018760,billboard_ye_1951#8;tsort_5000#1420
+1491,Q3775421,I Want You,Savage Garden,,1996,1997,high,0.018760,billboard_ye_1997#22;tsort_5000#854
+1492,Q126721177,Stargazing,Myles Smith,,2024,2024,high,0.018755,billboard_ye_2024#73;billboard_ye_2025#29
+1493,Q1440116,All Summer Long,Kid Rock,,2008,2008,high,0.018754,billboard_ye_2008#85;tsort_5000#446
+1494,Q1016791,Burning Heart,Survivor,,1985,1985,high,0.018752,billboard_ye_1986#8;tsort_5000#1423
+1495,Q2711511,You Can't Always Get What You Want,The Rolling Stones,,1969,1973,medium,0.018750,rs500_2004#100
+1496,Q1573122,Buttons,Pussycat Dolls featuring Snoop Dogg,,2006,2006,high,0.018739,billboard_ye_2006#15;tsort_5000#1050
+1497,Q4941168,Bonaparte's Retreat,Kay Starr with Lou Busch,,1950,1950,high,0.018728,billboard_ye_1950#12;grammy_hof
+1498,Q644657,Miss Independent,Ne-Yo,,2008,2008,high,0.018726,billboard_ye_2008#57;billboard_ye_2009#59;tsort_5000#3320
+1499,Q2040607,Sabotage,Beastie Boys,,1994,1994,high,0.018722,rs500_2021#245;rs500_2004#475
+1500,Q2878506,"Bad, Bad Leroy Brown",Jim Croce,,1973,1973,high,0.018719,billboard_ye_1973#2;tsort_5000#2257
+1510,Q17468562,Bang Bang,"Jessie J, Ariana Grande and Nicki Minaj",,2014,2014,high,0.018637,billboard_ye_2014#27;billboard_ye_2015#80
+1534,Q5151337,Come On-a My House,Rosemary Clooney,,1950,1951,high,0.018430,billboard_ye_1951#4;tsort_5000#2079
+1690,Q1068287,Chattanoogie Shoe Shine Boy,Red Foley,,1950,1950,high,0.017429,billboard_ye_1950#8;tsort_5000#2143
+1962,Q5990479,If I Knew You Were Coming I'd have Baked a Cake,Eileen Barton with Morty Craft,,1950,1950,high,0.016050,billboard_ye_1950#11;tsort_5000#2992
+2269,Q132746150,Ordinary,Alex Warren,,2025,2025,high,0.014925,billboard_ye_2025#7
+2631,Q132080808,I'm the Problem,Morgan Wallen,,2025,2025,high,0.013699,billboard_ye_2025#13
+2931,Q133777317,Just in Case,Morgan Wallen,,2025,2025,high,0.012821,billboard_ye_2025#18
+3120,Q131564957,30 for 30,SZA and Kendrick Lamar,,2025,2025,high,0.012346,billboard_ye_2025#21
+3286,Q132679937,Nokia,Drake,,2025,2025,high,0.011905,billboard_ye_2025#24
+3344,Q135235062,Golden,"Huntrix: Ejae, Audrey Nuna and Rei Ami",,2025,2025,high,0.011765,billboard_ye_2025#25
+3476,Q134489402,What I Want,Morgan Wallen featuring Tate McRae,,2025,2025,high,0.011494,billboard_ye_2025#27
+3826,Q133868473,All the Way,BigXthaPlug featuring Bailey Zimmerman,,2025,2025,high,0.010753,billboard_ye_2025#33

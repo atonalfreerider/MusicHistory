@@ -1,0 +1,19 @@
+This is a list of ''[[Billboard (magazine)|Billboard]]'' magazine's top popular songs of 1946.<ref>{{cite magazine|title=The Year's Top Popular Retail Record Sellers}}</ref>
+{| class="wikitable sortable" style="text-align: center"
+|-
+! scope="col" style="background:#dde;"| No. (Rank)
+! scope="col" style="background:#dde;"| Title
+! scope="col" style="background:#dde;"| Artist(s)
+|-
+|1 (1) || "[[Prisoner of Love (Russ Columbo song)|Prisoner of Love]]" || [[Perry Como]]
+|-
+|19 (19) || "[[I Can't Begin to Tell You]]" || [[Bing Crosby]] and [[Carmen Cavallaro]]
+|-
+|19 (19) || "[[I'm a Big Girl Now (song)|I'm a Big Girl Now]]" || [[Sammy Kaye]]
+|-
+|20 (21) || "[[Symphony (Bing Crosby song)|Symphony]]" || [[Bing Crosby]]
+|-
+|26 (30) || "[[You Won't Be Satisfied (Until You Break My Heart)]]" || [[Les Brown (bandleader) | Les Brown]]
+|-
+|35 (41) || "[[(I Love You) For Sentimental Reasons]]" || [[Nat King Cole|King Cole Trio]]
+|}

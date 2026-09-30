@@ -1,0 +1,17 @@
+== Most-streamed songs ==
+{| class="wikitable sortable plainrowheaders"
+! Rank
+! Song
+! Artist(s)
+! Streams<br />(billions)
+! Release date
+! class="unsortable" | {{abbr|Ref.|References}}
+|-
+| style="text-align:center;" | 1
+! scope="row" | "[[Blinding Lights]]"
+| style="text-align:left;" | [[The Weeknd]]|| style="text-align:center;" |5.610|| style="text-align:right;" | {{Date table sorting|29 November 2019}} || style="text-align:center;" |<ref>{{cite web | url=https://open.spotify.com/track/x | title=Blinding Lights| website=[[Spotify]]}}</ref>
+|-
+| style="text-align:center;" | 4
+! scope="row" | "[[Starboy (song)|Starboy]]"
+| [[The Weeknd]] and [[Daft Punk]]|| style="text-align:center;" | 4.780|| style="text-align:right;" | {{Date table sorting|21 September 2016}}|| style="text-align:center;" |<ref>{{cite web |title=Starboy}}</ref>
+|}

@@ -1,0 +1,42 @@
+{|class="wikitable sortable"
+|-
+! Title
+! Artist
+! Record label
+! Year of release
+! Genre
+! Format
+! Year Inducted
+|-
+| ''[[Number 1 Record|#1 Record]]''
+| [[Big Star]]
+| [[Ardent Records|Ardent]]
+| [[1972 in music|1972]]
+| [[Power pop]]
+| Album
+| 2025
+|-
+| "[[3 O'Clock Blues]]"
+| [[B.B. King]]
+| [[RPM Records (United States)|RPM]]
+| [[1951 in music|1951]]
+| [[Rhythm and blues|R&B]]
+| Single 
+| 2014
+|-
+| "[[Ain't Misbehavin' (song)|Ain't Misbehavin']]" ([[piano]] solo)
+| [[Fats Waller|Thomas "Fats" Waller]]
+| [[Victor Talking Machine Company|Victor]]
+| [[1929 in music|1929]]
+| Jazz 
+| Single
+| 1984
+|-
+| ''Afro-Cuban Jazz Suite''
+| [[Machito]]
+| [[Mercury Records|Mercury]]
+| [[1950 in music|1950]]
+| [[Afro-Cuban jazz]]
+| Track
+| 2020
+|}

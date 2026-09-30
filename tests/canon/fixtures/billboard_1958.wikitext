@@ -1,0 +1,14 @@
+{| class="wikitable sortable" style="text-align: center"
+|-
+! scope="col" style="background:#dde;"| No.
+! scope="col" style="background:#dde;"| Title
+! scope="col" style="background:#dde;"| Artist(s)
+|-
+|22 || "[[Wear My Ring Around Your Neck]]" / "Doncha' Think It's Time" || [[Elvis Presley]]
+|-
+|23 || "[[Rockin' Robin (song)|Rockin' Robin]]" / "[[Over and Over (Bobby Day song)|Over and Over]]" || [[Bobby Day]]
+|-
+|24 || "[[Poor Little Fool]]" || [[Ricky Nelson]]
+|-
+|29 || "[[Sweet Little Sixteen]]" || [[Chuck Berry]]
+|}

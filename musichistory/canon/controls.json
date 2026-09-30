@@ -1,0 +1,71 @@
+{
+  "about": "Validation controls for the influence stage (docs/DESIGN.md §8.12), from the MIR methods report §7. Titles, artists and years only. Resolved to work ids by musichistory.canon.known_influence and written to known_influence as control_positive / control_negative / control_version.",
+  "positive": [
+    {"src": {"title": "He's So Fine", "artist": "The Chiffons", "year": 1963}, "dst": {"title": "My Sweet Lord", "artist": "George Harrison", "year": 1970}, "channel": "melody", "note": "Bright Tunes v. Harrisongs (Savage PMI 56.25%)"},
+    {"src": {"title": "I Won't Back Down", "artist": "Tom Petty", "year": 1989}, "dst": {"title": "Stay with Me", "artist": "Sam Smith", "year": 2014}, "channel": "melody", "note": "chorus melody; songwriting credit settlement"},
+    {"src": {"title": "Sweet Little Sixteen", "artist": "Chuck Berry", "year": 1958}, "dst": {"title": "Surfin' U.S.A.", "artist": "The Beach Boys", "year": 1963}, "channel": "melody,chord", "note": "near version-level"},
+    {"src": {"title": "You Can't Catch Me", "artist": "Chuck Berry", "year": 1956}, "dst": {"title": "Come Together", "artist": "The Beatles", "year": 1969}, "channel": "melody", "note": "melodic line"},
+    {"src": {"title": "The Air That I Breathe", "artist": "The Hollies", "year": 1974}, "dst": {"title": "Creep", "artist": "Radiohead", "year": 1992}, "channel": "chord,melody", "note": "chord loop and melody"},
+    {"src": {"title": "No Scrubs", "artist": "TLC", "year": 1999}, "dst": {"title": "Shape of You", "artist": "Ed Sheeran", "year": 2017}, "channel": "melody", "note": "melody"},
+    {"src": {"title": "Oops Up Side Your Head", "artist": "The Gap Band", "year": 1979}, "dst": {"title": "Uptown Funk", "artist": "Mark Ronson", "year": 2014}, "channel": "bass", "note": "riff / hook"},
+    {"src": {"title": "Under Pressure", "artist": "Queen", "year": 1981}, "dst": {"title": "Ice Ice Baby", "artist": "Vanilla Ice", "year": 1990}, "channel": "bass", "note": "bass riff (tests the riff channel)"},
+    {"src": {"title": "The Last Time", "artist": "The Rolling Stones", "year": 1965}, "dst": {"title": "Bitter Sweet Symphony", "artist": "The Verve", "year": 1997}, "channel": "melody", "note": "melody via a 1966 orchestral version"},
+    {"src": {"title": "More Than a Feeling", "artist": "Boston", "year": 1976}, "dst": {"title": "Smells Like Teen Spirit", "artist": "Nirvana", "year": 1991}, "channel": "chord", "note": "riff / chords (widely noted, not a legal case)"},
+    {"src": {"title": "Mary Jane's Last Dance", "artist": "Tom Petty", "year": 1993}, "dst": {"title": "Dani California", "artist": "Red Hot Chili Peppers", "year": 2006}, "channel": "chord,melody", "note": "chords and melody"},
+    {"src": {"title": "Run Through the Jungle", "artist": "Creedence Clearwater Revival", "year": 1970}, "dst": {"title": "The Old Man Down the Road", "artist": "John Fogerty", "year": 1985}, "channel": "melody", "note": "same writer (PMI 67.4%; legally not infringing)"},
+    {"src": {"title": "Got to Give It Up", "artist": "Marvin Gaye", "year": 1977}, "dst": {"title": "Blurred Lines", "artist": "Robin Thicke", "year": 2013}, "channel": "groove", "note": "hard case: mostly groove, weak melody/chord evidence expected"}
+  ],
+  "pachelbel_cluster": {
+    "note": "Pachelbel Canon progression; members should link to each other more strongly than to generic I-V-vi-IV songs",
+    "songs": [
+      {"title": "Rain and Tears", "artist": "Aphrodite's Child", "year": 1968},
+      {"title": "Streets of London", "artist": "Ralph McTell", "year": 1969},
+      {"title": "Go West", "artist": "Village People", "year": 1979},
+      {"title": "All Together Now", "artist": "The Farm", "year": 1990},
+      {"title": "Basket Case", "artist": "Green Day", "year": 1994},
+      {"title": "Hook", "artist": "Blues Traveler", "year": 1994},
+      {"title": "C U When U Get There", "artist": "Coolio", "year": 1997},
+      {"title": "Graduation (Friends Forever)", "artist": "Vitamin C", "year": 2000},
+      {"title": "Memories", "artist": "Maroon 5", "year": 2019}
+    ]
+  },
+  "negative": {
+    "families": {
+      "I-V-vi-IV": [
+        {"title": "Let It Be", "artist": "The Beatles", "year": 1970},
+        {"title": "No Woman, No Cry", "artist": "Bob Marley & The Wailers", "year": 1974},
+        {"title": "With or Without You", "artist": "U2", "year": 1987},
+        {"title": "Don't Stop Believin'", "artist": "Journey", "year": 1981},
+        {"title": "Zombie", "artist": "The Cranberries", "year": 1994},
+        {"title": "I'm Yours", "artist": "Jason Mraz", "year": 2008},
+        {"title": "Poker Face", "artist": "Lady Gaga", "year": 2008},
+        {"title": "Someone Like You", "artist": "Adele", "year": 2011}
+      ],
+      "doo-wop": [
+        {"title": "Earth Angel", "artist": "The Penguins", "year": 1954},
+        {"title": "Stand by Me", "artist": "Ben E. King", "year": 1961},
+        {"title": "Every Breath You Take", "artist": "The Police", "year": 1983}
+      ],
+      "12-bar blues": [
+        {"title": "Rock Around the Clock", "artist": "Bill Haley & His Comets", "year": 1954},
+        {"title": "Tutti Frutti", "artist": "Little Richard", "year": 1955},
+        {"title": "Hound Dog", "artist": "Elvis Presley", "year": 1956},
+        {"title": "Blue Suede Shoes", "artist": "Carl Perkins", "year": 1956},
+        {"title": "Johnny B. Goode", "artist": "Chuck Berry", "year": 1958}
+      ]
+    },
+    "pairs": [
+      {"src": {"title": "Taurus", "artist": "Spirit", "year": 1968}, "dst": {"title": "Stairway to Heaven", "artist": "Led Zeppelin", "year": 1971}, "note": "court: commonplace (Skidmore v. Led Zeppelin)"},
+      {"src": {"title": "Let's Get It On", "artist": "Marvin Gaye", "year": 1973}, "dst": {"title": "Thinking Out Loud", "artist": "Ed Sheeran", "year": 2014}, "note": "court: commonplace (Griffin v. Sheeran)"},
+      {"src": {"title": "Joyful Noise", "artist": "Flame", "year": 2008}, "dst": {"title": "Dark Horse", "artist": "Katy Perry", "year": 2013}, "note": "court: commonplace (Gray v. Perry, verdict overturned)"}
+    ]
+  },
+  "version": [
+    {"a": {"title": "Hound Dog", "artist": "Big Mama Thornton", "year": 1953}, "b": {"title": "Hound Dog", "artist": "Elvis Presley", "year": 1956}},
+    {"a": {"title": "Respect", "artist": "Otis Redding", "year": 1965}, "b": {"title": "Respect", "artist": "Aretha Franklin", "year": 1967}},
+    {"a": {"title": "All Along the Watchtower", "artist": "Bob Dylan", "year": 1967}, "b": {"title": "All Along the Watchtower", "artist": "The Jimi Hendrix Experience", "year": 1968}},
+    {"a": {"title": "Twist and Shout", "artist": "The Isley Brothers", "year": 1962}, "b": {"title": "Twist and Shout", "artist": "The Beatles", "year": 1963}},
+    {"a": {"title": "I Will Always Love You", "artist": "Dolly Parton", "year": 1974}, "b": {"title": "I Will Always Love You", "artist": "Whitney Houston", "year": 1992}},
+    {"a": {"title": "Tainted Love", "artist": "Gloria Jones", "year": 1964}, "b": {"title": "Tainted Love", "artist": "Soft Cell", "year": 1981}}
+  ]
+}

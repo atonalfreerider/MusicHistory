@@ -1,0 +1,16 @@
+{| class="wikitable sortable" style="text-align: center"
+|+ List of songs on ''[[Billboard (magazine)|Billboard]]''{{'s}} 2025 [[Billboard Year-End|Year-End]] [[Billboard Hot 100|Hot 100]] chart
+|-
+! scope="col" style="background:#dde;"| {{Abbr|No.|Number}}
+! scope="col" style="background:#dde;"| Title
+! scope="col" style="background:#dde;"| Artist(s)
+|-
+| scope="row" | 1
+| "[[Die with a Smile]]" || [[Lady Gaga]] and [[Bruno Mars]]
+|-
+| scope="row" | 2
+| "[[Luther (song)|Luther]]" || [[Kendrick Lamar]] and [[SZA]]
+|-
+| scope="row" | 9
+| "[[APT. (song)|APT.]]" || [[Rosé (singer)|Rosé]] and [[Bruno Mars]]
+|}

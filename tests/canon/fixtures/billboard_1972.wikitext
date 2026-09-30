@@ -1,0 +1,14 @@
+{| class="wikitable sortable" style="text-align: center"
+|-
+! scope="col" style="background:#dde;"| No.
+! scope="col" style="background:#dde;"| Title
+! scope="col" style="background:#dde;"| Artist(s)
+|-
+|5 ||data-sort-value="&quot;Candy Man"| "[[The Candy Man]]" ||data-sort-value="Davis, Sammy"| [[Sammy Davis Jr.]]
+|-
+|8 ||data-sort-value="&quot;Baby Dont"| "[[Baby, Don't Get Hooked on Me]]" ||data-sort-value="Davis, Mac"| [[Mac Davis]]
+|-
+|9 || "[[Brand New Key]]" || [[Melanie Safka|Melanie]]
+|-
+|51 || "[[The Cover of "Rolling Stone"]]" || [[Dr. Hook & The Medicine Show]]
+|}

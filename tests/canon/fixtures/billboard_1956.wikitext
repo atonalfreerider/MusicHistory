@@ -1,0 +1,16 @@
+{| class="wikitable sortable" style="text-align: center"
+|-
+! scope="col" style="background:#dde;"| No.
+! scope="col" style="background:#dde;"| Title
+! scope="col" style="background:#dde;"| Artist(s)
+|-
+|1 || "[[Heartbreak Hotel]]" || rowspan="2"| [[Elvis Presley]]
+|-
+|2 || "[[Don't Be Cruel]]"
+|-
+|3 || "[[Lisbon Antigua]]" || [[Nelson Riddle]]
+|-
+|6 || "[[Hound Dog (song)|Hound Dog]]" || [[Elvis Presley]]
+|-
+|11 || "[[Moonglow and Theme from Picnic|Moonglow and Theme from ''Picnic'']]" || [[Morris Stoloff]]
+|}

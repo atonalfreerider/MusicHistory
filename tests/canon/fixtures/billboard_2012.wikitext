@@ -1,0 +1,13 @@
+{| class="wikitable sortable" style="text-align: center"
+|+ List of songs on ''[[Billboard (magazine)|Billboard]]''{{'s}} 2012 [[Billboard Year-End|Year-End]] [[Billboard Hot 100|Hot 100]] chart<ref>{{cite magazine|url=http://www.billboard.com/charts/year-end/2012/hot-100-songs|title=Hot 100 Songs Music Chart|year=2012}}</ref>
+|-
+! scope="col" style="background:#dde;"| No.
+! scope="col" style="background:#dde;"| Title
+! scope="col" style="background:#dde;"| Artist(s)
+|-
+|1 || "[[Somebody That I Used to Know]]" || [[Gotye]] featuring [[Kimbra]]
+|-
+|3 || "[[We Are Young]]" || [[Fun (band)|Fun]] featuring [[Janelle Monáe]]
+|-
+|4 || "[[Payphone (song)|Payphone]]" || [[Maroon 5]] featuring [[Wiz Khalifa]]
+|}
