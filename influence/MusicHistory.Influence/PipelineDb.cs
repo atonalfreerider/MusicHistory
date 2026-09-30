@@ -63,7 +63,7 @@ internal static class PipelineDb
     private static int? Int(SqliteDataReader r, int i) => r.IsDBNull(i) ? null : r.GetInt32(i);
     private static double? Dbl(SqliteDataReader r, int i) => r.IsDBNull(i) ? null : r.GetDouble(i);
 
-    /// <summary>Selected, analyzed songs (song.analysis_ok = 1 JOIN work.selected = 1) in node order (time_value, work_id).</summary>
+    /// <summary>Selected, analyzed songs (song.analysis_ok = 1 JOIN work.selected >= 1; 2 = validation extra) in node order (time_value, work_id).</summary>
     public static Song[] LoadSongs(SqliteConnection c, LoadStats stats)
     {
         var songs = new List<Song>();
@@ -78,7 +78,7 @@ internal static class PipelineDb
                        s.resonance_commit, c.source
                 FROM song s JOIN work w ON w.work_id = s.work_id
                 LEFT JOIN candidate c ON c.candidate_id = s.candidate_id
-                WHERE s.analysis_ok = 1 AND w.selected = 1
+                WHERE s.analysis_ok = 1 AND w.selected >= 1
                 ORDER BY s.work_id
                 """;
             using var r = cmd.ExecuteReader();

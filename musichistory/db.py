@@ -66,7 +66,8 @@ CREATE TABLE IF NOT EXISTS work(
   rrf_score REAL NOT NULL DEFAULT 0,
   canon_rank INTEGER,                -- 1 = highest fused score
   in_pool INTEGER NOT NULL DEFAULT 0,   -- 1 = among the POOL_SIZE works handed to acquisition
-  selected INTEGER NOT NULL DEFAULT 0   -- 1 = in the final TARGET_SONGS (set by select)
+  selected INTEGER NOT NULL DEFAULT 0   -- 1 = in the final TARGET_SONGS; 2 = validation-control extra
+                                        -- outside the ranked set (both set by select)
 );
 CREATE INDEX IF NOT EXISTS work_rank ON work(canon_rank);
 CREATE TABLE IF NOT EXISTS year_evidence(

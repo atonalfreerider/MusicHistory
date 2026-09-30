@@ -29,12 +29,32 @@ See [docs/DESIGN.md](docs/DESIGN.md) for the contracts between stages.
 ```powershell
 py -3.13 -m venv .venv
 .venv\Scripts\python -m pip install -r requirements.txt
+.venv\Scripts\python tools\sf3_to_sf2.py        # SoundFont for the Unity player (from MuseScore 4's MS Basic.sf3)
 .venv\Scripts\python -m musichistory status
 ```
 
-Requires the .NET 10 SDK, Unity 6000.6.3f1 and a checkout of Resonance-2 next to this
-folder (override with `RESONANCE_ROOT`). All downloads and outputs go to `data/`
-(gitignored; override with `MUSICHISTORY_DATA`).
+Requires the .NET 10 SDK, Unity 6000.6.3f1, MuseScore 4 (for its MIT-licensed SoundFont) and
+a checkout of Resonance-2 next to this folder (override with `RESONANCE_ROOT`). All downloads
+and outputs go to `data/` (gitignored; override with `MUSICHISTORY_DATA`, and the download
+cache separately with `MUSICHISTORY_CACHE`).
+
+Wikimedia and MusicBrainz ask API clients to identify themselves. Requests carry no personal
+data by default; setting `MUSICHISTORY_CONTACT` (e.g. to a URL) adds a contact to the
+User-Agent, which also lifts Wikimedia's anonymous rate limit (10 → 200 requests a minute).
+
+## Run
+
+```powershell
+.venv\Scripts\python -m musichistory canon       # ~20 s cached, ~1.5 h cold
+.venv\Scripts\python -m musichistory fetch       # Lakh (2 GB, once) + web gap-filling, 1-2 h
+.venv\Scripts\python -m musichistory select      # analyzes up to 4 candidates per song
+.venv\Scripts\python -m musichistory analyze
+.venv\Scripts\python -m musichistory influence
+.venv\Scripts\python -m musichistory layout
+```
+
+Then open `unity/` in Unity 6000.6.3f1, load `Assets/Scenes/SongInfluenceGraph.unity` and
+press Play (see [unity/README.md](unity/README.md) for controls). Every stage is resumable.
 
 ## Data sources and credits
 

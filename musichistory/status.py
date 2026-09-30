@@ -31,6 +31,7 @@ def run(args: argparse.Namespace) -> int:
          " WHERE c.valid = 1 AND w.in_pool = 1"),
         ("select: chosen", "SELECT COUNT(*) FROM selection"),
         ("select: final songs", "SELECT COUNT(*) FROM work WHERE selected = 1"),
+        ("select: validation-control extras", "SELECT COUNT(*) FROM work WHERE selected = 2"),
         ("analyze: songs ok", "SELECT COUNT(*) FROM song WHERE analysis_ok = 1"),
         ("analyze: songs failed", "SELECT COUNT(*) FROM song WHERE analysis_ok = 0"),
         ("influence: scored pairs", "SELECT COUNT(*) FROM pair_score"),

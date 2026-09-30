@@ -121,6 +121,18 @@ internal static class GraphExport
             ("pipeline_commit", RepoRoot.GitHead(repoRoot)),
             ("midi_base", "relative to this file's folder"),
         };
+        // Songs outside the ranked list that were added so known influence pairs can be checked
+        // (work.selected = 2); the viewer marks them.
+        var exported = new HashSet<string>(songs.Select(s => s.WorkId), StringComparer.Ordinal);
+        var extras = new List<string>();
+        using (var cmd = pipeline.CreateCommand())
+        {
+            cmd.CommandText = "SELECT work_id FROM work WHERE selected = 2 ORDER BY work_id";
+            using var r = cmd.ExecuteReader();
+            while (r.Read())
+                if (exported.Contains(r.GetString(0))) extras.Add(r.GetString(0));
+        }
+        meta.Add(("validation_extras", string.Join(",", extras)));
 
         string graphDir = Path.GetDirectoryName(Path.GetFullPath(graphPath))!;
         Directory.CreateDirectory(graphDir);

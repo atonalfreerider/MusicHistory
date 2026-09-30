@@ -393,6 +393,8 @@ def add_arguments(p: argparse.ArgumentParser) -> None:
     p.add_argument("--floor-first", type=int, default=FLOOR_FIRST_YEAR)
     p.add_argument("--floor-last", type=int, default=default_floor_last())
     p.add_argument("--report-only", action="store_true")
+    p.add_argument("--no-include-controls", dest="include_controls", action="store_false",
+                   help="do not add known-influence control songs outside the ranked set (selected = 2)")
 
 
 def _load_cands(conn: sqlite3.Connection, work_id: str, title: str) -> list[Cand]:
@@ -475,6 +477,29 @@ def apply_final_set(conn: sqlite3.Connection, target: int, floor: int, first: in
     return ids
 
 
+CONTROL_KINDS = ("control_positive", "control_negative", "wikidata_P144", "wikidata_P2550")
+
+
+def apply_control_extras(conn: sqlite3.Connection) -> list[str]:
+    """Add songs of known influence pairs that the ranked set left out, as ``selected = 2``.
+
+    Most famous influence cases involve a song outside the all-time top 1000 (He's So Fine,
+    Under Pressure, ...). Keeping both sides lets the influence stage be checked against
+    them; the graph lists these extras in ``graph_meta.validation_extras``.
+    """
+    ids = [r[0] for r in conn.execute(
+        f"""SELECT DISTINCT w.work_id FROM work w JOIN selection s USING(work_id)
+            WHERE w.selected = 0 AND w.work_id IN (
+              SELECT src_work_id FROM known_influence WHERE kind IN ({','.join('?' * len(CONTROL_KINDS))})
+                AND src_work_id <> dst_work_id
+              UNION SELECT dst_work_id FROM known_influence WHERE kind IN ({','.join('?' * len(CONTROL_KINDS))})
+                AND src_work_id <> dst_work_id)
+            ORDER BY w.work_id""", CONTROL_KINDS * 2)]
+    conn.executemany("UPDATE work SET selected = 2 WHERE work_id = ?", [(i,) for i in ids])
+    conn.commit()
+    return ids
+
+
 def run(args: argparse.Namespace, engine: Engine | None = None) -> int:
     conn = db.connect()
     conn.executescript(SCHEMA)
@@ -508,6 +533,9 @@ def run(args: argparse.Namespace, engine: Engine | None = None) -> int:
         ids = apply_final_set(conn, args.target, args.floor, args.floor_first, args.floor_last)
         print(f"select: final set {len(ids)} works (target {args.target}, floor {args.floor}/year "
               f"{args.floor_first}-{args.floor_last})")
+        if getattr(args, "include_controls", True):
+            extras = apply_control_extras(conn)
+            print(f"select: {len(extras)} validation-control songs added outside the ranked set (selected = 2)")
     jp, mp = write_report(source_report(conn))
     print(f"select: report {jp} and {mp.name}")
     return 0

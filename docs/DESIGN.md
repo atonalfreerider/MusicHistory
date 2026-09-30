@@ -411,6 +411,38 @@ Invariants: every non-root node has exactly one `kind='tree'` incoming edge, fro
 `tree_parent_node`; `time_value[source] < time_value[target]`; node ids ordered by time, so
 `source_node < target_node`.
 
+## 10a. As built: refinements to §4–§10
+
+These came out of real runs and calibration; each stage's README has the detail.
+
+* **canon** (`musichistory/canon/`): extra year rules (a lone date > 2 years before every
+  other source is a false match; Hot 100 matching on lead acts only; an early list year is
+  dropped only when no other source agrees within a year; a MusicBrainz date is authoritative
+  only when another source agrees), title-variant and acronym matching, options
+  `--search-limit`, `--pool-controls` (adds the validation-control works to the pool),
+  `--last-year`, `--offline`. Version controls whose recordings merged into one work are
+  stored with `src_work_id = dst_work_id`. Wikimedia throttles a User-Agent without contact
+  details to 10 requests a minute (200 with one): set `MUSICHISTORY_CONTACT` to speed up a
+  cold run.
+* **fetch** features add `n_bars`, `tracks[].role_src`, `first_beat`, `last_beat`. No raw
+  download is kept (it may contain lyrics); `--resanitize` re-extracts Lakh files only.
+* **select** analyzes only candidates whose sanitized bytes differ (identical files would
+  inflate consensus) and caches slims in `data/analysis-work/<work_id>/c<candidate_id>/`.
+  It also adds songs of known influence pairs that the ranked set left out as
+  `work.selected = 2` ("validation extras"; `--no-include-controls` turns this off); the
+  graph lists them in `graph_meta.validation_extras`.
+* **analyze** slims carry `slim_version` and `midi_sha256` (reuse check); `keyfree` is L1
+  only; `melody_line.durs` run to the next onset; a key signature votes for both relative
+  keys of its pitch collection.
+* **influence** (`influence/README.md`, "Calibration"): Stouffer Z over counting channels
+  only (loop counts only beside melody, bass or chord), σ floor 4 bits, commonplace cap (n-grams
+  in > 2 % of songs score ≤ 8 bits per channel per pair), loop null from random earlier songs'
+  loops, credit needs ≥ 12 bits, passages within 32 beats merge. All are `--param` settings.
+  Songs with `selected >= 1` are included.
+* **layout** (`layout/README.md`): `--spring` (global stiffness), springs use the `weight`
+  column, `--pinLargestRoot` on by default, subcommands `validate`, `check`, `devices`,
+  `run --out|--dry-run`, and exit codes 0–6.
+
 ## 11. Unity viewer (`unity/`, fork of Unity-FDG, Unity 6000.6.3f1, URP)
 
 * **Loader** reads §10 (default path `<repo>/data/graph/music_graph.db`), creates one node
@@ -431,8 +463,9 @@ Invariants: every non-root node has exactly one `kind='tree'` incoming edge, fro
   played before it** and morphs to its native key and BPM over the first `morphBars`
   (default 4) bars of its excerpt (smoothstep), then plays natively and hands off to the
   next song at a bar line. Transposition offset `o₀ = wrap(prevTonic − tonic)` in [−6, 5]
-  glides continuously to 0 (drums untransposed); tempo ratio starts at `P'/N` where P' is
-  the previous BPM folded by an octave (×½, ×1, ×2) closest to the native N, and glides to 1.
+  glides continuously to 0 (drums untransposed); tempo ratio starts at `P/N` — the previous
+  song's literal BPM — and glides to 1. Only when P and N are more than 0.8 octave apart is
+  P halved or doubled toward N (70 → 140 is half/double time, not a ramp).
   Event times come from the integral of the tempo curve, so beats never drift. The first
   song of a tour plays natively. Optional "apples to apples" mode plays the normalized MIDI
   (C major / A minor, 120 BPM) with no morph.
@@ -441,3 +474,11 @@ Invariants: every non-root node has exactly one `kind='tree'` incoming edge, fro
   `data/soundfonts/MS_Basic.sf2`; MIDI parsed with NAudio.Midi (from Resonance-2) into a
   beat-domain sequencer rendered in `OnAudioFilterRead`, 64-frame blocks, two decks for
   the handoff tail. Falls back to a sine synth when no SoundFont is present.
+  Transposition is sent as RPN coarse + fine tuning each block (MeltySynth re-pitches
+  sounding voices, measured within 1 cent). `FollowTimeScale` lets the clock follow
+  `Time.timeScale` for fast headless tests; a main-thread driver keeps the clip clock running
+  when no audio callbacks arrive (batchmode). A late `Play` within 120 ms of the bar line
+  joins at once; later ones wait for the next bar. The SF3 converter bakes the SoundFont's
+  velocity/key modulators (which MeltySynth ignores) into fixed generators, or MS Basic's
+  pianos render ~30 dB too quiet.
+* **Validation extras** (`graph_meta.validation_extras`) are marked in the viewer.
