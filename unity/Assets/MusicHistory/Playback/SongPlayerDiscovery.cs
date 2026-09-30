@@ -19,7 +19,7 @@ namespace MusicHistory.Playback
         {
             foreach (MonoBehaviour behaviour in host.GetComponents<MonoBehaviour>())
             {
-                if (behaviour is ISongPlayer existing && behaviour is not SilentSongPlayer)
+                if (behaviour is ISongPlayer existing && behaviour is not SilentSongPlayer && behaviour is not PreviewSongPlayer)
                 {
                     description = behaviour.GetType().FullName ?? behaviour.GetType().Name;
                     return existing;

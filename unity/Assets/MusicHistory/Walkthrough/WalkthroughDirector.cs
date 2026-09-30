@@ -34,7 +34,7 @@ namespace MusicHistory.Walkthrough
         public TourMode Mode = TourMode.Lineage;
         [Min(.1f)] public float FlyDuration = 1.8f;
         [Min(.1f)] public float EdgeGrowDuration = 1.6f;
-        [Min(0f)] public float MorphBars = 4f;
+        [Min(0f)] public float MorphBars = 2f;
         [Tooltip("Play the normalized MIDI (graph_meta target_key, target_bpm) without morphing.")]
         public bool ApplesToApples;
         [Min(1f)] public float FramingMargin = 1.35f;
@@ -49,6 +49,8 @@ namespace MusicHistory.Walkthrough
         public SongGraphLoader Loader = null!;
         public ISongPlayer? Player { get; private set; }
         public SilentSongPlayer Silent { get; private set; } = null!;
+        /// <summary>Plays prerendered recording previews (data/audio/renders) when one exists for the step.</summary>
+        public PreviewSongPlayer? Preview { get; private set; }
         public string PlayerDescription { get; private set; } = "";
         public bool IsTouring { get; private set; }
         /// <summary>The last step's excerpt has ended.</summary>
@@ -98,6 +100,10 @@ namespace MusicHistory.Walkthrough
             PlayerDescription = description;
             Silent.Finished -= OnClipFinished;
             Silent.Finished += OnClipFinished;
+            Preview = GetComponent<PreviewSongPlayer>();
+            if (Preview == null) Preview = gameObject.AddComponent<PreviewSongPlayer>();
+            Preview.Finished -= OnClipFinished;
+            Preview.Finished += OnClipFinished;
             if (Player != null && !ReferenceEquals(Player, Silent))
             {
                 Player.Finished -= OnClipFinished;
@@ -130,6 +136,7 @@ namespace MusicHistory.Walkthrough
         void OnDestroy()
         {
             if (Silent != null) Silent.Finished -= OnClipFinished;
+            if (Preview != null) Preview.Finished -= OnClipFinished;
             if (Player != null) Player.Finished -= OnClipFinished;
         }
 
@@ -294,6 +301,8 @@ namespace MusicHistory.Walkthrough
         /// <summary>The real player when this clip's file exists, else the silent clock.</summary>
         ISongPlayer ChoosePlayer(SongClip clip)
         {
+            // A prerendered preview of the recording wins when one exists for this exact step.
+            if (!ApplesToApples && Preview != null && Preview.Has(PreviousClip, clip)) return Preview;
             string? path = ApplesToApples && !string.IsNullOrEmpty(clip.NormalizedMidiPath) ? clip.NormalizedMidiPath : clip.MidiPath;
             bool fileExists = !string.IsNullOrEmpty(path) && File.Exists(path);
             if (Player != null && !ReferenceEquals(Player, Silent) && fileExists) return Player;
@@ -449,7 +458,7 @@ namespace MusicHistory.Walkthrough
             string state = TourComplete ? "tour complete" : p != null && p.Paused ? "paused" : "playing";
             string playerName = ReferenceEquals(p, Silent)
                 ? (Player != null && !ReferenceEquals(Player, Silent) ? "silent (MIDI file missing)" : "silent (no synth)")
-                : "synth";
+                : ReferenceEquals(p, Preview) ? "recording preview" : "synth";
             string channelColor = edge != null ? SongPalette.ToHex(SongPalette.ChannelColor(edge.Channel))
                 : family != null ? SongPalette.ToHex(SongPalette.ChannelColor(family.Kind == "loop" ? EdgeChannel.Loop : EdgeChannel.Chord))
                 : "#f4f6fb";

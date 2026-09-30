@@ -40,7 +40,7 @@ namespace MusicHistory.Audio
         public string SoundFontPath = "";
 
         [SerializeField, Tooltip("Bars over which a clip glides from the previous song's key/BPM to its own.")]
-        float morphBars = 4f;
+        float morphBars = 2f;
 
         [SerializeField, Tooltip("Play the normalized files (graph_meta target_key / target_bpm) without morphing.")]
         bool applesToApples;
