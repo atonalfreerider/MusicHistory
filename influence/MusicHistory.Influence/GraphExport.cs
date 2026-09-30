@@ -189,7 +189,7 @@ internal static class GraphExport
         foreach (var sp in PipelineDb.LoadPairs(pipeline, significantOnly: true))
         {
             if (sp.Relation != "influence" || !byId.TryGetValue(sp.A, out int a) || !byId.TryGetValue(sp.B, out int b)) continue;
-            pairs[(a, b)] = ToResult(sp, songs[a], songs[b], a, b, p);
+            pairs[(a, b)] = ToResult(sp, a, b, p);
         }
         int n = songs.Length;
         var tree = new TreeResult
@@ -237,13 +237,9 @@ internal static class GraphExport
         foreach (var (pr, kind, _) in ordered)
         {
             double sim = 1 - Math.Pow(2, -pr.S / p.SimilarityHalfBits);
-            var counting = Enumerable.Range(0, Channels.Count).Where(c => pr.Counts((Channel)c)).ToList();
-            int primary = counting.Count > 0
-                ? counting.OrderByDescending(c => pr.W[c] * pr.Z[c]).ThenBy(c => c).First()
-                : Enumerable.Range(0, Channels.Count).OrderByDescending(c => pr.E[c]).ThenBy(c => c).First();
-            string csv = counting.Count > 0 ? string.Join(",", counting.Select(c => Channels.Names[c])) : Channels.Names[primary];
+            var (csv, primary) = EdgeChannels(pr);
             double weight = kind == "tree" ? 0.5 + 0.5 * sim : sim;
-            summary.EdgeRows.Add(new GraphEdge(++id, pr.A + 1, pr.B + 1, kind, csv, Channels.Names[primary], pr.S, pr.Zc,
+            summary.EdgeRows.Add(new GraphEdge(++id, pr.A + 1, pr.B + 1, kind, csv, primary, pr.S, pr.Zc,
                 double.IsNaN(pr.Q) ? null : pr.Q, sim, weight, Excerpts.Strongest(pr), EvidenceText(pr)));
             summary.InDegree[pr.B]++;
             summary.OutDegree[pr.A]++;
@@ -288,6 +284,8 @@ internal static class GraphExport
                 if (exported.Contains(r.GetString(0))) extras.Add(r.GetString(0));
         }
         meta.Add(("validation_extras", string.Join(",", extras)));
+        // The influence decision's settings (threshold, target FPR, weights...), as the run stored them.
+        foreach (var kv in InfluenceMeta(pipeline)) meta.Add(kv);
 
         string graphDir = Path.GetDirectoryName(Path.GetFullPath(graphPath))!;
         Directory.CreateDirectory(graphDir);
@@ -349,24 +347,71 @@ internal static class GraphExport
         return summary;
     }
 
-    internal static PairResult ToResult(PipelineDb.StoredPair sp, Song a, Song b, int ai, int bi, Params p)
+    /// <summary>A stored significant pair as a result (for credit, tree and edge rows): channel values from the
+    /// columns, lanes and the counting channels from the segments (a segment exists for every counting channel).</summary>
+    internal static PairResult ToResult(PipelineDb.StoredPair sp, int ai, int bi, Params p)
     {
         var r = new PairResult
         {
             A = ai, B = bi, Zc = sp.Zc ?? 0, Q = sp.Q ?? double.NaN, S = sp.S ?? 0, Pmi = sp.Pmi ?? double.NaN,
             ChordId = sp.ChordId ?? double.NaN, Significant = sp.Significant, Relation = sp.Relation, Tested = true,
         };
-        double hMin = Math.Min(a.IntervalEntropy, b.IntervalEntropy);
-        double[] w = [hMin < p.EntropyHalf ? p.WMelody / 2 : p.WMelody, p.WBass, p.WChord, p.WLoop];
+        double[] w = [p.WMelody, p.WBass, p.WChord, p.WLoop, p.WLanes];
         for (int c = 0; c < Channels.Count; c++)
         {
+            r.W[c] = w[c];
+            if (c >= Channels.Stored) continue;
             r.Avail[c] = sp.E[c] != null;
             r.E[c] = sp.E[c] ?? 0;
             r.Z[c] = sp.Z[c] ?? double.NaN;
-            r.W[c] = w[c];
         }
         r.Segments.AddRange(sp.Segments);
+        foreach (var seg in sp.Segments)
+        {
+            int c = (int)seg.Channel;
+            r.Counting[c] = true;
+            if (c >= Channels.Stored)
+            {
+                r.Avail[c] = true;
+                r.E[c] = seg.Bits;
+                r.Z[c] = seg.Z;
+            }
+        }
         return r;
+    }
+
+    /// <summary>
+    /// influence_edges.channels / primary_channel: the counting channels (those with a passage) in the graph's names
+    /// (lanes are melody material), primary = the largest weighted z (bits when no z is stored).
+    /// </summary>
+    public static (string Csv, string Primary) EdgeChannels(PairResult pr)
+    {
+        var counting = Enumerable.Range(0, Channels.Count).Where(c => pr.Counts((Channel)c)).ToList();
+        if (counting.Count == 0)
+            counting = [Enumerable.Range(0, Channels.Count).OrderByDescending(c => pr.E[c]).ThenBy(c => c).First()];
+        double Key(int c) => double.IsNaN(pr.Z[c]) ? double.NegativeInfinity : pr.W[c] * pr.Z[c];
+        int primary = counting.OrderByDescending(Key).ThenByDescending(c => pr.E[c]).ThenBy(c => c).First();
+        var names = counting.Select(Channels.GraphName).Distinct().OrderBy(n => Array.IndexOf(Channels.Names, n)).ToList();
+        return (string.Join(",", names), Channels.GraphName(primary));
+    }
+
+    /// <summary>The pipeline meta keys <c>influence_*</c> (written by <c>run</c>), sorted by key.</summary>
+    public static List<(string, string?)> InfluenceMeta(SqliteConnection pipeline)
+    {
+        var l = new List<(string, string?)>();
+        try
+        {
+            using var cmd = pipeline.CreateCommand();
+            cmd.CommandText = "SELECT key, value FROM meta WHERE key LIKE 'influence%' ORDER BY key";
+            using var r = cmd.ExecuteReader();
+            while (r.Read())
+                if (r.GetString(0).StartsWith("influence_", StringComparison.Ordinal)) l.Add((r.GetString(0), r.IsDBNull(1) ? null : r.GetString(1)));
+        }
+        catch (SqliteException)
+        {
+            // No meta table: nothing to copy.
+        }
+        return l;
     }
 
     /// <summary>DESIGN.md §10 invariants: one tree edge into every non-root, from its parent; sources earlier.</summary>
@@ -426,6 +471,7 @@ internal static class GraphExport
                 Channel.Melody => $"melody {best.N} notes",
                 Channel.Bass => $"bass riff {best.N} notes",
                 Channel.Chord => $"chords {best.N} changes",
+                Channel.Lanes => $"melody vs another lane {best.N} notes",
                 _ => $"loop {best.Loop ?? "?"} ({(best.SamePhase ? "same" : "cross")} phase)",
             };
             parts.Add((bits, $"{what}, {bits.ToString("0", CultureInfo.InvariantCulture)} bits"));

@@ -37,6 +37,9 @@ CSPROJ = ROOT / "influence" / "MusicHistory.Influence" / "MusicHistory.Influence
 UNITY_SQLITE = ROOT.parent / "Unity-FDG" / "Assets" / "Plugins" / "x86_64" / "sqlite3.dll"
 STAMP = "2026-01-01T00:00:00Z"
 N_SONGS = 120
+# The fixture's 120 songs make every time-ordered pair part of the null sample, planted pairs included, so its
+# threshold at the real corpus's calibrated FPR (3e-5 of 507,740 pairs) is dominated by the plants: run it at 1e-3.
+FIXTURE_FPR = ["--param", "TargetFpr=1e-3"]
 
 pytestmark = pytest.mark.skipif(shutil.which("dotnet") is None, reason="needs the .NET 10 SDK")
 
@@ -58,7 +61,7 @@ def fixture_run(exe, tmp_path_factory):
                    capture_output=True, text=True)
     graph = data / "graph" / "music_graph.db"
     r = subprocess.run([str(exe), "run", "--db", str(db), "--graph", str(graph), "--root", str(root),
-                        "--generated-at", STAMP], capture_output=True, text=True)
+                        "--generated-at", STAMP, *FIXTURE_FPR], capture_output=True, text=True)
     assert r.returncode == 0, r.stderr
     return {"root": root, "db": db, "graph": graph, "exe": exe, "log": r.stderr}
 
@@ -198,7 +201,7 @@ def test_deterministic_and_export_reproduces(fixture_run, tmp_path):
     # Same depth below the data folder, so the relative MIDI paths are the same strings.
     g2 = root / "data" / "graph2" / "music_graph.db"
     r = subprocess.run([str(exe), "run", "--db", str(db), "--graph", str(g2), "--root", str(root), "--generated-at", STAMP,
-                        "--threads", "2", "--report", str(tmp_path / "r2.json")], capture_output=True, text=True)
+                        "--threads", "2", "--report", str(tmp_path / "r2.json"), *FIXTURE_FPR], capture_output=True, text=True)
     assert r.returncode == 0, r.stderr
     assert hashlib.sha256(g2.read_bytes()).hexdigest() == first
     g3 = root / "data" / "graph3" / "music_graph.db"
@@ -234,7 +237,85 @@ def test_score_pairs_prints_json(fixture_run):
                        capture_output=True, text=True, check=True)
     out = json.loads(r.stdout)
     assert out[0]["a_id"] == src and out[0]["b_id"] == dst
-    assert set(out[0]["channels"]) == {"melody", "bass", "chord", "loop"}
+    # V2: every channel of the V8 evidence is listed (lanes is null without lane:* rows); the pair's z is the
+    # best window's fused z and is compared with the run's recorded threshold.
+    assert set(out[0]["channels"]) == {"melody", "bass", "chord", "loop", "lanes"}
+    assert out[0]["channels"]["lanes"] is None
+    assert out[0]["threshold_z"] is not None and isinstance(out[0]["above_threshold"], bool)
+    assert out[0]["best_windows"] and out[0]["z"] == pytest.approx(max(w["fused_z"] for w in out[0]["best_windows"]), abs=1e-3)
+    assert 0 < out[0]["windows_above_half"] <= out[0]["windows"]
+
+
+def test_score_pairs_debug_places_the_shared_material_in_both_songs(fixture_run):
+    """--debug lists every shared rare n-gram of the winning window with its span in the later song and its
+    occurrences in the earlier one (for the side-by-side audit), and ranks the earlier song among all earlier songs
+    on that window."""
+    c = sqlite3.connect(fixture_run["db"])
+    src, dst = c.execute("SELECT a_id, b_id FROM pair_score WHERE significant = 1 ORDER BY z_combined DESC LIMIT 1").fetchone()
+    r = subprocess.run([str(fixture_run["exe"]), "score-pairs", "--db", str(fixture_run["db"]), "--pairs", json.dumps([[src, dst]]),
+                        "--debug"], capture_output=True, text=True, check=True)
+    out = json.loads(r.stdout)[0]
+    grams = [g for g in out["shared_rare_ngrams"] if g["bits"] > 0]
+    assert grams
+    w0, w1 = out["window_beats"]
+    for g in grams:
+        assert {"channel", "family", "df", "pair_df", "bits", "b_beat", "b_end_beat", "b_line", "a_line", "a_beats"} <= set(g)
+        assert w0 - 1e-6 <= g["b_beat"] <= g["b_end_beat"] < w1 + 1e-6
+        assert g["a_beats"] and all(s <= e for s, e in g["a_beats"]) and len(g["a_beats"]) <= 4
+        assert g["channel"] in ("melody", "bass", "chord", "lanes")
+    assert out["window_z"] == pytest.approx(out["z"], abs=1e-3)
+    assert out["window_rank"] >= 1 and out["window_others_half"] >= 0
+
+
+def test_decision_is_recorded_in_graph_meta_and_report(fixture_run):
+    """The empirical threshold of the run is written to graph_meta (influence_*) and the report, and every edge clears it."""
+    g = sqlite3.connect(fixture_run["graph"])
+    meta = dict(g.execute("SELECT key, value FROM graph_meta WHERE key LIKE 'influence%'"))
+    t = float(meta["influence_threshold_z"])
+    rep = json.loads((fixture_run["graph"].parent / "influence_report.json").read_text(encoding="utf-8"))
+    fpr = rep["params"]["TargetFpr"]
+    assert fpr == 1e-3                                               # FIXTURE_FPR (the default, 3e-5, is checked in CalibrationTests)
+    assert float(meta["influence_target_fpr"]) == fpr
+    assert int(meta["influence_null_sample"]) > 0 and meta["influence_threshold_method"]
+    # The evidence settings of the V2.1 calibration are recorded next to the decision.
+    assert meta["influence_df_cap"] == str(rep["params"]["DfCap"])
+    assert meta["influence_lanes"] == "off" and meta["influence_key_free_df"].startswith("2 ")
+    assert "pitch classes" in meta["influence_line_filter"]
+    assert g.execute("SELECT COUNT(*) FROM influence_edges WHERE z <= ?", (t,)).fetchone()[0] == 0
+    d = rep["decision"]
+    assert d["threshold_z"] == pytest.approx(t, abs=1e-6)
+    assert d["expected_false_pairs"] == pytest.approx(fpr * d["time_ordered_pairs"], rel=1e-9)
+    # Diagnostics: the operating curve (expected chance pairs per FPR) and the top of the null sample.
+    curve = d["operating_curve"]
+    assert [x["fpr"] for x in curve] == [1e-2, 3e-3, 1e-3, 3e-4, 1e-4, 3e-5, 1e-5]
+    for x in curve:
+        assert x["expected_false"] == pytest.approx(x["fpr"] * d["time_ordered_pairs"], rel=1e-9)
+    top = d["null_sample_top"]
+    assert top and all(a["z"] >= b["z"] for a, b in zip(top, top[1:]))
+    # The pipeline meta holds the same keys, so export alone reproduces them.
+    c = sqlite3.connect(fixture_run["db"])
+    assert dict(c.execute("SELECT key, value FROM meta WHERE key LIKE 'influence%'")) == meta
+
+
+BENCHMARK = os.environ.get("MUSICHISTORY_BENCHMARK")
+
+
+@pytest.mark.skipif(not BENCHMARK or not (Path(BENCHMARK or ".") / "pairs.json").exists(),
+                    reason="set MUSICHISTORY_BENCHMARK to the calibration benchmark folder (diag/benchmark)")
+def test_benchmark_port_reproduces_python_v8(exe):
+    """evaluate --benchmark: the C# V8 reproduces the Python analytic.py z of every benchmark pair (df cap 5 and
+    uncapped, per channel and fused) and therefore its TPR at a window FPR of 1e-3."""
+    r = subprocess.run([str(exe), "evaluate", "--benchmark", BENCHMARK], capture_output=True, text=True, timeout=1800)
+    assert r.returncode == 0, r.stderr
+    rows = [line for line in r.stdout.splitlines() if line.startswith("| 5 |") or line.startswith("| none |")]
+    assert len(rows) >= 10
+    for line in rows:
+        cells = [c.strip() for c in line.strip("|").split("|")]
+        cs_tpr, py_tpr, bad = cells[2].split()[0], cells[3].split()[0], cells[9]
+        if py_tpr == "-":
+            continue
+        assert cs_tpr == py_tpr, line
+        assert bad == "0", line
 
 
 @pytest.mark.skipif(sys.platform != "win32" or not UNITY_SQLITE.exists(), reason="needs Unity-FDG's sqlite3.dll (Windows)")

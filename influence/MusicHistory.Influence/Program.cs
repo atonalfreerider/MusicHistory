@@ -6,9 +6,9 @@ using System.Text.Json.Nodes;
 namespace MusicHistory.Influence;
 
 /// <summary>
-/// MusicHistory influence stage (DESIGN.md §8): scores rare shared material between earlier and
-/// later songs against a Markov null, roots every song under its most-referenced influencer, and
-/// exports the graph database of §10.
+/// MusicHistory influence stage (DESIGN.md §8): scores rare shared material between every earlier and later
+/// song (V8: analytic corpus null over rare n-grams, window max), decides with an empirical threshold, roots
+/// every song under its most-referenced strong influencer, and exports the graph database of §10.
 /// </summary>
 internal static class Program
 {
@@ -17,16 +17,22 @@ internal static class Program
 
           run           --db <pipeline.sqlite> --graph <music_graph.db> [--report <json>] [--root <repo>]
                         [--threads N] [--generated-at <iso>] [--no-export] [--param name=value]...
-                        Score pairs, write pair_score / influence_edge / tree_node, export the graph DB
-                        and data/graph/influence_report.json.
-          score-pairs   --db <pipeline.sqlite> --pairs <json | file>  [[a_id, b_id], ...]
-                        Force-score pairs (a earlier than b) and print JSON.
+                        Score every time-ordered pair, write pair_score / influence_edge / tree_node and the
+                        influence_* meta keys, export the graph DB and data/graph/influence_report.json.
+          score-pairs   --db <pipeline.sqlite> --pairs <json | file> [--debug]  [[a_id, b_id], ...]
+                        Score pairs (every window of the later song) and print JSON; --debug lists the shared
+                        rare n-grams of the winning window.
+          evaluate      --benchmark <dir> [--db <pipeline.sqlite>] [--tune] [--threshold-z Z] [--param name=value]...
+                        Score the calibration benchmark (pairs.json) and print TPR at window FPR 1e-3 per
+                        channel and fused, next to the Python V8 when its score files are present.
           export        --db <pipeline.sqlite> --graph <music_graph.db> [--root <repo>] [--generated-at <iso>]
                         Rewrite the graph DB from the pipeline tables only.
           retree        --db <pipeline.sqlite> --graph <music_graph.db> [--param name=value]...
                         Redo credit, tree and export from the stored pair_score rows (no rescoring).
           make-fixture  --out <db> --songs N [--seed S]
                         Write a synthetic pipeline DB (db.py schema) with planted influence.
+          bench         --db <pipeline.sqlite> [--pairs N]
+                        Time the V8 engine on N later songs of a pipeline DB.
         """;
 
     public static int Main(string[] args)
@@ -47,8 +53,8 @@ internal static class Program
             if (opts.TryGetValue("param", out var ps)) foreach (var a in ps) p.Set(a);
             var ro = new RunOptions
             {
-                Db = One(opts, "db") ?? ro_Default.Db,
-                Graph = One(opts, "graph") ?? ro_Default.Graph,
+                Db = One(opts, "db") ?? DefaultOptions.Db,
+                Graph = One(opts, "graph") ?? DefaultOptions.Graph,
                 Report = One(opts, "report"),
                 Root = One(opts, "root"),
                 GeneratedAt = One(opts, "generated-at"),
@@ -70,6 +76,10 @@ internal static class Program
                 }
                 case "score-pairs":
                     return ScorePairs(ro, One(opts, "pairs") ?? throw new ArgumentException("score-pairs needs --pairs"), p, log, opts.ContainsKey("debug"));
+                case "evaluate":
+                    return BenchmarkEval.Run(One(opts, "benchmark") ?? throw new ArgumentException("evaluate needs --benchmark <dir>"), p, log,
+                        opts.ContainsKey("tune"), One(opts, "threshold-z") is { } tz ? double.Parse(tz, CultureInfo.InvariantCulture) : double.NaN,
+                        One(opts, "db"));
                 case "make-fixture":
                 {
                     string outPath = One(opts, "out") ?? throw new ArgumentException("make-fixture needs --out");
@@ -79,7 +89,7 @@ internal static class Program
                     return 0;
                 }
                 case "bench":
-                    return Bench.Run(ro, p, int.Parse(One(opts, "pairs") ?? "300", CultureInfo.InvariantCulture), log);
+                    return Bench.Run(ro, p, int.Parse(One(opts, "pairs") ?? "50", CultureInfo.InvariantCulture), log);
                 default:
                     Console.Error.WriteLine($"unknown command '{args[0]}'\n\n{Usage}");
                     return 2;
@@ -92,7 +102,7 @@ internal static class Program
         }
     }
 
-    private static readonly RunOptions ro_Default = new();
+    private static readonly RunOptions DefaultOptions = new();
 
     private static Dictionary<string, List<string>> Parse(string[] args)
     {
@@ -102,7 +112,7 @@ internal static class Program
             if (!args[i].StartsWith("--", StringComparison.Ordinal)) throw new ArgumentException($"unexpected argument '{args[i]}'");
             string key = args[i][2..];
             if (!d.TryGetValue(key, out var list)) d[key] = list = [];
-            if (key is "no-export" or "debug") continue;
+            if (key is "no-export" or "debug" or "tune") continue;
             if (i + 1 >= args.Length) throw new ArgumentException($"--{key} needs a value");
             list.Add(args[++i]);
         }
@@ -111,28 +121,26 @@ internal static class Program
 
     private static string? One(Dictionary<string, List<string>> d, string key) => d.TryGetValue(key, out var v) && v.Count > 0 ? v[^1] : null;
 
-    /// <summary><c>score-pairs</c>: full per-channel detail for given pairs, as JSON on stdout.</summary>
+    /// <summary><c>score-pairs</c>: every window of the later song against the earlier one, as JSON on stdout.</summary>
     private static int ScorePairs(RunOptions ro, string pairsArg, Params p, TextWriter log, bool debug)
     {
         string json = pairsArg.TrimStart().StartsWith('[') ? pairsArg : File.ReadAllText(pairsArg);
-        p.SkipUnreachable = 0;   // force-score: always run the null, even when the bits gate is out of reach
         var pairs = JsonSerializer.Deserialize<string[][]>(json) ?? [];
         using var conn = PipelineDb.Open(ro.Db);
-        var load = new LoadStats();
-        var songs = PipelineDb.LoadSongs(conn, load);
-        var sc = new NgramScratch();
-        foreach (var s in songs) s.F = Features.Build(s, 0, sc, full: true, p.NullDistinct);
-        var corpus = Corpus.Build(songs, p);
-        var scorer = new PairScorer(p, corpus, songs);
+        var songs = PipelineDb.LoadSongs(conn, new LoadStats());
+        foreach (var s in songs) s.F = Features.Build(s, 0);
+        var engine = V8Engine.Build(songs, p);
+        var details = new PairDetails(engine, p);
+        var w = engine.NewWorker();
+        double? threshold = double.TryParse(PipelineDb.Meta(conn, "influence_threshold_z"), NumberStyles.Float, CultureInfo.InvariantCulture, out double t) ? t : null;
         var idx = songs.ToDictionary(s => s.WorkId, s => s.Index, StringComparer.Ordinal);
-        var w = new Worker(songs.Length, p);
         var outArr = new JsonArray();
         foreach (var pr in pairs)
         {
             if (pr.Length < 2) continue;
             var o = new JsonObject { ["a_id"] = pr[0], ["b_id"] = pr[1] };
             outArr.Add(o);
-            if (!idx.TryGetValue(pr[0], out int a) || !idx.TryGetValue(pr[1], out int b))
+            if (!idx.TryGetValue(pr[0], out int a) || !idx.TryGetValue(pr[1], out int b) || a == b)
             {
                 o["error"] = "not among the selected, analyzed songs";
                 continue;
@@ -142,62 +150,195 @@ internal static class Program
             o["a_title"] = sa.Title;
             o["b_title"] = sb.Title;
             o["order"] = DateOrder.Earlier(sa.Date, sb.Date) ? "a_before_b" : DateOrder.Earlier(sb.Date, sa.Date) ? "b_before_a" : "contemporaneous";
-            w.SetB(sb, corpus, p.EvidenceStopGrams == 0);
-            var (early, _) = CandidateGen.For(sb, songs, corpus, w.W, w.AccE, w.AccS, w.Touched, p);
-            var cand = early.FirstOrDefault(c => c.A == a);
-            o["candidate_rank"] = cand.Bits > 0 ? cand.Rank : null;
-            o["candidate_bits"] = cand.Bits > 0 ? Math.Round(cand.Bits, 3) : null;
-            if (debug) w.Debug = [];
-            var r = scorer.Score(sa, sb, w);
-            scorer.FillPmi(r, w);
-            if (debug && w.Debug != null)
-            {
-                var obs = new JsonArray();
-                foreach (var (phase, it) in w.Debug.Where(d => d.Phase == "obs"))
-                {
-                    int g = corpus.Group(it.Hash);
-                    obs.Add(new JsonObject
-                    {
-                        ["kind"] = Features.KindNames[it.Kind], ["b"] = $"{it.Start}-{it.End}", ["bits"] = Math.Round(it.W, 2),
-                        ["df"] = g >= 0 ? corpus.Df(g) : 0, ["stop"] = it.Stop,
-                    });
-                }
-                o["debug_observed"] = obs;
-                var nullItems = w.Debug.Where(d => d.Phase != "obs").ToList();
-                int nSur = Math.Max(1, nullItems.Select(d => d.Phase).Distinct().Count());
-                var byKind = new JsonObject();
-                foreach (var grp in nullItems.GroupBy(d => Features.KindNames[d.Item.Kind]).OrderBy(g => g.Key, StringComparer.Ordinal))
-                    byKind[grp.Key] = new JsonObject
-                    {
-                        ["items_per_surrogate"] = Math.Round(grp.Count() / (double)nSur, 2),
-                        ["bits_per_surrogate"] = Math.Round(grp.Sum(d => d.Item.W) / nSur, 2),
-                        ["mean_df"] = Math.Round(grp.Average(d => { int g = corpus.Group(d.Item.Hash); return g >= 0 ? corpus.Df(g) : 0; }), 1),
-                    };
-                o["debug_null_by_kind"] = byKind;
-                w.Debug = null;
-            }
-            bool bits = r.Excess(Channel.Melody) >= p.MelodyBits || r.Excess(Channel.Bass) >= p.BassBits || r.Excess(Channel.Chord) >= p.ChordBits;
-            o["z"] = Num(r.Zc);
-            o["p"] = r.P;
-            o["s_bits"] = Num(r.S);
-            o["pmi"] = Num(r.Pmi);
-            o["chord_identity"] = Num(r.ChordId);
-            o["duration_ratio"] = Num(r.DurationRatio);
-            o["version"] = r.Version;
-            o["shift"] = r.Shift;
-            o["surrogates"] = r.K;
-            o["passes_z_and_bits"] = r.Zc >= p.ZMin && bits;
+            (int x, int y) = a < b ? (a, b) : (b, a);
+            o["scored_as"] = $"{songs[x].WorkId} -> {songs[y].WorkId}";
+            var detail = new List<WindowEval>();
+            var recs = engine.ScoreB(y, w, x, detail);
+            var res = details.From(recs[x], x, y);
+            o["z"] = Num(res.Zc);
+            o["threshold_z"] = threshold is double tz ? Num(tz) : null;
+            o["above_threshold"] = threshold is double tz2 ? res.Zc > tz2 : null;
+            o["s_bits"] = Num(res.S);
+            o["shift"] = res.Shift;
+            o["window_beats"] = double.IsNaN(res.WinStart) ? null : new JsonArray(Num(res.WinStart), Num(res.WinEnd));
+            o["riff_z"] = Num(res.RiffZ);
+            o["riff_z_window_max"] = Num(res.RiffMax);
             var ch = new JsonObject();
             for (int c = 0; c < Channels.Count; c++)
-                ch[Channels.Names[c]] = r.Avail[c]
-                    ? new JsonObject { ["weight"] = r.W[c], ["e"] = Num(r.E[c]), ["mu"] = Num(r.Mu[c]), ["sigma"] = Num(r.Sigma[c]), ["z"] = Num(r.Z[c]) }
+                ch[Channels.Names[c]] = res.Avail[c] || !double.IsNaN(res.ZMax[c])
+                    ? new JsonObject
+                    {
+                        ["weight"] = res.W[c], ["s"] = res.Avail[c] ? Num(res.E[c]) : null, ["mu"] = res.Avail[c] ? Num(res.Mu[c]) : null,
+                        ["sigma"] = res.Avail[c] ? Num(res.Sigma[c]) : null, ["z"] = Num(res.Z[c]), ["z_window_max"] = Num(res.ZMax[c]),
+                    }
                     : null;
             o["channels"] = ch;
-            o["segments"] = JsonNode.Parse(PipelineDb.SegmentsJson(r.Segments));
+            if (res.LaneSrc >= 0)
+            {
+                o["lanes_match"] = res.LaneSrc == 0
+                    ? $"later lead vs earlier lane #{res.LaneIdx}"
+                    : $"later lane #{res.LaneSrc - 1} vs earlier lead";
+                o["lane_role"] = LaneRole(engine, res.LaneSrc == 0 ? x : y, res.LaneSrc == 0 ? res.LaneIdx : res.LaneSrc - 1);
+            }
+            o["windows"] = detail.Count;
+            o["windows_above_half"] = detail.Count(d => !double.IsNaN(d.Fused) && d.Fused >= 0.5 * res.Zc);
+            o["best_windows"] = new JsonArray(detail.OrderByDescending(d => d.Fused).ThenBy(d => d.Window).Take(5).Select(d => (JsonNode)new JsonObject
+            {
+                ["beats"] = new JsonArray(Num(d.T0), Num(d.T1)), ["fused_z"] = Num(d.Fused), ["shift"] = d.Shift,
+                ["z"] = new JsonObject(Enumerable.Range(0, Ch.N).Where(c => (d.Avail & (1 << c)) != 0)
+                    .Select(c => KeyValuePair.Create(Ch.Names[c], Num(d.Z[c])))),
+            }).ToArray());
+            if (debug)
+            {
+                o["shared_rare_ngrams"] = SharedGrams(engine, x, y, res);
+                // How unique the earlier song is for the winning window: every earlier song scored on that window alone.
+                if (res.Window >= 0)
+                {
+                    var atWin = engine.ScoreB(y, w, -1, null, res.Window);
+                    var others = Enumerable.Range(0, y).Where(a => a != x && DateOrder.Earlier(songs[a].Date, songs[y].Date) && !float.IsNaN(atWin[a].Z))
+                        .Select(a => (A: a, Z: (double)atWin[a].Z)).OrderByDescending(t => t.Z).ToList();
+                    double zx = atWin[x].Z;
+                    o["window_z"] = Num(zx);
+                    o["window_rank"] = 1 + others.Count(t => t.Z > zx);
+                    o["window_others_half"] = others.Count(t => t.Z >= 0.5 * zx);
+                    o["window_runner_up"] = others.Count > 0
+                        ? new JsonObject { ["work_id"] = songs[others[0].A].WorkId, ["title"] = songs[others[0].A].Title, ["z"] = Num(others[0].Z) }
+                        : null;
+                }
+            }
         }
         Console.Out.WriteLine(outArr.ToJsonString(Report.JsonOptions));
         log.WriteLine($"score-pairs: {outArr.Count} pairs");
         return 0;
+    }
+
+    /// <summary>The <c>melody_line</c> role of a song's usable lane (index into <see cref="SongV8.Lanes"/>).</summary>
+    private static string? LaneRole(V8Engine e, int song, int usable)
+    {
+        var d = e.Data[song];
+        var s = e.Songs[song];
+        if (usable < 0 || usable >= d.LaneRows.Length) return null;
+        int row = d.LaneRows[usable];
+        return row >= 0 && row < s.LaneRoles.Length ? s.LaneRoles[row] : null;
+    }
+
+    /// <summary>
+    /// The rare n-grams of the winning window that the earlier song contains, with their weight (score-pairs --debug):
+    /// channel, family, df, pair df, bits, the n-gram's first and last onset in B (<c>b_beat</c>, <c>b_end_beat</c>), the
+    /// line of each song it was matched in (<c>b_line</c> / <c>a_line</c>: melody, bass, chords or a lane role) and up to
+    /// four of its occurrences in A (<c>a_beats</c>: [first onset, last onset] each), so the matched material can be
+    /// printed side by side. The lanes channel lists the lane match of the winning window.
+    /// </summary>
+    internal static JsonArray SharedGrams(V8Engine e, int a, int b, PairResult res)
+    {
+        var arr = new JsonArray();
+        if (res.Window < 0) return arr;
+        var wins = e.Windows(e.Songs[b]);
+        if (res.Window >= wins.Count) return arr;
+        var win = wins[res.Window];
+        var sa = e.Songs[a];
+        var sb = e.Songs[b];
+        double fdb = sb.FirstDownbeat, bpb = sb.BeatsPerBar > 0 ? sb.BeatsPerBar : 4.0;
+        double fdbA = sa.FirstDownbeat, bpbA = sa.BeatsPerBar > 0 ? sa.BeatsPerBar : 4.0;
+        var docA = e.Data[a].DocSet;
+        var docB = e.Data[b].DocSet;
+
+        // A's occurrences (whole line or chords, never shifted) of every n-gram key.
+        Dictionary<long, List<(double S, double E)>> LineOcc(NoteLine? line, bool melody)
+        {
+            var map = new Dictionary<long, List<(double, double)>>();
+            if (line == null) return map;
+            var o = new List<GramOcc>();
+            Grams.Line(melody, line.Onsets, line.Pitches, fdbA, bpbA, 0, false, o, melody ? e.MelFilter : default);
+            foreach (var g in o)
+            {
+                if (!map.TryGetValue(g.Key, out var l)) map[g.Key] = l = [];
+                l.Add((line.Onsets[g.Start], line.Onsets[g.End]));
+            }
+            return map;
+        }
+
+        void Emit(string ch, string bLine, string aLine, List<GramOcc> occ, Func<GramOcc, bool> inGroup, HashSet64? target,
+            Func<int, double> beat, Dictionary<long, List<(double S, double E)>> aOcc)
+        {
+            if (target == null) return;
+            var seen = new HashSet<long>();
+            foreach (var o in occ)
+            {
+                if (!inGroup(o) || !seen.Add(o.Key)) continue;
+                ulong u = unchecked((ulong)o.Key);
+                if (!target.Contains(u)) continue;
+                int df = e.Df.Df(o.Key);
+                int d = e.Wt.Dfp(df, (docA.Contains(u) ? 1 : 0) + (docB.Contains(u) ? 1 : 0));
+                if (e.P.KeyFreeDf != 0 && o.Canon != o.Key)
+                {
+                    ulong cu = unchecked((ulong)o.Canon);
+                    d = e.Wt.Dfp(e.Df.Df(o.Canon), (docA.Contains(cu) ? 1 : 0) + (docB.Contains(cu) ? 1 : 0));
+                }
+                int scope = ch == "chord" ? 1 : ch == "bass" ? 4 : 2;
+                if (e.P.KeyFreeDf >= 2 && (e.P.ProjScope & scope) != 0 && o.Proj != 0 && o.Proj != o.Canon)
+                {
+                    ulong pu = unchecked((ulong)o.Proj);
+                    d = Math.Max(d, e.Wt.Dfp(e.Df.Df(o.Proj), (docA.Contains(pu) ? 1 : 0) + (docB.Contains(pu) ? 1 : 0)));
+                }
+                var at = new JsonArray();
+                if (aOcc.TryGetValue(o.Key, out var l))
+                    foreach (var (s0, e0) in l.Take(4)) at.Add(new JsonArray(Num(s0), Num(e0)));
+                arr.Add(new JsonObject
+                {
+                    ["channel"] = ch, ["family"] = Grams.FamNames[(int)o.Fam], ["df"] = df, ["pair_df"] = d, ["bits"] = Num(e.Wt.W[d]),
+                    ["b_beat"] = Num(beat(o.Start)), ["b_end_beat"] = Num(beat(o.End)), ["npc"] = o.Npc,
+                    ["b_line"] = bLine, ["a_line"] = aLine, ["a_beats"] = at,
+                });
+            }
+        }
+
+        var occ = new List<GramOcc>();
+        if (win.Mel is { } mv)
+        {
+            Grams.Line(true, mv.On, mv.Pitch, fdb, bpb, res.Shift, false, occ, e.MelFilter);
+            Emit("melody", "melody", "melody", occ, o => Grams.InGroup(o, Grp.Mel), e.Data[a].Mel, i => mv.On[i], LineOcc(sa.Melody, true));
+            // Lanes (i): the later lead window against the earlier song's lane of the winning window.
+            if (res.LaneSrc == 0 && res.LaneIdx < e.Data[a].Lanes.Length)
+            {
+                int row = e.Data[a].LaneRows[res.LaneIdx];
+                Emit("lanes", "melody", LaneRole(e, a, res.LaneIdx) ?? "lane", occ, o => Grams.InGroup(o, Grp.Mel), e.Data[a].Lanes[res.LaneIdx],
+                    i => mv.On[i], LineOcc(sa.Lanes[row], true));
+            }
+        }
+        // Lanes (ii): a later lane in the window against the earlier lead line.
+        if (res.LaneSrc >= 1 && res.LaneSrc - 1 < win.Lanes.Length && win.Lanes[res.LaneSrc - 1] is { } lv)
+        {
+            occ.Clear();
+            Grams.Line(true, lv.On, lv.Pitch, fdb, bpb, res.Shift, false, occ, e.MelFilter);
+            Emit("lanes", LaneRole(e, b, res.LaneSrc - 1) ?? "lane", "melody", occ, o => Grams.InGroup(o, Grp.Mel), e.Data[a].Mel, i => lv.On[i],
+                LineOcc(sa.Melody, true));
+        }
+        if (win.Bass is { } bv)
+        {
+            occ.Clear();
+            Grams.Line(false, bv.On, bv.Pitch, fdb, bpb, res.Shift, false, occ);
+            Emit("bass", "bass", "bass", occ, o => Grams.InGroup(o, Grp.BassNpc2) || Grams.InGroup(o, Grp.Riff), e.Data[a].Bass, i => bv.On[i],
+                LineOcc(sa.Bass, false));
+        }
+        if (win.Chord is { } cv)
+        {
+            occ.Clear();
+            Grams.Chords(cv.Tok, cv.Start, cv.Dur, fdb, bpb, res.Shift, false, occ);
+            var aOcc = new Dictionary<long, List<(double S, double E)>>();
+            if (sa.Chords is { } ac)
+            {
+                var o2 = new List<GramOcc>();
+                Grams.Chords(ac.Tokens, ac.Starts, ac.Durs, fdbA, bpbA, 0, false, o2);
+                foreach (var g in o2)
+                {
+                    if (!aOcc.TryGetValue(g.Key, out var l)) aOcc[g.Key] = l = [];
+                    l.Add((ac.Starts[g.Start], ac.Starts[g.End]));
+                }
+            }
+            Emit("chord", "chords", "chords", occ, o => Grams.InGroup(o, Grp.Chord), e.Data[a].Chord, i => cv.Start[i], aOcc);
+        }
+        return arr;
     }
 
     private static JsonNode? Num(double v) => double.IsNaN(v) || double.IsInfinity(v) ? null : JsonValue.Create(Math.Round(v, 4));

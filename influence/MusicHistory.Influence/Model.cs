@@ -2,13 +2,19 @@ using System.Globalization;
 
 namespace MusicHistory.Influence;
 
-internal enum Channel { Melody = 0, Bass = 1, Chord = 2, Loop = 3 }
+/// <summary>Evidence channels. Melody, bass, chord and loop have pair_score columns; lanes (the lead line of each
+/// song against every other pitched lane of the other) is kept in segments_json and the report.</summary>
+internal enum Channel { Melody = 0, Bass = 1, Chord = 2, Loop = 3, Lanes = 4 }
 
 internal static class Channels
 {
-    public const int Count = 4;
-    public static readonly string[] Names = ["melody", "bass", "chord", "loop"];
+    public const int Count = 5;
+    public const int Stored = 4;     // channels with pair_score columns
+    public static readonly string[] Names = ["melody", "bass", "chord", "loop", "lanes"];
     public static string Name(Channel c) => Names[(int)c];
+
+    /// <summary>The channel as the graph DB names it (DESIGN §10: melody | bass | chord | loop): lanes are melody material.</summary>
+    public static string GraphName(int c) => c == (int)Channel.Lanes ? "melody" : Names[c];
 }
 
 /// <summary>A normalized note line (<c>melody_line</c>): lead or bass, rests absorbed, C/Am frame.</summary>
@@ -122,6 +128,8 @@ internal sealed class Song
     public string? ResonanceCommit;
 
     public NoteLine? Melody, Bass;
+    public NoteLine[] Lanes = [];     // melody_line rows with role 'lane:*' (analyze), in role order
+    public string[] LaneRoles = [];
     public ChordLine? Chords;
     public LoopRow[] Loops = [];
 

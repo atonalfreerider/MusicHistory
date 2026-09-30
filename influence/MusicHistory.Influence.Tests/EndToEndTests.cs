@@ -25,11 +25,13 @@ public class EndToEndTests
         var log = new StringWriter();
         Fixture.Make(db, 150, 3, log);
 
-        var p = new Params { Threads = 4 };
+        // The fixture's 150 songs make every pair part of the null sample, planted pairs included: its threshold at the
+        // real corpus's calibrated FPR (3e-5) is dominated by the plants, so it runs at 1e-3.
+        var p = new Params { Threads = 4, TargetFpr = 1e-3 };
         var o1 = new RunOptions { Db = db, Graph = graph, Root = root, GeneratedAt = "2026-01-01T00:00:00Z" };
         Assert.Equal(0, Runner.Run(o1, p, log));
         var o2 = new RunOptions { Db = db, Graph = graph2, Root = root, GeneratedAt = "2026-01-01T00:00:00Z", Report = Path.Combine(root, "r2.json") };
-        Assert.Equal(0, Runner.Run(o2, new Params { Threads = 2 }, log));
+        Assert.Equal(0, Runner.Run(o2, new Params { Threads = 2, TargetFpr = 1e-3 }, log));
 
         // Determinism: same bytes (fixed generated_at), whatever the thread count.
         Assert.Equal(SHA256.HashData(File.ReadAllBytes(graph)), SHA256.HashData(File.ReadAllBytes(graph2)));
@@ -137,6 +139,28 @@ public class EndToEndTests
             }
             Assert.True(nonHome > 0, "no excerpt enters or leaves outside its home key; the fixture should exercise that");
         }
+        // The decision's settings are recorded: the empirical threshold and how it was obtained (graph_meta influence_*).
+        using (var cmd = g.CreateCommand())
+        {
+            cmd.CommandText = "SELECT key, value FROM graph_meta WHERE key LIKE 'influence%'";
+            var meta = new Dictionary<string, string>();
+            using var r = cmd.ExecuteReader();
+            while (r.Read()) meta[r.GetString(0)] = r.GetString(1);
+            Assert.True(double.Parse(meta["influence_threshold_z"], System.Globalization.CultureInfo.InvariantCulture) > 0);
+            Assert.Equal(1e-3, double.Parse(meta["influence_target_fpr"], System.Globalization.CultureInfo.InvariantCulture));
+            Assert.Equal(new Params().DfCap.ToString(System.Globalization.CultureInfo.InvariantCulture), meta["influence_df_cap"]);
+            Assert.StartsWith("2 ", meta["influence_key_free_df"]);
+            Assert.Equal("off", meta["influence_lanes"]);
+            Assert.Contains("influence_line_filter", meta.Keys);
+            Assert.Contains("influence_threshold_method", meta.Keys);
+            Assert.Contains("influence_riff_threshold_z", meta.Keys);
+            Assert.Contains("influence_count_z_melody", meta.Keys);
+        }
+        // Every edge's z clears the recorded threshold, and edges carry the winning window as their target passage.
+        Assert.Equal(0, Scalar(g, """
+            SELECT COUNT(*) FROM influence_edges WHERE z <= (SELECT CAST(value AS REAL) FROM graph_meta WHERE key = 'influence_threshold_z')
+            """));
+        Assert.Equal(0, Scalar(g, "SELECT COUNT(*) FROM influence_edges WHERE dst_start_beat IS NULL OR dst_end_beat <= dst_start_beat"));
         // graph_meta settings come from the fixture's analyze meta, not from the environment.
         using (var cmd = g.CreateCommand())
         {
@@ -164,6 +188,24 @@ public class EndToEndTests
         Assert.Contains("analyze_normalization", rep.RootElement.GetProperty("graph_meta_settings").GetProperty("normalization_source").GetString());
         Assert.Contains("analyze_target_bpm", rep.RootElement.GetProperty("graph_meta_settings").GetProperty("target_bpm_source").GetString());
         Assert.True(rep.RootElement.GetProperty("graph").GetProperty("excerpts_outside_home_key").GetInt32() > 0);
+        // Diagnostics of the decision: the operating curve (threshold, pairs above it and expected chance pairs per FPR)
+        // and the top of the null sample.
+        var dec = rep.RootElement.GetProperty("decision");
+        var curve = dec.GetProperty("operating_curve").EnumerateArray().ToList();
+        Assert.Equal(7, curve.Count);
+        long ordered = rep.RootElement.GetProperty("pairs").GetProperty("time_ordered").GetInt64();
+        for (int k = 0; k < curve.Count; k++)
+        {
+            double f = curve[k].GetProperty("fpr").GetDouble();
+            if (k > 0) Assert.True(f < curve[k - 1].GetProperty("fpr").GetDouble());
+            Assert.Equal(f * ordered, curve[k].GetProperty("expected_false").GetDouble(), 6);
+            Assert.InRange(curve[k].GetProperty("pairs_above").GetInt32(), 0, (int)ordered);
+            if (curve[k].GetProperty("estimated_real_share").ValueKind == JsonValueKind.Number)
+                Assert.InRange(curve[k].GetProperty("estimated_real_share").GetDouble(), 0, 1);
+        }
+        var top = dec.GetProperty("null_sample_top").EnumerateArray().ToList();
+        Assert.NotEmpty(top);
+        for (int k = 1; k < top.Count; k++) Assert.True(top[k].GetProperty("z").GetDouble() <= top[k - 1].GetProperty("z").GetDouble());
         g.Close();
         pc.Close();
         SqliteConnection.ClearAllPools();

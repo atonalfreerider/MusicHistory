@@ -107,30 +107,6 @@ public class UnitTests
     }
 
     [Fact]
-    public void NormalTailAndErfc()
-    {
-        Assert.Equal(0.157299207050285, Stats.Erfc(1.0), 12);
-        Assert.Equal(2.209049699858544e-5, Stats.Erfc(3.0), 15);
-        Assert.Equal(0.5, Stats.NormalSf(0), 12);
-        Assert.Equal(0.0013498980316301, Stats.NormalSf(3), 12);
-        Assert.Equal(0.9772498680518208, Stats.NormalSf(-2), 12);
-    }
-
-    [Fact]
-    public void BenjaminiHochberg()
-    {
-        // R: p.adjust(c(0.01, 0.04, 0.03, 0.5, 0.02), "BH") = 0.05 0.05 0.05 0.50 0.05
-        var q = Stats.BenjaminiHochberg([0.01, 0.04, 0.03, 0.5, 0.02]);
-        Assert.Equal([0.05, 0.05, 0.05, 0.5, 0.05], q.Select(x => Math.Round(x, 10)).ToArray());
-        // p.adjust(c(0.001, 0.2, 0.03, 0.04), "BH") = 0.004 0.200 0.0533 0.0533
-        q = Stats.BenjaminiHochberg([0.001, 0.2, 0.03, 0.04]);
-        Assert.Equal(0.004, q[0], 12);
-        Assert.Equal(0.2, q[1], 12);
-        Assert.Equal(0.04 * 4 / 3, q[2], 12);
-        Assert.Equal(0.04 * 4 / 3, q[3], 12);
-    }
-
-    [Fact]
     public void HashSetAndRngAreDeterministic()
     {
         var set = new HashSet64(4);
@@ -194,13 +170,16 @@ public class UnitTests
     [Fact]
     public void ParamsOverride()
     {
+        // V2 parameters (the V1 null / gate parameters KScreen, ZMin, StopCapBits are gone with the Markov null).
         var p = new Params();
-        p.Set("KScreen=10");
-        p.Set("zmin=3.5");
-        Assert.Equal(10, p.KScreen);
-        Assert.Equal(3.5, p.ZMin);
+        p.Set("DfCap=10");
+        p.Set("targetfpr=1e-4");
+        Assert.Equal(10, p.DfCap);
+        Assert.Equal(1e-4, p.TargetFpr);
         Assert.Throws<ArgumentException>(() => p.Set("nope=1"));
-        Assert.NotNull(p.ToJson()["StopCapBits"]);
+        Assert.Throws<ArgumentException>(() => p.Set("KScreen=10"));
+        Assert.NotNull(p.ToJson()["ShiftPenalty"]);
+        Assert.Null(p.ToJson()["Threads"]);
         _ = CultureInfo.InvariantCulture;
     }
 }

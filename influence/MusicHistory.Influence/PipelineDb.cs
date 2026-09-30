@@ -9,7 +9,7 @@ internal sealed record KnownInfluence(string Src, string Dst, string Kind, strin
 
 internal sealed class LoadStats
 {
-    public int Rows, Loaded, SkippedNoYear, MissingKey, NoMelody, NoBass, NoChords, NoLoops;
+    public int Rows, Loaded, SkippedNoYear, MissingKey, NoMelody, NoBass, NoChords, NoLoops, Lanes, WithLanes;
 }
 
 /// <summary>
@@ -153,13 +153,17 @@ internal static class PipelineDb
                 };
             }
         }
+        var lanes = new Dictionary<string, List<(string Role, NoteLine Line)>>(StringComparer.Ordinal);
         using (var cmd = c.CreateCommand())
         {
-            cmd.CommandText = "SELECT work_id, role, onsets, durs, pitches, met FROM melody_line";
+            cmd.CommandText = "SELECT work_id, role, onsets, durs, pitches, met FROM melody_line ORDER BY work_id, role";
             using var r = cmd.ExecuteReader();
             while (r.Read())
             {
                 if (!byId.TryGetValue(r.GetString(0), out var s)) continue;
+                string role = r.GetString(1);
+                bool lane = role.StartsWith("lane:", StringComparison.Ordinal);
+                if (role != "melody" && role != "bass" && !lane) continue;
                 var on = Doubles(r.GetString(2));
                 var du = Doubles(r.GetString(3));
                 var pi = Ints(r.GetString(4));
@@ -170,9 +174,23 @@ internal static class PipelineDb
                     Onsets = on[..n], Durs = du[..n], Pitches = pi[..n],
                     Met = Enumerable.Range(0, n).Select(i => i < me.Length ? me[i] : 3).ToArray(),
                 };
-                if (r.GetString(1) == "melody") s.Melody = line;
-                else if (r.GetString(1) == "bass") s.Bass = line;
+                if (role == "melody") s.Melody = line;
+                else if (role == "bass") s.Bass = line;
+                else
+                {
+                    if (!lanes.TryGetValue(s.WorkId, out var l)) lanes[s.WorkId] = l = [];
+                    l.Add((role, line));
+                }
             }
+        }
+        foreach (var (w, l) in lanes)
+        {
+            var s = byId[w];
+            var sorted = l.OrderBy(x => x.Role, StringComparer.Ordinal).ToList();
+            s.Lanes = sorted.Select(x => x.Line).ToArray();
+            s.LaneRoles = sorted.Select(x => x.Role).ToArray();
+            stats.Lanes += s.Lanes.Length;
+            stats.WithLanes++;
         }
         var loops = new Dictionary<string, List<LoopRow>>(StringComparer.Ordinal);
         using (var cmd = c.CreateCommand())
@@ -290,10 +308,32 @@ internal static class PipelineDb
     }
 
     // ------------------------------------------------------------------------------ writing
-    public static void WriteResults(SqliteConnection c, Song[] songs, IReadOnlyList<PairResult>? pairs, TreeResult tree)
+    /// <summary>
+    /// Replaces the influence tables (pair_score only when <paramref name="pairs"/> is given) and, when
+    /// <paramref name="meta"/> is given, the stage's <c>influence_*</c> keys of the shared meta table (the decision's
+    /// threshold and settings, which export copies to graph_meta).
+    /// </summary>
+    public static void WriteResults(SqliteConnection c, Song[] songs, IReadOnlyList<PairResult>? pairs, TreeResult tree,
+        IReadOnlyList<(string Key, string Value)>? meta)
     {
         EnsureInfluenceTables(c);
+        if (meta != null) Exec(c, "CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY, value TEXT)");
         using var tx = c.BeginTransaction();
+        if (meta != null)
+        {
+            Exec(c, @"DELETE FROM meta WHERE key LIKE 'influence\_%' ESCAPE '\'", tx);
+            using var mc = c.CreateCommand();
+            mc.Transaction = tx;
+            mc.CommandText = "INSERT OR REPLACE INTO meta(key, value) VALUES ($k, $v)";
+            var pk = mc.Parameters.Add("$k", SqliteType.Text);
+            var pv = mc.Parameters.Add("$v", SqliteType.Text);
+            foreach (var (k, v) in meta)
+            {
+                pk.Value = k;
+                pv.Value = v;
+                mc.ExecuteNonQuery();
+            }
+        }
         if (pairs != null) Exec(c, "DELETE FROM pair_score", tx);
         Exec(c, "DELETE FROM influence_edge", tx);
         Exec(c, "DELETE FROM tree_node", tx);
@@ -311,16 +351,16 @@ internal static class PipelineDb
             {
                 ps[0].Value = songs[r.A].WorkId;
                 ps[1].Value = songs[r.B].WorkId;
-                for (int ch = 0; ch < 4; ch++)
+                for (int ch = 0; ch < Channels.Stored; ch++)
                 {
                     ps[2 + ch].SqliteType = SqliteType.Real;
-                    ps[2 + ch].Value = !r.Contemporaneous && r.Avail[ch] ? r.E[ch] : DBNull.Value;
+                    ps[2 + ch].Value = r.Avail[ch] ? r.E[ch] : DBNull.Value;
                     ps[6 + ch].SqliteType = SqliteType.Real;
-                    ps[6 + ch].Value = !r.Contemporaneous && r.Avail[ch] && !double.IsNaN(r.Z[ch]) ? r.Z[ch] : DBNull.Value;
+                    ps[6 + ch].Value = r.Avail[ch] && !double.IsNaN(r.Z[ch]) ? r.Z[ch] : DBNull.Value;
                 }
-                SetReal(ps[10], r.Contemporaneous || !r.Tested ? double.NaN : r.Zc);
-                SetReal(ps[11], r.Q);
-                SetReal(ps[12], r.Contemporaneous || !r.Tested ? double.NaN : r.S);
+                SetReal(ps[10], r.Zc);
+                SetReal(ps[11], r.Contemporaneous ? double.NaN : r.Q);
+                SetReal(ps[12], r.Contemporaneous ? double.NaN : r.S);
                 SetReal(ps[13], r.Pmi);
                 SetReal(ps[14], r.ChordId);
                 ps[15].SqliteType = SqliteType.Integer;
@@ -398,6 +438,7 @@ internal static class PipelineDb
             sb.Append(",\"a_start\":").Append(Num(s.AStart)).Append(",\"a_end\":").Append(Num(s.AEnd));
             sb.Append(",\"b_start\":").Append(Num(s.BStart)).Append(",\"b_end\":").Append(Num(s.BEnd));
             sb.Append(",\"bits\":").Append(Num(s.Bits)).Append(",\"n\":").Append(s.N.ToString(CultureInfo.InvariantCulture));
+            if (!double.IsNaN(s.Z) && !double.IsInfinity(s.Z)) sb.Append(",\"z\":").Append(Num(s.Z));
             if (s.Channel == Channel.Loop)
             {
                 sb.Append(",\"phase\":\"").Append(s.SamePhase ? "same" : "cross").Append('"');
@@ -423,6 +464,7 @@ internal static class PipelineDb
                 BStart = e.GetProperty("b_start").GetDouble(), BEnd = e.GetProperty("b_end").GetDouble(),
                 Bits = e.GetProperty("bits").GetDouble(),
                 N = e.TryGetProperty("n", out var n) ? n.GetInt32() : 0,
+                Z = e.TryGetProperty("z", out var z) && z.ValueKind == JsonValueKind.Number ? z.GetDouble() : double.NaN,
                 SamePhase = e.TryGetProperty("phase", out var ph) && ph.GetString() == "same",
                 Loop = e.TryGetProperty("loop", out var lp) ? lp.GetString() : null,
             });

@@ -143,6 +143,13 @@ internal sealed class HashSet64
         }
     }
 
+    /// <summary>The members in insertion order (0 last, when present).</summary>
+    public IEnumerable<ulong> Keys()
+    {
+        for (int k = 0; k < _count; k++) yield return _slots[_used[k]];
+        if (_hasZero) yield return 0;
+    }
+
     public void Clear()
     {
         for (int k = 0; k < _count; k++) _slots[_used[k]] = 0;

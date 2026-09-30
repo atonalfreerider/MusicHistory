@@ -1,6 +1,3 @@
-using System.Runtime.Intrinsics;
-using System.Runtime.Intrinsics.X86;
-
 namespace MusicHistory.Influence;
 
 /// <summary>A local alignment hit: score (scaled points) and inclusive 0-based token spans.</summary>
@@ -15,7 +12,7 @@ internal sealed class Scoring
 {
     public readonly int[] MelSub;       // 48 x 48 over pc * 4 + metric class
     public readonly int[] ChordSub;     // 36 x 36 over L1 tokens
-    public readonly int MelOpen, MelExt, Cons, ChordOpen, ChordExt, MinHit, FifthPenalty;
+    public readonly int MelOpen, MelExt, Cons, ChordOpen, ChordExt, MinHit;
 
     public Scoring(Params p)
     {
@@ -46,7 +43,6 @@ internal sealed class Scoring
         ChordOpen = p.Pts(p.ChordGapOpen);
         ChordExt = p.Pts(p.ChordGapExtend);
         MinHit = p.Pts(p.MinHit);
-        FifthPenalty = p.Pts(p.FifthPenalty);
     }
 
     /// <summary>Pitch-class set of an L1 token as a 12-bit mask (maj 0-4-7, min 0-3-7, dim 0-3-6).</summary>
@@ -88,8 +84,8 @@ internal struct Best
 /// so the next hit is the best alignment inside one of the four corner blocks around it (an
 /// alignment cannot cross closed rows or columns). Melody/bass add the Mongeau-Sankoff
 /// consolidation move: one note against a run of 2-3 same-pitch notes in the other line, at a
-/// small cost. Scores are integers, so the scalar kernel and the AVX2 kernel (8 surrogates in
-/// lockstep, one per lane) give identical results.
+/// small cost. Scores are integers (x20). V2 aligns only to place display passages (a window of the
+/// later song against the earlier song), so the AVX2 surrogate kernel of V1 is gone.
 /// </summary>
 internal sealed unsafe class LocalAligner
 {
@@ -101,8 +97,6 @@ internal sealed unsafe class LocalAligner
     private readonly List<(int R0, int R1, int C0, int C1, Best B)> _blocks = [];
 
     public long Cells;
-
-    public static bool Simd => Avx2.IsSupported;
 
     private void EnsureScalar(int m)
     {
@@ -290,172 +284,6 @@ internal sealed unsafe class LocalAligner
         // A hit needs at least three positive moves, hence three rows and three columns.
         if (r1 - r0 < 2 || c1 - c0 < 2) return;
         _blocks.Add((r0, r1, c0, c1, BestIn(a, b, ap, r0, r1, c0, c1)));
-    }
-
-    // ------------------------------------------------------------------------------ AVX2, 8 lanes
-    private int[] _vh = [], _vs = [], _ve = [], _vse = [], _vbt = [], _vbr = [];
-    private int _vStride;
-
-    /// <summary>
-    /// Best cell of the full alignment of <paramref name="a"/> against each of <paramref name="count"/>
-    /// (at most 8) sequences of equal length, one per AVX2 lane. Same arithmetic as <see cref="BestIn"/>.
-    /// </summary>
-    public void Best8(Seq a, Seq[] bs, int count, in AlignParams ap, Span<Best> outBest)
-    {
-        int n = a.N, m = bs[0].N;
-        if (!Simd)
-        {
-            for (int l = 0; l < count; l++) outBest[l] = BestIn(a, bs[l], ap, 1, n, 1, m);
-            return;
-        }
-        Cells += (long)n * m * count;
-        int stride = (m + Pad + 1) * 8;
-        if (_vh.Length < 4 * stride)
-        {
-            _vh = new int[4 * stride];
-            _vs = new int[4 * stride];
-            _ve = new int[stride];
-            _vse = new int[stride];
-        }
-        if (_vbt.Length < m * 8)
-        {
-            _vbt = new int[m * 8];
-            _vbr = new int[m * 8];
-        }
-        _vStride = stride;
-        for (int j = 0; j < m; j++)
-            for (int l = 0; l < 8; l++)
-            {
-                var src = bs[l < count ? l : 0];
-                _vbt[j * 8 + l] = src.Tok[j];
-                _vbr[j * 8 + l] = src.Run[j];
-            }
-        Array.Clear(_vh, 0, 4 * stride);
-        Array.Clear(_vs, 0, 4 * stride);
-        Array.Fill(_ve, Neg, 0, stride);
-        bool useCons = ap.Cons > 0;
-        var vOpen = Vector256.Create(ap.Open);
-        var vExt = Vector256.Create(ap.Ext);
-        var vCons = Vector256.Create(ap.Cons);
-        var vNeg = Vector256.Create(Neg);
-        var one = Vector256.Create(1);
-        var two = Vector256.Create(2);
-        var zero = Vector256<int>.Zero;
-        var best = zero;
-        var bestS = zero;
-        var bestIJ = zero;
-        int alpha = ap.Alpha;
-        fixed (int* H = _vh, S = _vs, E0 = _ve, SE0 = _vse, BT = _vbt, BR = _vbr, sub0 = ap.Sub)
-        fixed (byte* at = a.Tok, ar = a.Run)
-        {
-            int* E = E0 + Pad * 8, SE = SE0 + Pad * 8;
-            for (int i = 1; i <= n; i++)
-            {
-                int* hc = H + (i & 3) * stride + Pad * 8, h1 = H + ((i - 1) & 3) * stride + Pad * 8;
-                int* sc = S + (i & 3) * stride + Pad * 8, s1 = S + ((i - 1) & 3) * stride + Pad * 8;
-                int* h2 = H + ((i - 2) & 3) * stride + Pad * 8, s2 = S + ((i - 2) & 3) * stride + Pad * 8;
-                int* h3 = H + ((i - 3) & 3) * stride + Pad * 8, s3 = S + ((i - 3) & 3) * stride + Pad * 8;
-                int* subRow = sub0 + at[i - 1] * alpha;
-                int kA = useCons ? Math.Min(ar[i - 1], i) : 1;
-                int* subA2 = kA >= 2 ? sub0 + at[i - 2] * alpha : null;
-                int* subA3 = kA >= 3 ? sub0 + at[i - 3] * alpha : null;
-                var vi = Vector256.Create(i << 16);
-                var vi1 = Vector256.Create((i - 1) << 16);
-                var vi2 = Vector256.Create((i - 2) << 16);
-                Vector256.Store(zero, hc);
-                Vector256.Store(zero, sc);
-                var f = vNeg;
-                var sf = zero;
-                var hPrev = zero;
-                var sPrev = zero;
-                var subP1 = vNeg;
-                var subP2 = vNeg;
-                for (int j = 1; j <= m; j++)
-                {
-                    int off = j * 8;
-                    var bt = Vector256.Load(BT + off - 8);
-                    var subv = Avx2.GatherVector256(subRow, bt, 4);
-                    var vj = Vector256.Create(j);
-                    // Vertical gap.
-                    var eExt = Vector256.Load(E + off) - vExt;
-                    var h1j = Vector256.Load(h1 + off);
-                    var eOpen = h1j - vOpen;
-                    var mOpen = Vector256.GreaterThan(eOpen, eExt);
-                    var e = Vector256.ConditionalSelect(mOpen, eOpen, eExt);
-                    var se = Vector256.ConditionalSelect(mOpen, Vector256.Load(s1 + off), Vector256.Load(SE + off));
-                    Vector256.Store(e, E + off);
-                    Vector256.Store(se, SE + off);
-                    // Horizontal gap.
-                    var fOpen = hPrev - vOpen;
-                    f -= vExt;
-                    var mF = Vector256.GreaterThan(fOpen, f);
-                    f = Vector256.ConditionalSelect(mF, fOpen, f);
-                    sf = Vector256.ConditionalSelect(mF, sPrev, sf);
-                    // Diagonal.
-                    var hd = Vector256.Load(h1 + off - 8);
-                    var h = hd + subv;
-                    var s = Vector256.ConditionalSelect(Vector256.GreaterThan(hd, zero), Vector256.Load(s1 + off - 8), vi | vj);
-                    var m1 = Vector256.GreaterThan(e, h);
-                    h = Vector256.ConditionalSelect(m1, e, h);
-                    s = Vector256.ConditionalSelect(m1, se, s);
-                    var m2 = Vector256.GreaterThan(f, h);
-                    h = Vector256.ConditionalSelect(m2, f, h);
-                    s = Vector256.ConditionalSelect(m2, sf, s);
-                    if (useCons)
-                    {
-                        var br = Vector256.Load(BR + off - 8);
-                        var hp = Vector256.Load(h1 + off - 16);
-                        var c = hp + subP1 - vCons;
-                        var mc = Vector256.GreaterThan(br, one) & Vector256.GreaterThan(c, h);
-                        h = Vector256.ConditionalSelect(mc, c, h);
-                        s = Vector256.ConditionalSelect(mc,
-                            Vector256.ConditionalSelect(Vector256.GreaterThan(hp, zero), Vector256.Load(s1 + off - 16), vi | (vj - one)), s);
-                        hp = Vector256.Load(h1 + off - 24);
-                        c = hp + subP2 - vCons;
-                        mc = Vector256.GreaterThan(br, two) & Vector256.GreaterThan(c, h);
-                        h = Vector256.ConditionalSelect(mc, c, h);
-                        s = Vector256.ConditionalSelect(mc,
-                            Vector256.ConditionalSelect(Vector256.GreaterThan(hp, zero), Vector256.Load(s1 + off - 24), vi | (vj - two)), s);
-                        if (subA2 != null)
-                        {
-                            hp = Vector256.Load(h2 + off - 8);
-                            c = hp + Avx2.GatherVector256(subA2, bt, 4) - vCons;
-                            mc = Vector256.GreaterThan(c, h);
-                            h = Vector256.ConditionalSelect(mc, c, h);
-                            s = Vector256.ConditionalSelect(mc,
-                                Vector256.ConditionalSelect(Vector256.GreaterThan(hp, zero), Vector256.Load(s2 + off - 8), vi1 | vj), s);
-                            if (subA3 != null)
-                            {
-                                hp = Vector256.Load(h3 + off - 8);
-                                c = hp + Avx2.GatherVector256(subA3, bt, 4) - vCons;
-                                mc = Vector256.GreaterThan(c, h);
-                                h = Vector256.ConditionalSelect(mc, c, h);
-                                s = Vector256.ConditionalSelect(mc,
-                                    Vector256.ConditionalSelect(Vector256.GreaterThan(hp, zero), Vector256.Load(s3 + off - 8), vi2 | vj), s);
-                            }
-                        }
-                    }
-                    var pos = Vector256.GreaterThan(h, zero);
-                    h &= pos;
-                    s &= pos;
-                    Vector256.Store(h, hc + off);
-                    Vector256.Store(s, sc + off);
-                    hPrev = h;
-                    sPrev = s;
-                    var mb = Vector256.GreaterThan(h, best);
-                    best = Vector256.ConditionalSelect(mb, h, best);
-                    bestS = Vector256.ConditionalSelect(mb, s, bestS);
-                    bestIJ = Vector256.ConditionalSelect(mb, vi | vj, bestIJ);
-                    subP2 = subP1;
-                    subP1 = subv;
-                }
-            }
-        }
-        for (int l = 0; l < count; l++)
-        {
-            int sc0 = bestS.GetElement(l), ij = bestIJ.GetElement(l);
-            outBest[l] = new Best { Score = best.GetElement(l), I0 = sc0 >> 16, J0 = sc0 & 0xFFFF, I = ij >> 16, J = ij & 0xFFFF };
-        }
     }
 }
 

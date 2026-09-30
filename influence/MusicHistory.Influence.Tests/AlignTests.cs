@@ -1,6 +1,6 @@
 namespace MusicHistory.Influence.Tests;
 
-/// <summary>Local alignment kernels: hits, consolidation, and the AVX2 kernel against the scalar one.</summary>
+/// <summary>Local alignment kernels (display passages): hits, consolidation, global identity (versions).</summary>
 public class AlignTests
 {
     private static readonly Params P = new();
@@ -17,7 +17,7 @@ public class AlignTests
         };
         var s = new Seq();
         Features.LoadNotes(s, line, 0);
-        Features.FinishNotes(s, true, new NgramScratch());
+        Features.FinishNotes(s);
         return s;
     }
 
@@ -113,70 +113,6 @@ public class AlignTests
         var noCons = new AlignParams(Sc.MelSub, 48, Sc.MelOpen, Sc.MelExt, 0, Sc.MinHit);
         al.Hits(Line(phrase), Line(split), noCons, hits);
         Assert.True(withCons > hits[0].Score, $"consolidation {withCons} vs gap {hits[0].Score}");
-    }
-
-    [Fact]
-    public void Avx2KernelMatchesScalar()
-    {
-        var r = new Rng(7);
-        var al = new LocalAligner();
-        var bests = new Best[8];
-        var batch = Enumerable.Range(0, 8).Select(_ => new Seq()).ToArray();
-        var sc = new NgramScratch();
-        foreach (var ap in new[] { Note, Chord })
-        {
-            for (int t = 0; t < 6; t++)
-            {
-                int n = 40 + r.Below(120), m = 40 + r.Below(120);
-                Seq a;
-                if (ap.Cons > 0)
-                {
-                    a = Line(RandomPitches(ref r, n));
-                    var src = new NoteLine
-                    {
-                        Pitches = RandomPitches(ref r, m), Onsets = Enumerable.Range(0, m).Select(i => i * 0.5).ToArray(),
-                        Durs = Enumerable.Repeat(0.5, m).ToArray(), Met = Enumerable.Range(0, m).Select(i => i % 4).ToArray(),
-                    };
-                    // repeated notes exercise the consolidation lanes
-                    for (int i = 1; i < m; i += 5) src.Pitches[i] = src.Pitches[i - 1];
-                    var mk = MarkovIndex.Build(src.Pitches, 128);
-                    for (int l = 0; l < 8; l++) Surrogates.Notes(src, mk, 0, ref r, batch[l], true, sc, false);
-                }
-                else
-                {
-                    a = ChordSeq(ref r, n);
-                    for (int l = 0; l < 8; l++) batch[l] = ChordSeq(ref r, m);
-                }
-                int count = 1 + r.Below(8);
-                al.Best8(a, batch, count, ap, bests);
-                for (int l = 0; l < count; l++)
-                {
-                    var s = al.BestIn(a, batch[l], ap, 1, a.N, 1, batch[l].N);
-                    Assert.Equal(s.Score, bests[l].Score);
-                    Assert.Equal((s.I0, s.J0, s.I, s.J), (bests[l].I0, bests[l].J0, bests[l].I, bests[l].J));
-                }
-            }
-        }
-    }
-
-    private static Seq ChordSeq(ref Rng r, int n)
-    {
-        int[] pool = [0, 7, 13, 15, 21, 28, 30, 9, 24];
-        var s = new Seq();
-        s.Ensure(n);
-        s.N = n;
-        int last = -1;
-        for (int i = 0; i < n; i++)
-        {
-            int t;
-            do t = pool[r.Below(pool.Length)]; while (t == last);
-            last = t;
-            s.Pitch[i] = t;
-            s.Start[i] = i * 2;
-            s.Dur[i] = 2;
-        }
-        Features.FinishChords(s);
-        return s;
     }
 
     [Fact]
