@@ -23,7 +23,8 @@ namespace MusicHistory.EditorTools
     /// (no -quit, no -nographics). Enters play mode so the scene builds itself through
     /// SongGraphLoader.Start, then measures the player loop and a full camera render per frame
     /// in four phases: idle overview, hover churn (a new focus every 10 frames), a running
-    /// lineage tour (time scale 30, so excerpts finish), and the live axis-locked simulation.
+    /// lineage tour (time scale 30, so excerpts finish), a family tour when the graph has identity
+    /// families (DESIGN.md §8b; same time scale), and the live axis-locked simulation.
     /// Writes data/screens/playmode_bench.json; exit code 0 when the checks pass.
     /// </summary>
     [InitializeOnLoad]
@@ -33,7 +34,7 @@ namespace MusicHistory.EditorTools
         const string ScenePath = "Assets/Scenes/SongInfluenceGraph.unity";
         const int Width = 1920, Height = 1080;
 
-        enum Phase { Waiting, Warmup, Idle, Hover, Tour, Simulation, Done }
+        enum Phase { Waiting, Warmup, Idle, Hover, Tour, FamilyTour, Simulation, Done }
 
         static Phase phase = Phase.Waiting;
         static int phaseFrame;
@@ -50,6 +51,9 @@ namespace MusicHistory.EditorTools
         static float[]? timeCoordinates;
         static int tourStartStep;
         static int exitCode = -1;
+        // Family tour (identity lineages): forward advances seen, and whether each one morphed from the step before.
+        static int familyStep, familyAdvances, familyBadHandoffs;
+        static string familyDetail = "";
 
         static PlayModeBench()
         {
@@ -140,11 +144,22 @@ namespace MusicHistory.EditorTools
                         $"{advanced} steps in {phaseFrame} frames at time scale 30; player {loader.Director.PlayerDescription}");
                     Capture(loader, cam, "playmode_tour.png");
                     loader.Director.Exit();
-                    Time.timeScale = 1f;
-                    timeCoordinates = loader.Nodes.Select(n => Vector3.Dot(n.transform.position, loader.Frame.TimeDir)).ToArray();
-                    loader.ToggleSimulation();
-                    Check("F starts the live simulation", loader.Simulation.IsRunning);
-                    Enter(Phase.Simulation);
+                    if (loader.Data.HasFamilies && StartFamilyTour(loader))
+                    {
+                        Enter(Phase.FamilyTour);
+                        break;
+                    }
+                    StartSimulation(loader);
+                    break;
+                case Phase.FamilyTour:
+                    WatchFamilyTour(loader);
+                    if (phaseFrame < 600 && !loader.Director.TourComplete) break;
+                    Check("family tour advances on the player's Finished events, each song morphing from the one before",
+                        (familyAdvances >= 2 || loader.Director.TourComplete) && familyBadHandoffs == 0,
+                        $"{familyAdvances} advances in {phaseFrame} frames at time scale 30, {familyBadHandoffs} bad handoffs; {familyDetail}");
+                    Capture(loader, cam, "playmode_family_tour.png");
+                    loader.Director.Exit();
+                    StartSimulation(loader);
                     break;
                 case Phase.Simulation when phaseFrame >= 120:
                     loader.ToggleSimulation();
@@ -156,6 +171,52 @@ namespace MusicHistory.EditorTools
                     Finish(null);
                     break;
             }
+        }
+
+        /// <summary>
+        /// A family tour of the largest identity family whose first songs include one played outside
+        /// its own excerpt, so the real synth plays edge-span and first-visit windows.
+        /// </summary>
+        static bool StartFamilyTour(SongGraphLoader loader)
+        {
+            SongGraphData data = loader.Data!;
+            IdentityFamily? family = data.Families.Values.Where(f => f.Members.Count >= 4)
+                .OrderByDescending(f => f.Members.Count).ThenBy(f => f.FamilyId)
+                .FirstOrDefault(f => f.Members.Take(4).Any(m => TourPlanner.Window(data, f.FamilyId, m.NodeId).Source != FamilyWindow.OwnExcerpt));
+            if (family == null) return false;
+            bool started = loader.Director.StartFamilyTour(family.FamilyId);
+            Check("family tour starts in play mode", started, $"'{family.Label}', {family.Members.Count} songs");
+            familyStep = loader.Director.StepIndex;
+            familyAdvances = 0;
+            familyBadHandoffs = 0;
+            familyDetail = $"family '{family.Label}'";
+            return started;
+        }
+
+        /// <summary>Each forward advance must play the next song of the family, at its window, after the song before.</summary>
+        static void WatchFamilyTour(SongGraphLoader loader)
+        {
+            WalkthroughDirector d = loader.Director;
+            if (d.StepIndex == familyStep || d.CurrentClip == null) return;
+            if (d.StepIndex == familyStep + 1)
+            {
+                familyAdvances++;
+                FamilyWindow w = TourPlanner.Window(loader.Data!, d.FamilyId ?? -1, d.Steps[d.StepIndex]);
+                bool ok = d.PreviousClip != null && d.PreviousClip.NodeId == d.Steps[d.StepIndex - 1] && d.CurrentClip.NodeId == d.Steps[d.StepIndex] &&
+                          d.CurrentClip.ExcerptStartBeat == w.Start && d.CurrentClip.ExcerptEndBeat == w.End && d.CurrentPlan.MorphBeats > 0;
+                if (!ok) familyBadHandoffs++;
+                familyDetail += $"; step {d.StepIndex + 1} {w.Source}";
+            }
+            familyStep = d.StepIndex;
+        }
+
+        static void StartSimulation(SongGraphLoader loader)
+        {
+            Time.timeScale = 1f;
+            timeCoordinates = loader.Nodes.Select(n => Vector3.Dot(n.transform.position, loader.Frame.TimeDir)).ToArray();
+            loader.ToggleSimulation();
+            Check("F starts the live simulation", loader.Simulation.IsRunning);
+            Enter(Phase.Simulation);
         }
 
         static void Enter(Phase next)
@@ -220,7 +281,7 @@ namespace MusicHistory.EditorTools
             StringBuilder json = new();
             json.Append("{\n  \"graphics_device\": \"").Append(SystemInfo.graphicsDeviceName).Append("\",\n  \"phases\": {");
             List<string> phases = new();
-            foreach (Phase p in new[] { Phase.Idle, Phase.Hover, Phase.Tour, Phase.Simulation })
+            foreach (Phase p in new[] { Phase.Idle, Phase.Hover, Phase.Tour, Phase.FamilyTour, Phase.Simulation })
             {
                 if (!loopMs.ContainsKey(p)) continue;
                 string entry = $"\n    \"{p.ToString().ToLowerInvariant()}\": {{\"frames\": {renderMs[p].Count}, " +

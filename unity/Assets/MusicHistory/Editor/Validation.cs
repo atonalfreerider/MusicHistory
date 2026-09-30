@@ -34,7 +34,7 @@ namespace MusicHistory.EditorTools
     /// Options: -validationDb &lt;path&gt; -validationFixtureDb &lt;path&gt; -validationOut &lt;dir&gt;
     /// -validationWidth 1920 -validationHeight 1080.
     /// </summary>
-    public static class Validation
+    public static partial class Validation
     {
         const string ScenePath = "Assets/Scenes/SongInfluenceGraph.unity";
 
@@ -121,6 +121,7 @@ namespace MusicHistory.EditorTools
 
             if (!report.Check("graph database exists", File.Exists(dbPath), dbPath)) return;
             ValidateMainGraph(report, loader, cam, dbPath, outDir, width, height);
+            ValidateLineage(report, loader, cam, outDir, width, height);
 
             if (File.Exists(fixturePath)) ValidateFixture(report, loader, cam, fixturePath, outDir, width, height);
             else report.Check("fixture database exists (python tests/unity/graph_fixture.py build)", false, fixturePath);
@@ -248,6 +249,7 @@ namespace MusicHistory.EditorTools
                 .Where(e => !e.IsTree).All(e => e.Shown == (e.Source == focus || e.Target == focus)));
             report.Check("hover: HUD shows title, key, BPM and lineage", loader.Hud.InfoText.Contains(focus.Song.Title) &&
                 loader.Hud.InfoText.Contains("Key") && loader.Hud.InfoText.Contains("BPM") && loader.Hud.InfoText.Contains("Lineage"));
+            CheckHudSemantics(report, loader, focus, "hover");
             // Frame the focus with its neighbourhood for the screenshot.
             List<(Vector3, float)> items = new() { (focus.transform.position, focus.Radius) };
             items.AddRange(related.Select(x => (x.transform.position, x.Radius)));
@@ -476,6 +478,13 @@ namespace MusicHistory.EditorTools
             report.Number($"{view}_labels_drawn", drawn.Count, "0");
             report.Number($"{view}_pinned_labels_drawn", pinnedDrawn, "0");
             report.Check($"{view}: drawn labels never overlap", overlaps == 0, $"{drawn.Count} labels, {overlaps} overlapping pairs");
+            // Labels keep clear of the HUD panels and the screen edge (LabelLayer.KeepClear); focus labels are exempt.
+            IReadOnlyList<Rect> panels = loader.Hud.PanelScreenRects(captureWidth, captureHeight);
+            int hidden = drawn.Count(l => l.Priority < LabelLayer.FocusPriority &&
+                (panels.Any(p => l.ScreenRect.Overlaps(p)) || l.ScreenRect.xMin < 0 || l.ScreenRect.yMin < 0 ||
+                 l.ScreenRect.xMax > captureWidth || l.ScreenRect.yMax > captureHeight));
+            report.Check($"{view}: no drawn label under a HUD panel or cut by the screen edge", hidden == 0 && panels.Count > 0,
+                $"{panels.Count} panels, {hidden} labels under a panel or off screen");
         }
 
         static void TickDirector(WalkthroughDirector director, float dt)
@@ -778,8 +787,13 @@ namespace MusicHistory.EditorTools
         }
 
         /// <summary>Renders <paramref name="cam"/> (with the HUD) at width x height; writes a PNG when <paramref name="path"/> is set. Returns ms.</summary>
+        /// <summary>Size of the last capture: label screen rects are in its pixels.</summary>
+        static int captureWidth = 1920, captureHeight = 1080;
+
         static double Capture(Camera cam, SongGraphLoader loader, string? path, int width, int height, out RenderStats stats)
         {
+            captureWidth = width;
+            captureHeight = height;
             RenderTexture rt = new(width, height, 24, RenderTextureFormat.ARGB32) { antiAliasing = 4, name = "Validation Capture" };
             rt.Create();
             RenderTexture? previousTarget = cam.targetTexture;

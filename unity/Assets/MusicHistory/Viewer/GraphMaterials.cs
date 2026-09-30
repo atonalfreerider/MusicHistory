@@ -27,7 +27,9 @@ namespace MusicHistory.Viewer
     {
         Twig,
         Branch,
-        Trunk
+        Trunk,
+        /// <summary>Identity lineages: a strong match (exact shared passage), drawn brightest.</summary>
+        Strong
     }
 
     /// <summary>
@@ -107,7 +109,7 @@ namespace MusicHistory.Viewer
                 (EdgeState.Dimmed, _) => (.06f, 0f, true),
                 (EdgeState.Highlight, true) => (.6f, .55f, false),
                 (EdgeState.Highlight, false) => (.5f, .35f, false),
-                (_, true) => (tier switch { EdgeTier.Twig => .17f, EdgeTier.Trunk => .5f, _ => .3f }, 0f, true),
+                (_, true) => (tier switch { EdgeTier.Twig => .17f, EdgeTier.Trunk => .5f, EdgeTier.Strong => .95f, _ => .3f }, 0f, true),
                 _ => (.16f, 0f, true)
             };
             m.SetColor("_Color", new Color(c.r * baseScale, c.g * baseScale, c.b * baseScale, 1));

@@ -28,16 +28,16 @@ next to `data/graph/` finds `data/songs/`.
 
 | Input | Action |
 |---|---|
-| Hover | Highlights the song, the songs that influenced it and the songs it influenced. Shows its secondary edges and fills the info panel (title, artist, year, key, BPM, main loop, lineage, evidence). |
-| Left click | Selects a song: a sticky focus that becomes the walkthrough's target. Clicking empty space clears it. |
+| Hover | Highlights the song, the songs that influenced it and the songs it influenced. Shows its secondary edges and fills the info panel (title, artist, year, key, BPM, main loop, lineage, and the tree edge: bits and z for a strict-evidence graph, `Shares: <identity>` for identity lineages). |
+| Left click | Selects a song: a sticky focus that becomes the walkthrough's target. A click on no bubble but within 7 px (`EdgePickPixels`) of a drawn edge selects the edge: its card replaces the song info, and a family tour plays its identity. Clicking empty space clears both. |
 | Right drag · W A S D · Q E · wheel | Look · move · down/up · dolly. Hold Shift to move faster. |
 | R / Home | Reset to the overview. |
 | L | Label every song (by default only the 40 most influential songs are labelled, plus whatever is in focus). |
 | V | Show all secondary edges. |
 | F | Toggle the live force-directed simulation. It is axis-locked, so songs never leave their dates. |
 | H | Show or hide the controls. |
-| 1 / 2 / 3 | Walkthrough mode: **lineage** (root → selected song), **subtree** (depth-first from the selected song, or from its root when it has no children; children in date order), **chronological** (every song from the selected one onward). |
-| Enter | Start the walkthrough from the selected song. With nothing selected, it starts from the deepest lineage, the largest tree, or the first song, depending on the mode. |
+| 1 / 2 / 3 / 4 · M | Walkthrough mode: **lineage** (root → selected song), **subtree** (depth-first from the selected song, or from its root when it has no children; children in date order), **chronological** (every song from the selected one onward), **family** (identity lineages only: every song of one shared identity in time order, see below). M steps to the next mode (family only when the graph has families). |
+| Enter | Start the walkthrough from the selected song (or the selected edge's later song). With nothing selected, it starts from the deepest lineage, the largest tree, the first song, or the largest family, depending on the mode. |
 | Space · N / → · B / ← · Esc | Pause/resume · next step · previous step · leave the tour (the free camera comes back). |
 | C | Toggle "compare in C / 120 BPM": plays the normalized MIDI without the key/BPM glide. |
 
@@ -52,6 +52,57 @@ Each walkthrough step does four things:
 
 The next step starts when the player raises `Finished`. When the next step plays on the same player, the director does not stop it first, so a song that ended naturally hands off on its bar line. A watchdog advances only when the player makes no progress (its beat stands still, unpaused) for `WatchdogSeconds` (20 s), so an excerpt in a section slower than the song's median tempo is never cut short.
 
+## Identity lineages (DESIGN §8b)
+
+The influence stage can write two kinds of graph. The viewer reads `graph_meta.edge_semantics` to tell them apart:
+
+| `edge_semantics` | Meaning | How the viewer describes an edge |
+|---|---|---|
+| `identity_lineage` | The two songs share a musical identity: a loop, a chord schema or progression, or an exact passage. It is shared DNA, not proven copying. | `Shares: <identity> · family of N songs`, plus `strong match (z …)` on a strong match. Bits are never shown. |
+| `strict_evidence`, or the key is missing (older databases and `--mode evidence`) | Strict v2 borrowing evidence. | `Via <channel> · N bits · z …`, plus the evidence text. Unchanged from before. |
+
+**Families.** For identity lineages the viewer also reads `identity_family` and `song_family` when both tables exist. Each edge's family is the one family both songs belong to whose `label` equals the edge's `evidence`. It must be exactly one, otherwise the edge is reported as a contract problem. On the real graph all 1,713 edges resolve. An edge is a **strong match** when its family has kind `strong`. Without the tables, the viewer falls back to `z > 0`. In the real graph, 66 edges are strong matches, and those are exactly the edges with `z > 0`.
+
+**HUD.** The info panel shows `Shares: <identity>` for the song's tree edge, and says `Shares identities with N earlier · M later` instead of "influenced by". Click an edge to see its **edge card**, which shows:
+
+- the two songs;
+- the identity, the family size and the strong-match z;
+- the kind of identity (repeating chord loop, named chord schema, chord progression schema, or exact shared passage);
+- whether it is a tree edge or a secondary edge;
+- the note "a shared musical identity, not proven copying".
+
+The edge lights up, its two songs glow, the rest of its family stays undimmed and everything else dims.
+
+**Legend.** It explains edges as shared musical identities and says they are not proven copying. It lists the identity colours (chord progression orange, loop gold, bass line green, melody blue, melody + harmony white) and highlights strong matches. Strong-match tree edges are drawn in the brightest tier (`EdgeTier.Strong`).
+
+**Family walkthrough (4 or M, then Enter).** The tour plays every member of one family in time order: `song_family` members by node id, which is `(time_value, work_id)` order. The viewer picks the family as follows:
+
+| Selection | Family played |
+|---|---|
+| An edge | The edge's family |
+| A song | The song's strongest family: the highest `song_family.strength` among the families it shares with another song, ties to the smaller family, then the lower id |
+| Nothing | The largest family |
+
+A song with no family has nothing to play. The idle panel says which family Enter will play, and why that one.
+
+Each step morphs from the song heard just before, exactly as in the other modes (`WalkthroughDirector.GoTo`). The camera frames the song together with the previous song of the family. The family's edge into the song grows: the one from that previous song if there is one, otherwise the tree edge, otherwise the family's highest-scoring edge. The panel shows `Shares: <identity> · family of N songs`.
+
+Each song plays where the identity sounds in it (`TourPlanner.Window`):
+
+| Window | Used when | Count on the real graph |
+|---|---|---|
+| Its own excerpt | The excerpt starts on the bar of the identity's first visit (`song_family.first_beat`). The excerpt's entry and exit keys apply. | 727 |
+| An edge span | Otherwise, if the influence stage exported a span for an edge of this family at this song. | 250 |
+| 8 bars from the bar of the first visit | Neither of the above. | 171 |
+
+The counts are over the 1,148 memberships in families that more than one song shares.
+
+**Limitations.**
+
+- The graph stores no key region for a window outside the song's own excerpt, so for those windows the key handoff uses the home key (the entry and exit columns read as NULL). The panel marks such windows with "home key assumed".
+- The graph stores no song length, so an 8-bar first-visit window can run past the end of a short file. The tail is then silent.
+- Mono.Data.Sqlite reads `REAL` columns as single precision, so window comparisons allow `TourPlanner.BeatTolerance` (0.001 beat).
+
 ## Visual encoding
 
 | Element | Meaning |
@@ -61,8 +112,9 @@ The next step starts when the player raises `Finished`. When the next step plays
 | Bubble fill | Key colour. The hue is the key signature on the circle of fifths: C major and A minor share a hue. Minor keys are darker. |
 | Bubble ring | Decade colour. |
 | Tree edge | Always visible. Tapered, wide at the influencer. Coloured by the channel that carried the influence: chords orange, melody blue, melody + harmony white, bass green, loop gold. Edges leading into big subtrees (trunks) are wider and brighter. Resting edges are drawn with additive light, so bundles of edges read as flows rather than a tangle. |
-| Secondary edge | Hidden until hover (or V). |
-| Labels | Keep a constant size on screen, independent of bubble size. Always drawn on top. When two labels would overlap, the lower-priority one is hidden, in this order: focus, then related songs, then the most influential songs. |
+| Strong match (identity lineages) | A tree edge whose shared identity is an exact passage above the calibrated v2 threshold. Drawn brightest (`EdgeTier.Strong`), in its channel colour. |
+| Secondary edge | Hidden until hover (or V). A selected edge's family shows all of its edges. |
+| Labels | Keep a constant size on screen, independent of bubble size. Always drawn on top. When two labels would overlap, the lower-priority one is hidden, in this order: focus, then related songs, then the most influential songs. A label that would sit under a HUD panel or be cut by the screen edge is hidden too, unless it is the focus label (`LabelLayer.KeepClear`, fed by `GraphHud.PanelScreenRects`). |
 
 ## Data contract (read-only)
 
@@ -71,7 +123,9 @@ DESIGN §10. `node_layout_metadata` (`mass`, `display_radius`) and the latest `l
 (`time_axis`, `time_direction`, `year_scale`, `min_time`, `params_json`) are optional. The
 `song_node` columns `entry_tonic_pc`, `entry_mode`, `exit_tonic_pc` and `exit_mode` are read
 when present (`PRAGMA table_info`); older databases without them read as NULL, which means the
-home key.
+home key. `graph_meta.edge_semantics` and the DESIGN §8b tables `identity_family` and
+`song_family` are optional too. A missing key reads as `strict_evidence`, and missing tables as a
+graph with no families.
 
 The viewer also relies on these invariants, and reports any that fail as warnings (validation
 treats them as failures):
@@ -80,6 +134,7 @@ treats them as failures):
 - Every non-root node has exactly one tree edge, and it comes from `tree_parent_node`.
 - Every edge's source is earlier than its target.
 - `descendants`, `tree_depth`, `tree_root_node`, `in_degree` and `out_degree` agree with the edges.
+- For identity lineages with family tables: every `song_family` row names an existing song and family, each family's `size` equals its number of rows, `family_count` matches, and each edge's evidence names exactly one family that both of its songs share.
 
 The database must be readable by Unity's bundled SQLite 3.15. That rules out STRICT tables,
 generated columns, and window functions or UPSERT inside views or triggers. Use
@@ -93,20 +148,20 @@ The viewer never reads or shows lyrics. Every string shown from the database is 
 | Path | Role |
 |---|---|
 | `Assets/MusicHistory/Viewer/SongGraphLoader.cs` | Scene entry point (GUID of the old `LoadFromSqliteDb`). Resolves the DB path, builds nodes, edges, timeline, HUD, hover and walkthrough, and frames the overview. Handles the F/L/V/H/R keys. |
-| `Viewer/SongGraphData.cs` | `SongGraphReader`: Mono.Data.Sqlite reader for §10, MIDI path resolution, invariant checks. |
+| `Viewer/SongGraphData.cs` | `SongGraphReader`: Mono.Data.Sqlite reader for §10, MIDI path resolution, invariant checks. It also reads `edge_semantics`, `identity_family`, `song_family` and each edge's family (DESIGN §8b). |
 | `Viewer/GraphFrame.cs` | Maps layout positions to the display time axis, fits time_value → coordinate, fallback layout. |
 | `Viewer/SongNode.cs`, `InfluenceEdge.cs` | Song bubble (sphere impostor) and tapered edge, with an animatable `VisibleFraction`. |
 | `Viewer/GraphMaterials.cs` | Shared material cache: 201 bubble and 10–30 edge materials for the 1000-song demo graph. No renderer owns a material. |
 | `Viewer/LabelLayer.cs`, `TextBox.cs` | Constant-screen-size world labels with priority decluttering. |
 | `Viewer/TimelineAxis.cs` | Decade axis, ticks, year labels and rings. |
-| `Viewer/HoverHighlighter.cs`, `GraphHud.cs` | Hover and selection highlighting; screen HUD (legend, song info, walkthrough panel). |
+| `Viewer/HoverHighlighter.cs`, `GraphHud.cs` | Hover, song and edge selection (screen-space edge pick) and highlighting. Screen HUD: legend, song info or edge card (`Shares: …` for identity lineages), walkthrough panel. |
 | `Viewer/CameraControl.cs`, `SceneLook.cs` | Free-fly camera (`InputEnabled`, `SyncRotationFromTransform`, null-safe input); gradient sky and bloom. |
-| `Walkthrough/TourPlanner.cs`, `WalkthroughDirector.cs`, `CameraFraming.cs` | Tour sequences, the step state machine, and perspective-correct framing that keeps the HUD clear. |
+| `Walkthrough/TourPlanner.cs`, `WalkthroughDirector.cs`, `CameraFraming.cs` | Tour sequences (including the family tour's family choice, order and per-song windows), the step state machine, and perspective-correct framing that keeps the HUD clear. |
 | `Playback/SilentSongPlayer.cs` | Timer-based `ISongPlayer`: the same morph tempo maths, raises `Finished`. |
 | `Playback/SongPlayerDiscovery.cs` | Chooses the player: an `ISongPlayer` component on the loader object; else `MusicHistory.Audio.SongPlayer`, added by reflection; else the silent player. The silent player also covers songs whose MIDI file is missing. |
 | `Assets/FDG/ForceDirectedGraph.cs` | Unity-FDG simulation with an axis lock, a Burst job, persistent buffers and a `Stepped` event. |
 | `Assets/Resources/SongBubble.shader`, `GlowingEdge.shader` | Unlit URP shaders with properties in the `UnityPerMaterial` CBUFFER (SRP Batcher compatible). |
-| `Assets/MusicHistory/Editor/Validation.cs`, `PlayModeBench.cs` | Headless checks, screenshots and the play-mode benchmark. |
+| `Assets/MusicHistory/Editor/Validation.cs`, `LineageValidation.cs`, `PlayModeBench.cs` | Headless checks (identity lineages in `LineageValidation.cs`), screenshots and the play-mode benchmark. |
 | `Assets/MusicHistory/Contracts/` | Shared with the audio module (foundation, do not edit). |
 
 ## Performance (measured)
@@ -129,6 +184,23 @@ Other measurements:
 - Garbage collection when idle is about 140 B per frame.
 - Materials are shared: 201 for bubbles and 20 for edges, all SRP Batcher compatible.
 
+Measured again on 2026-09-30, after the identity-lineage changes, on the same hardware. Two other
+Unity editors were open during these runs. The family tour played the 74-song "I-IV-V-I cadence"
+family at time scale 30.
+
+| Phase | Demo graph: player loop, mean (p95) | Demo graph: render + sync | `music_graph.db` (identity lineages): player loop | `music_graph.db`: render + sync |
+|---|---|---|---|---|
+| Idle overview | 0.58 ms (0.69) | 5.2 ms (6.4) | 0.56 ms (0.65) | 5.6 ms (6.6) |
+| Hover churn | 0.81 ms (2.49) | 6.9 ms (9.7) | 0.79 ms (2.22) | 5.7 ms (8.0) |
+| Running walkthrough (lineage) | 0.89 ms (2.03) | 5.3 ms (6.9) | 0.80 ms (1.92) | 5.1 ms (6.5) |
+| Running family tour | not run (no families) | not run | 0.85 ms (2.07) | 5.2 ms (6.3) |
+| Live simulation (F) | 9.46 ms (11.48) | 8.5 ms (10.5) | 8.05 ms (9.42) | 8.5 ms (11.5) |
+
+A focus change took 2.6 ms at the median on the demo graph and 1.9 ms on `music_graph.db`, where
+the graph built in 647 ms. An earlier run on `music_graph.db` in the same session was slower
+throughout (family tour 2.10 ms (6.42) loop and 11.3 ms (39.9) render; idle render 8.3 ms (20.1)),
+so these numbers vary with machine load.
+
 ## Headless validation
 
 Run from the repo root. Keep `-batchmode` but leave out `-nographics`, so the camera can render.
@@ -143,7 +215,7 @@ UNITY="C:/Program Files/Unity/Hub/Editor/6000.6.3f1/Editor/Unity.exe"
 # Edit-mode validation: counts, invariants, hover, tours, the silent player's clock,
 # axis lock, screenshots. Writes data/screens/*.png and validation.json.
 "$UNITY" -batchmode -projectPath "$PWD/unity" -executeMethod MusicHistory.EditorTools.Validation.Run   -musicHistoryDb "$PWD/data/graph/demo_graph.db" -logFile "$PWD/validate.log"
-# Options: -validationDb <db> -validationFixtureDb <db> -validationOut <dir> -validationWidth/-validationHeight
+# Options: -validationDb <db> -validationFixtureDb <db> -validationLineageDb <db> -validationOut <dir> -validationWidth/-validationHeight
 
 # Play-mode benchmark (the scene builds itself through Start). Writes data/screens/playmode_bench.json.
 "$UNITY" -batchmode -projectPath "$PWD/unity" -executeMethod MusicHistory.EditorTools.PlayModeBench.Run   -musicHistoryDb "$PWD/data/graph/demo_graph.db" -logFile "$PWD/bench.log"
@@ -151,6 +223,27 @@ UNITY="C:/Program Files/Unity/Hub/Editor/6000.6.3f1/Editor/Unity.exe"
 
 Relative `-musicHistoryDb` paths are tried against Unity's working directory (the project
 folder), then against the repository root.
+
+The identity-lineage checks (`Editor/LineageValidation.cs`) run on `data/graph/music_graph.db`
+when its `edge_semantics` is `identity_lineage`; `-validationLineageDb <db>` picks another database.
+They check the following:
+
+- The semantics key and the family tables are read in full.
+- Every edge's family is resolved, and matches an independent SQL join.
+- Strong matches are exactly the edges with `z > 0`.
+- The HUD, the edge card and the legend wording hold for both kinds of graph: `Shares:` and never
+  bits for identity lineages, bits and z for strict evidence. The strict-evidence case is also
+  checked on a copy stripped of `edge_semantics` and the family tables, which stands in for an
+  older database.
+- The family tour order equals the time order of `song_family` for every family (SQL).
+- The strongest family agrees with SQL for every song.
+- Every family window is bar aligned and contains the identity's first visit.
+- The family tour morphs from the song heard before, on Next, B/← and a natural advance.
+- No drawn label lies under a HUD panel.
+
+They write `lineage_overview.png`, `lineage_walkthrough.png`, `lineage_edge_card.png` and
+`family_tour.png`. When the graph has families, `PlayModeBench` adds a family-tour phase with the
+real synth and writes `playmode_family_tour.png`.
 
 Both commands exit with code 0 only when every check passes. In the editor, the same checks
 run from **MusicHistory → Run Validation**.

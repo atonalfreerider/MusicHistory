@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using Mono.Data.Sqlite;
 using MusicHistory.Playback;
 using UnityEngine;
@@ -105,6 +106,41 @@ namespace MusicHistory.Viewer
         public double? DstStartBeat;
         public double? DstEndBeat;
         public string? Evidence;
+
+        /// <summary>
+        /// Identity lineages (DESIGN.md §8b): the family this edge shares, found by matching
+        /// <see cref="Evidence"/> to the label of a family both songs belong to (song_family).
+        /// Null for strict-evidence graphs and older databases.
+        /// </summary>
+        public int? FamilyId;
+        /// <summary>Identity lineages: a strong match (an exact shared passage above the calibrated v2 threshold; z &gt; 0).</summary>
+        public bool IsStrongMatch;
+    }
+
+    /// <summary>One row of identity_family (DESIGN.md §8b) with its song_family members in time order.</summary>
+    public sealed class IdentityFamily
+    {
+        public int FamilyId;
+        public string Label = "";
+        /// <summary>'loop' | 'schema' | 'progression' | 'strong'.</summary>
+        public string Kind = "";
+        public string? Roman;
+        public int Size;
+        /// <summary>Members ordered by node id, which is (time_value, work_id) order.</summary>
+        public readonly List<FamilyMember> Members = new();
+
+        public bool IsStrong => string.Equals(Kind, "strong", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>One row of song_family: a song's membership in an identity family.</summary>
+    public sealed class FamilyMember
+    {
+        public int NodeId;
+        public int FamilyId;
+        /// <summary>Fraction of the song's beats the identity covers (capped).</summary>
+        public double Strength;
+        /// <summary>Beat of the identity's first visit in the song's MIDI (null = unknown).</summary>
+        public double? FirstBeat;
     }
 
     /// <summary>The latest layout_run row, or defaults matching the layout stage when there is none.</summary>
@@ -140,6 +176,48 @@ namespace MusicHistory.Viewer
         public double MaxTime;
 
         public SongRecord Song(int nodeId) => Songs[nodeId - 1];
+
+        /// <summary>graph_meta.edge_semantics of a DESIGN.md §8b identity-lineage graph.</summary>
+        public const string IdentityLineageSemantics = "identity_lineage";
+        /// <summary>graph_meta.edge_semantics of a strict-evidence graph (§8); a missing key means this.</summary>
+        public const string StrictEvidenceSemantics = "strict_evidence";
+
+        /// <summary>graph_meta.edge_semantics; strict-evidence graphs and older databases do not carry the key.</summary>
+        public string EdgeSemantics
+        {
+            get
+            {
+                string? value = MetaValue("edge_semantics");
+                return string.IsNullOrWhiteSpace(value) ? StrictEvidenceSemantics : value!.Trim().ToLowerInvariant();
+            }
+        }
+
+        /// <summary>Edges are shared musical identities (DESIGN.md §8b), not proven borrowings.</summary>
+        public bool IsIdentityLineage => EdgeSemantics == IdentityLineageSemantics;
+
+        /// <summary>identity_family rows by family_id (empty when the table is absent).</summary>
+        public readonly Dictionary<int, IdentityFamily> Families = new();
+        /// <summary>song_family rows per song: SongFamilies[nodeId - 1] (empty lists when the table is absent).</summary>
+        public readonly List<List<FamilyMember>> SongFamilies = new();
+        /// <summary>Edges by the family they share (identity lineages only).</summary>
+        public readonly Dictionary<int, List<EdgeRecord>> FamilyEdges = new();
+        public bool HasFamilies => Families.Count > 0;
+
+        public IdentityFamily? Family(int? familyId) =>
+            familyId is int id && Families.TryGetValue(id, out IdentityFamily? f) ? f : null;
+
+        public IReadOnlyList<FamilyMember> FamiliesOf(int nodeId) =>
+            nodeId >= 1 && nodeId <= SongFamilies.Count ? SongFamilies[nodeId - 1] : Array.Empty<FamilyMember>();
+
+        public FamilyMember? Membership(int nodeId, int familyId)
+        {
+            foreach (FamilyMember m in FamiliesOf(nodeId))
+                if (m.FamilyId == familyId) return m;
+            return null;
+        }
+
+        public IReadOnlyList<EdgeRecord> EdgesOfFamily(int familyId) =>
+            FamilyEdges.TryGetValue(familyId, out List<EdgeRecord>? list) ? list : Array.Empty<EdgeRecord>();
 
         public string? MetaValue(string key) => Meta.TryGetValue(key, out string? v) ? v : null;
 
@@ -220,10 +298,109 @@ namespace MusicHistory.Viewer
             ReadLayoutMetadata(conn, data);
             ReadLayoutRun(conn, data);
             ReadEdges(conn, data);
+            ReadFamilies(conn, data);
             conn.Close();
             MarkValidationExtras(data);
+            ResolveEdgeFamilies(data);
             Validate(data);
             return data;
+        }
+
+        /// <summary>
+        /// identity_family and song_family (DESIGN.md §8b), read when both tables exist; older
+        /// databases lack them and read as no families.
+        /// </summary>
+        static void ReadFamilies(SqliteConnection conn, SongGraphData data)
+        {
+            for (int i = 0; i < data.Songs.Count; i++) data.SongFamilies.Add(new List<FamilyMember>());
+            HashSet<string> familyColumns = TableColumns(conn, "identity_family");
+            HashSet<string> memberColumns = TableColumns(conn, "song_family");
+            if (!new[] { "family_id", "label", "kind", "roman", "size" }.All(familyColumns.Contains) ||
+                !new[] { "node_id", "family_id", "strength", "first_beat" }.All(memberColumns.Contains))
+                return;
+
+            using (IDbCommand cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "SELECT family_id, label, kind, roman, size FROM identity_family ORDER BY family_id";
+                using IDataReader r = cmd.ExecuteReader();
+                while (r.Read())
+                {
+                    IdentityFamily f = new()
+                    {
+                        FamilyId = Int(r, 0) ?? 0,
+                        Label = Str(r, 1) ?? "",
+                        Kind = (Str(r, 2) ?? "").Trim().ToLowerInvariant(),
+                        Roman = Str(r, 3),
+                        Size = Int(r, 4) ?? 0
+                    };
+                    data.Families[f.FamilyId] = f;
+                }
+            }
+            using (IDbCommand cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "SELECT node_id, family_id, strength, first_beat FROM song_family ORDER BY node_id, family_id";
+                using IDataReader r = cmd.ExecuteReader();
+                while (r.Read())
+                {
+                    FamilyMember m = new()
+                    {
+                        NodeId = Int(r, 0) ?? 0,
+                        FamilyId = Int(r, 1) ?? 0,
+                        Strength = Dbl(r, 2) ?? 0,
+                        FirstBeat = Dbl(r, 3)
+                    };
+                    if (m.NodeId < 1 || m.NodeId > data.Songs.Count || !data.Families.TryGetValue(m.FamilyId, out IdentityFamily? f))
+                    {
+                        data.Problems.Add($"song_family row ({m.NodeId}, {m.FamilyId}) references a missing song or family");
+                        continue;
+                    }
+                    data.SongFamilies[m.NodeId - 1].Add(m);
+                    f.Members.Add(m); // rows arrive by node id: time order
+                }
+            }
+        }
+
+        /// <summary>
+        /// Identity lineages: each edge's family is the family both songs belong to whose label is
+        /// the edge's evidence (unique by construction in the influence stage); a family of kind
+        /// 'strong' (or z &gt; 0 when the tables are absent) marks a strong match.
+        /// </summary>
+        static void ResolveEdgeFamilies(SongGraphData data)
+        {
+            if (!data.IsIdentityLineage) return;
+            int n = data.Songs.Count;
+            foreach (EdgeRecord e in data.Edges)
+            {
+                if (e.Source < 1 || e.Source > n || e.Target < 1 || e.Target > n) continue;
+                if (data.HasFamilies)
+                {
+                    int? match = null;
+                    int matches = 0;
+                    foreach (FamilyMember a in data.FamiliesOf(e.Source))
+                    {
+                        if (data.Membership(e.Target, a.FamilyId) == null) continue;
+                        if (!string.Equals(data.Families[a.FamilyId].Label, e.Evidence, StringComparison.Ordinal)) continue;
+                        match ??= a.FamilyId;
+                        matches++;
+                    }
+                    if (matches == 1)
+                    {
+                        e.FamilyId = match;
+                        if (!data.FamilyEdges.TryGetValue(match!.Value, out List<EdgeRecord>? list))
+                            data.FamilyEdges[match.Value] = list = new List<EdgeRecord>();
+                        list.Add(e);
+                    }
+                    else
+                    {
+                        data.Problems.Add($"edge {e.Id}: evidence '{e.Evidence}' names {matches} families both songs share (expected 1)");
+                    }
+                    e.IsStrongMatch = data.Family(e.FamilyId)?.IsStrong ?? e.Z > 0;
+                }
+                else
+                {
+                    e.IsStrongMatch = e.Z > 0;
+                }
+            }
         }
 
         /// <summary>
@@ -506,6 +683,13 @@ namespace MusicHistory.Viewer
             CheckMetaCount(data, "song_count", n);
             CheckMetaCount(data, "edge_count", data.Edges.Count);
             CheckMetaCount(data, "root_count", data.RootCount);
+            if (data.HasFamilies)
+            {
+                CheckMetaCount(data, "family_count", data.Families.Count);
+                foreach (IdentityFamily f in data.Families.Values)
+                    if (f.Size != f.Members.Count)
+                        p.Add($"identity_family {f.FamilyId}: size {f.Size} but {f.Members.Count} song_family rows");
+            }
         }
 
         static void CheckMetaCount(SongGraphData data, string key, int actual)

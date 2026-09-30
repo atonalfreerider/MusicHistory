@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -53,6 +54,14 @@ namespace MusicHistory.Viewer
         public bool HideDimmed;
         [Tooltip("Pixels kept free around each label when decluttering.")]
         public float LabelPadding = 3f;
+
+        /// <summary>
+        /// Screen rects (pixels, origin bottom-left) that labels keep clear of, such as HUD panels.
+        /// When set, a label under one of them or cut by the screen edge is hidden, except a focus
+        /// label (priority at least <see cref="FocusPriority"/>). Null: no such rule.
+        /// </summary>
+        [NonSerialized] public Func<Camera, IReadOnlyList<Rect>>? KeepClear;
+        public const float FocusPriority = 1e8f;
 
         public const string OverlayShaderName = "TextMeshPro/Distance Field Overlay";
 
@@ -196,11 +205,20 @@ namespace MusicHistory.Viewer
             // Greedy declutter: highest priority first; a label stays only if it overlaps no kept one.
             candidates.Sort((a, b) => b.Priority.CompareTo(a.Priority));
             placed.Clear();
+            IReadOnlyList<Rect>? keepClear = KeepClear?.Invoke(cam);
+            Rect screen = new(0, 0, cam.pixelWidth, cam.pixelHeight);
             foreach (WorldLabel label in candidates)
             {
                 Rect r = label.ScreenRect;
                 Rect padded = new(r.xMin - LabelPadding, r.yMin - LabelPadding, r.width + 2 * LabelPadding, r.height + 2 * LabelPadding);
                 bool clear = true;
+                if (keepClear != null && label.Priority < FocusPriority)
+                {
+                    // Under a HUD panel or cut by the screen edge, a label cannot be read.
+                    clear = r.xMin >= 0 && r.yMin >= 0 && r.xMax <= screen.width && r.yMax <= screen.height;
+                    for (int i = 0; clear && i < keepClear.Count; i++)
+                        if (r.Overlaps(keepClear[i])) clear = false;
+                }
                 foreach (Rect other in placed)
                 {
                     if (!padded.Overlaps(other)) continue;

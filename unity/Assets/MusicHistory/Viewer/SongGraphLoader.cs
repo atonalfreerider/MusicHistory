@@ -161,6 +161,8 @@ namespace MusicHistory.Viewer
                 // Tree edges into big subtrees are the trunks of the lineage: wider and brighter.
                 int below = target.Song.Descendants;
                 EdgeTier tier = below >= TrunkDescendants ? EdgeTier.Trunk : below >= 1 ? EdgeTier.Branch : EdgeTier.Twig;
+                // Identity lineages: strong matches (exact shared passages) are drawn brightest.
+                if (record.IsStrongMatch && data.IsIdentityLineage) tier = EdgeTier.Strong;
                 float subtree = Mathf.Min(3f, 1f + .35f * Mathf.Log(1 + below, 2));
                 float width = record.IsTree
                     ? TreeEdgeWidth * (.5f + .5f * similarity) * subtree
@@ -202,11 +204,15 @@ namespace MusicHistory.Viewer
             Hud = GetOrAdd<GraphHud>();
             Hud.Build(this);
             Hud.SetLegend(LegendBody());
+            // A label under a HUD panel or cut by the screen edge is hidden (focus labels excepted).
+            Labels.KeepClear = c => Hud != null ? Hud.PanelScreenRects(c) : (IReadOnlyList<Rect>)Array.Empty<Rect>();
 
             Highlighter = GetOrAdd<HoverHighlighter>();
             Highlighter.Loader = this;
             Highlighter.FocusChanged -= OnFocusChanged;
             Highlighter.FocusChanged += OnFocusChanged;
+            Highlighter.EdgeFocusChanged -= OnEdgeFocusChanged;
+            Highlighter.EdgeFocusChanged += OnEdgeFocusChanged;
             Highlighter.ApplyFocus(null, force: true);
 
             Director = GetOrAdd<WalkthroughDirector>();
@@ -232,6 +238,11 @@ namespace MusicHistory.Viewer
             if (Hud != null) Hud.ShowSong(node);
         }
 
+        void OnEdgeFocusChanged(InfluenceEdge edge)
+        {
+            if (Hud != null) Hud.ShowEdge(edge);
+        }
+
         T GetOrAdd<T>() where T : Component
         {
             T existing = GetComponent<T>();
@@ -251,9 +262,13 @@ namespace MusicHistory.Viewer
             SongGraphData data = Data!;
             string m = GraphHud.Muted;
             StringBuilder b = new();
-            b.Append($"<size=125%><b>MusicHistory</b></size>  <color={m}>song influence graph</color>");
+            bool lineage = data.IsIdentityLineage;
+            b.Append($"<size=125%><b>MusicHistory</b></size>  <color={m}>{(lineage ? "shared-identity lineages" : "song influence graph")}</color>");
             if (data.IsSynthetic) b.Append("  <color=#ffcf4a>[synthetic data]</color>");
-            b.Append($"\n{data.Songs.Count} songs · {data.Edges.Count} influences ({data.TreeEdgeCount} tree) · {data.RootCount} roots");
+            b.Append(lineage
+                ? $"\n{data.Songs.Count} songs · {data.Edges.Count} shared-identity links ({data.TreeEdgeCount} tree) · {data.RootCount} roots" +
+                  (data.HasFamilies ? $" · {data.Families.Count} families" : "")
+                : $"\n{data.Songs.Count} songs · {data.Edges.Count} influences ({data.TreeEdgeCount} tree) · {data.RootCount} roots");
             if (data.Songs.Count > 0) b.Append($" · {data.Songs[0].Year}–{data.Songs[data.Songs.Count - 1].Year}");
             b.Append(TimeAxis switch
             {
@@ -270,10 +285,29 @@ namespace MusicHistory.Viewer
             for (int decade = SongPalette.FirstDecade; decade <= SongPalette.LastDecade; decade += 10)
                 b.Append($"<color={SongPalette.ToHex(SongPalette.DecadeColor(decade))}>{decade % 100:00}s</color> ");
             b.Append($"<color={m}>· area = descendants + 1</color>");
-            b.Append($"\n<color={m}>Edges</color> ");
-            foreach (EdgeChannel c in new[] { EdgeChannel.Chord, EdgeChannel.Melody, EdgeChannel.Both, EdgeChannel.Bass, EdgeChannel.Loop })
-                b.Append($"<color={SongPalette.ToHex(SongPalette.ChannelColor(c))}>{SongPalette.ChannelLabel(c)}</color> ");
-            b.Append($"<color={m}>· wide end = influencer</color>");
+            if (lineage)
+            {
+                // DESIGN.md §8b: an edge is a shared musical identity, labelled as such.
+                int strong = data.Edges.Count(e => e.IsStrongMatch);
+                b.Append($"\n<color={m}>Edge = two songs share a musical identity (shared DNA, not proven copying) · wide end = earlier song</color>");
+                b.Append($"\n<color={m}>Shared:</color> ");
+                (EdgeChannel channel, string label)[] kinds =
+                {
+                    (EdgeChannel.Chord, "chord progression"), (EdgeChannel.Loop, "loop"), (EdgeChannel.Bass, "bass line"),
+                    (EdgeChannel.Melody, "melody"), (EdgeChannel.Both, "melody + harmony")
+                };
+                b.Append(string.Join($" <color={m}>·</color> ",
+                    kinds.Select(k => $"<color={SongPalette.ToHex(SongPalette.ChannelColor(k.channel))}>{k.label}</color>")));
+                b.Append($"\n<color={GraphHud.StrongColor}><b>Bright edge = strong match</b></color>" +
+                         $"<color={m}>: an exact shared passage above the calibrated evidence threshold ({strong} edges)</color>");
+            }
+            else
+            {
+                b.Append($"\n<color={m}>Edges</color> ");
+                foreach (EdgeChannel c in new[] { EdgeChannel.Chord, EdgeChannel.Melody, EdgeChannel.Both, EdgeChannel.Bass, EdgeChannel.Loop })
+                    b.Append($"<color={SongPalette.ToHex(SongPalette.ChannelColor(c))}>{SongPalette.ChannelLabel(c)}</color> ");
+                b.Append($"<color={m}>· wide end = influencer</color>");
+            }
             b.Append($"\n<size=80%><color={m}>{GraphHud.Esc(Path.GetFileName(ResolvedDbPath))} · {GraphHud.Esc(Frame.Description)}</color></size>");
             return b.ToString();
         }
@@ -319,7 +353,8 @@ namespace MusicHistory.Viewer
             if (k.vKey.wasPressedThisFrame)
             {
                 ShowAllSecondaryEdges = !ShowAllSecondaryEdges;
-                Highlighter.ApplyFocus(Highlighter.Focus, force: true);
+                if (Highlighter.Suspended) Highlighter.ApplyFocus(Highlighter.Focus, force: true);
+                else Highlighter.Reapply();
             }
             if (k.hKey.wasPressedThisFrame) Hud.ToggleHelp();
             if ((k.rKey.wasPressedThisFrame || k.homeKey.wasPressedThisFrame) && !Director.IsTouring && ViewCamera != null)

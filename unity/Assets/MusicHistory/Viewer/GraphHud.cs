@@ -1,5 +1,6 @@
 #nullable enable
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using TMPro;
 using UnityEngine;
@@ -9,9 +10,11 @@ namespace MusicHistory.Viewer
 {
     /// <summary>
     /// Screen overlay: legend + controls (top left), the focused song's facts (top right: title,
-    /// artist, year, key, BPM, main loop, parent chain, tree-edge evidence) and the walkthrough
-    /// panel (bottom). Nothing is clickable, so no EventSystem is needed. All strings from the
-    /// database are shown inside noparse tags; the database never holds lyrics.
+    /// artist, year, key, BPM, main loop, parent chain, tree-edge evidence) or a clicked edge's
+    /// card, and the walkthrough panel (bottom). For identity lineages (DESIGN.md §8b) edges read
+    /// "Shares: &lt;identity&gt; · family of N songs" (plus "strong match (z …)"), never bits.
+    /// Nothing is clickable, so no EventSystem is needed. All strings from the database are
+    /// shown inside noparse tags; the database never holds lyrics.
     /// </summary>
     public sealed class GraphHud : MonoBehaviour
     {
@@ -36,6 +39,8 @@ namespace MusicHistory.Viewer
 
         public bool HelpVisible { get; private set; }
         public string InfoText => info.Text.text;
+        /// <summary>The song / edge card is showing (InfoText keeps the last text while hidden).</summary>
+        public bool InfoVisible => info.Root.activeSelf;
         public string TourText => tour.Text.text;
         public string LegendText => legend.Text.text;
         public Canvas Canvas => canvas;
@@ -52,6 +57,7 @@ namespace MusicHistory.Viewer
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920, 1080);
             scaler.matchWidthOrHeight = .5f;
+            canvasScaler = scaler;
 
             legend = CreatePanel("Legend", new Vector2(0, 1), new Vector2(0, 1), new Vector2(20, -20), 660, TextAlignmentOptions.TopLeft, 17);
             info = CreatePanel("Song Info", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-20, -20), 540, TextAlignmentOptions.TopLeft, 19);
@@ -144,15 +150,92 @@ namespace MusicHistory.Viewer
 
         void RefreshLegend()
         {
+            bool lineage = loader != null && loader.Data != null && loader.Data.IsIdentityLineage;
             string help = HelpVisible
-                ? $"\n<color={Muted}>Mouse</color>  hover shows influences · click selects · right-drag looks · wheel dollies" +
+                ? (lineage
+                      ? $"\n<color={Muted}>Mouse</color>  hover shows shared identities · click selects a song or an edge · right-drag looks · wheel dollies"
+                      : $"\n<color={Muted}>Mouse</color>  hover shows influences · click selects · right-drag looks · wheel dollies") +
                   $"\n<color={Muted}>Move</color>  W A S D, Q E (Shift = fast) · R reset view · L all labels · V secondary edges · F live layout (time locked) · T lyric themes" +
-                  $"\n<color={Muted}>Walkthrough</color>  1 lineage · 2 subtree · 3 chronological · Enter start · Space pause · N/→ next · B/← back · Esc exit · C compare in C / 120 BPM"
+                  $"\n<color={Muted}>Walkthrough</color>  1 lineage · 2 subtree · 3 chronological{(lineage ? " · 4 family" : "")} · M next mode · Enter start · Space pause · N/→ next · B/← back · Esc exit · C compare in C / 120 BPM"
                 : $"\n<color={Muted}>H</color> controls";
             SetText(legend, legendBody + help);
         }
 
         public void ShowSong(SongNode? node) => SetText(info, node == null ? "" : SongInfo(node));
+
+        /// <summary>The edge card of a clicked edge.</summary>
+        public void ShowEdge(InfluenceEdge edge) => SetText(info, EdgeInfo(edge));
+
+        /// <summary>Colour of strong-match highlights in the HUD and legend.</summary>
+        public const string StrongColor = "#fff27a";
+
+        /// <summary>
+        /// Identity lineages (DESIGN.md §8b): "Shares: &lt;identity&gt; · family of N songs", plus
+        /// "strong match (z …)" when the edge is flagged. Never bits: the score is a lineage
+        /// score, not borrowing evidence.
+        /// </summary>
+        public static string SharesText(SongGraphData data, EdgeRecord e, string identityColor) =>
+            SharesText(data.Family(e.FamilyId), e.Evidence, e, identityColor);
+
+        /// <summary>As above, for a family (with or without the edge that carries it).</summary>
+        public static string SharesText(IdentityFamily? family, string? label, EdgeRecord? e, string identityColor)
+        {
+            StringBuilder b = new();
+            b.Append($"<color={Muted}>Shares:</color> <color={identityColor}>{Esc(family?.Label ?? label ?? "")}</color>");
+            if (family != null)
+                b.Append($" <color={Muted}>· family of {family.Members.Count} song{(family.Members.Count == 1 ? "" : "s")}</color>");
+            if (e != null && e.IsStrongMatch && e.Z > 0)
+                b.Append($" · <color={StrongColor}><b>strong match</b> (z {SongPalette.Invariant(e.Z, "0.0")})</color>");
+            else if ((e != null && e.IsStrongMatch) || (e == null && family != null && family.IsStrong))
+                b.Append($" · <color={StrongColor}><b>strong match</b></color>");
+            return b.ToString();
+        }
+
+        /// <summary>'loop', 'progression schema', 'named schema', 'exact shared passage'.</summary>
+        public static string KindText(string kind) => kind switch
+        {
+            "loop" => "repeating chord loop",
+            "schema" => "named chord schema",
+            "progression" => "chord progression schema",
+            "strong" => "exact shared passage",
+            _ => kind
+        };
+
+        string EdgeInfo(InfluenceEdge edge)
+        {
+            SongGraphData data = loader.Data!;
+            EdgeRecord e = edge.Record;
+            SongRecord a = edge.Source.Song, c = edge.Target.Song;
+            string color = SongPalette.ToHex(SongPalette.ChannelColor(edge.Channel));
+            StringBuilder b = new();
+            b.Append($"<size=125%><b>{Esc(a.Title)}</b> <color={color}>→</color> <b>{Esc(c.Title)}</b></size>\n");
+            b.Append($"{Esc(a.Artist)} · {a.Year}  <color={Muted}>→</color>  {Esc(c.Artist)} · {c.Year}\n");
+            if (data.IsIdentityLineage)
+            {
+                b.Append(SharesText(data, e, color)).Append('\n');
+                IdentityFamily? family = data.Family(e.FamilyId);
+                if (family != null)
+                {
+                    b.Append($"<color={Muted}>{KindText(family.Kind)}");
+                    if (!string.IsNullOrEmpty(family.Roman) && !family.Label.Contains(family.Roman!)) b.Append($" · {Esc(family.Roman)}");
+                    SongRecord first = data.Song(family.Members[0].NodeId);
+                    if (family.Members.Count > 2) b.Append($" · earliest song {Esc(first.Title)} ({first.Year})");
+                    b.Append("</color>\n");
+                }
+                b.Append($"<color={Muted}>{(e.IsTree ? "Tree edge: the earlier song is the later one's lineage parent" : "Secondary edge: another strong sharer")}" +
+                         " · a shared musical identity, not proven copying</color>");
+                if (family != null)
+                    b.Append($"\n<color={Muted}>Walkthrough 4 (family) + Enter plays " +
+                             (family.Members.Count == 2 ? "both songs, earlier first" : $"all {family.Members.Count} songs in time order") + "</color>");
+            }
+            else
+            {
+                b.Append($"<color={Muted}>Via</color> <color={color}>{SongPalette.ChannelLabel(edge.Channel)}</color>" +
+                         $" · {SongPalette.Invariant(e.ScoreBits, "0")} bits · z {SongPalette.Invariant(e.Z, "0.0")} · {(e.IsTree ? "tree" : "secondary")} edge");
+                if (!string.IsNullOrEmpty(e.Evidence)) b.Append($"\n<size=90%><color={Muted}>{Esc(e.Evidence)}</color></size>");
+            }
+            return b.ToString();
+        }
 
         public void ShowTour(string? text, float progress, Color barColor)
         {
@@ -175,16 +258,34 @@ namespace MusicHistory.Viewer
                      $"   <color={Muted}>Beats/bar</color> {SongPalette.Invariant(s.BeatsPerBar, "0.##")}\n");
             b.Append($"<color={Muted}>Main loop</color> {(string.IsNullOrEmpty(s.MainLoop) ? "—" : Esc(s.MainLoop))}\n");
             b.Append($"<color={Muted}>Lineage</color> {Lineage(node)}\n");
-            b.Append($"<color={Muted}>Influenced by</color> {node.Incoming.Count} · <color={Muted}>influences</color> {node.Outgoing.Count}" +
-                     $" · <color={Muted}>descendants</color> {s.Descendants}");
+            SongGraphData? data = loader != null ? loader.Data : null;
+            bool lineage = data != null && data.IsIdentityLineage;
+            b.Append(lineage
+                ? $"<color={Muted}>Shares identities with</color> {node.Incoming.Count} earlier · {node.Outgoing.Count} later" +
+                  $" · <color={Muted}>descendants</color> {s.Descendants}"
+                : $"<color={Muted}>Influenced by</color> {node.Incoming.Count} · <color={Muted}>influences</color> {node.Outgoing.Count}" +
+                  $" · <color={Muted}>descendants</color> {s.Descendants}");
             if (s.CanonRank.HasValue) b.Append($" · <color={Muted}>canon rank</color> {s.CanonRank.Value}");
             if (node.TreeEdge != null)
             {
                 EdgeRecord e = node.TreeEdge.Record;
                 string color = SongPalette.ToHex(SongPalette.ChannelColor(node.TreeEdge.Channel));
-                b.Append($"\n<color={Muted}>Via</color> <color={color}>{SongPalette.ChannelLabel(node.TreeEdge.Channel)}</color>" +
-                         $" · {SongPalette.Invariant(e.ScoreBits, "0")} bits · z {SongPalette.Invariant(e.Z, "0.0")}");
-                if (!string.IsNullOrEmpty(e.Evidence)) b.Append($"\n<size=90%><color={Muted}>{Esc(e.Evidence)}</color></size>");
+                if (lineage)
+                {
+                    b.Append('\n').Append(SharesText(data!, e, color));
+                    b.Append($" <color={Muted}>with {Esc(node.TreeEdge.Source.Song.Title)} ({node.TreeEdge.Source.Song.Year})</color>");
+                }
+                else
+                {
+                    b.Append($"\n<color={Muted}>Via</color> <color={color}>{SongPalette.ChannelLabel(node.TreeEdge.Channel)}</color>" +
+                             $" · {SongPalette.Invariant(e.ScoreBits, "0")} bits · z {SongPalette.Invariant(e.Z, "0.0")}");
+                    if (!string.IsNullOrEmpty(e.Evidence)) b.Append($"\n<size=90%><color={Muted}>{Esc(e.Evidence)}</color></size>");
+                }
+            }
+            else if (lineage && data!.HasFamilies)
+            {
+                int families = data.FamiliesOf(s.NodeId).Count(m => data.Families[m.FamilyId].Size >= 2);
+                b.Append($"\n<color={Muted}>Root of its lineage tree · in {families} famil{(families == 1 ? "y" : "ies")} shared with other songs</color>");
             }
             if (!string.IsNullOrEmpty(s.Summary)) b.Append($"\n<size=85%><color={Muted}>{Esc(s.Summary)}</color></size>");
             return b.ToString();
@@ -209,6 +310,40 @@ namespace MusicHistory.Viewer
                 parts.Add(n == node ? $"<b>{Esc(n.Song.Title)}</b>" : $"{Esc(n.Song.Title)} ({n.Song.Year})");
             }
             return string.Join(" › ", parts);
+        }
+
+        readonly List<Rect> panelRects = new();
+        CanvasScaler? canvasScaler;
+
+        /// <summary>
+        /// Screen rects (pixels, origin bottom-left) the visible panels cover on a screen the size
+        /// of <paramref name="cam"/>'s target, from the panels' anchors and the CanvasScaler's
+        /// scale-with-screen-size factor, so world labels can keep clear of them (LabelLayer.KeepClear).
+        /// </summary>
+        public IReadOnlyList<Rect> PanelScreenRects(Camera cam) => PanelScreenRects(cam.pixelWidth, cam.pixelHeight);
+
+        /// <summary>As above, for a <paramref name="width"/> x <paramref name="height"/> pixel screen.</summary>
+        public IReadOnlyList<Rect> PanelScreenRects(float width, float height)
+        {
+            panelRects.Clear();
+            if (canvas == null || canvasScaler == null) return panelRects;
+            float w = Mathf.Max(1, width), h = Mathf.Max(1, height);
+            Vector2 reference = canvasScaler.referenceResolution;
+            float scale = Mathf.Pow(2f, Mathf.Lerp(Mathf.Log(w / reference.x, 2f), Mathf.Log(h / reference.y, 2f), canvasScaler.matchWidthOrHeight));
+            AddPanelRect(legend, w, h, scale);
+            AddPanelRect(info, w, h, scale);
+            AddPanelRect(tour, w, h, scale);
+            return panelRects;
+        }
+
+        void AddPanelRect(Panel p, float w, float h, float scale)
+        {
+            if (!p.Root.activeSelf) return;
+            RectTransform r = p.Rect;
+            Vector2 size = r.sizeDelta * scale;
+            Vector2 anchor = new(r.anchorMin.x * w, r.anchorMin.y * h);
+            Vector2 min = anchor + r.anchoredPosition * scale - Vector2.Scale(r.pivot, size);
+            panelRects.Add(new Rect(min, size));
         }
 
         /// <summary>Draws the HUD into <paramref name="cam"/> (screenshots) or back onto the screen (null).</summary>
