@@ -357,6 +357,56 @@ Reads selected, analyzed songs with their identities and dates; writes `pair_sco
 Subcommands: `run`, `score-pairs --pairs <json [[a_id, b_id], ...]>` (force-score, print
 JSON), `export` (graph DB only). Deterministic; parallel over B.
 
+## 8b. Identity lineages — the graph's edge semantics (chosen by the user)
+
+A strict borrowing detector cannot separate stock idioms from borrowings in fan MIDI (§8,
+influence v2: ~10 % of its edges pass a borrowing audit). The graph therefore connects songs
+through the **identities they share**, labelled as such — shared musical DNA, not proven
+copying. `MusicHistory.Influence.exe run --mode lineage` (the default; `--mode evidence`
+keeps the strict v2 graph).
+
+**Families** (a song belongs to a family with a strength = fraction of its beats, capped):
+* *Loop families*: `loop.cycle_id` (L1, rotation-invariant, 2–8 changes) for loops covering at
+  least 8 bars of the song. A quality-tolerant key (roots + L1 with sevenths folded) keeps
+  E vs Em transcription noise from splitting a family. Named when the cycle matches a known
+  schema — axis I–V–vi–IV (all rotations), doo-wop I–vi–IV–V, Pachelbel ground
+  I–V–vi–iii–IV–I–IV–V, Andalusian i–♭VII–♭VI–V, Mixolydian I–♭VII–IV, I–♭VII–♭VI–♭VII,
+  i–♭VI–♭III–♭VII, two-chord vamps, … — else labelled by its roman numerals (C/Am frame).
+* *Progression schemas* found on the bar-level chord grid outside loops: 12-bar blues (and
+  8/16-bar variants), ii–V–I, I–IV–V turnarounds, descending chromatic bass line.
+* *Strong matches*: pairs above the calibrated v2 threshold (§8), each its own family
+  ("exact shared melody/riff/progression passage"), flagged `strong` on the edge.
+
+**Scores.** specificity(F) = log2(N / |F|). For an earlier song A and later song B:
+`score(A→B) = Σ_F specificity(F) · agreement_F(A, B) · min(strength_A, strength_B)^½`, where
+agreement is 1 for the same phase and rhythm signature, 0.75 same phase, 0.5 otherwise; a
+strong match adds its fused z (scaled so it dominates). Temporal order and the same-year rule
+are those of §8.
+
+**Tree (the user's rule).** Each later song credits the earlier song with the highest score
+(ties: earliest). ref_count(A) = number of songs crediting A. Strong influencers of B =
+{A : score ≥ ParentFraction · max score} (default 0.5); **parent(B) = the most-referenced
+strong influencer** (ties by score, then earlier). Songs with no earlier family member are
+roots. Other strong influencers become secondary edges (≤ 8 per song).
+
+**Edges and excerpts.** `influence_edges.evidence` names the shared identity ("Pachelbel ground
+I–V–vi–iii–IV–I–IV–V", "12-bar blues", "exact melody passage, 13 notes"), `primary_channel` is
+`loop`/`chord` for families and the strong match's channel otherwise, `score_bits` = score,
+`z` = the strong match's z or 0. The excerpts are where the shared identity sounds: the target's
+first visit of the credited family (loop `visit_starts` / schema position / strong window) and
+the source's, snapped to bars, so the walkthrough plays the same progression morphing from one
+song into the next.
+
+**Extra graph tables** (additive, SQLite 3.15-compatible):
+`identity_family(family_id INTEGER PRIMARY KEY, label TEXT NOT NULL, kind TEXT NOT NULL,
+roman TEXT, size INTEGER NOT NULL)` and `song_family(node_id INTEGER NOT NULL, family_id INTEGER
+NOT NULL, strength REAL NOT NULL, first_beat REAL, PRIMARY KEY(node_id, family_id))`;
+`graph_meta.edge_semantics = 'identity_lineage'` (or `'strict_evidence'`).
+
+**Viewer.** For identity lineages the HUD says "Shares: <identity>" (plus "strong match, z …"
+when flagged) instead of bits/z, and a walkthrough mode **family** plays every song of the
+selected edge's identity in time order.
+
 ## 9. Stage: layout (C#, `layout/MusicHistory.Layout`, fork of GPU-FDG)
 
 `MusicHistory.Layout.exe data/graph/music_graph.db [--iterations 1500] [--yearScale 2]
