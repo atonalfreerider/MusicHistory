@@ -169,6 +169,10 @@ def run(args: argparse.Namespace) -> int:
     checker = curate.Checker(g, m)
     t0 = time.monotonic()
     cands = curate.enumerate_paths(g, m, checker)
+    n_all = len(cands)
+    cands = [c for c in cands if not curate.quality_problems(g, c)]
+    _log(f"curate: {n_all - len(cands)} of {n_all} candidate paths fail the quality gate "
+         "(rough handoff, late recording, validation extra, identity not audible)")
     auto = curate.select(cands, args.count)
     _log(f"\ncurate: {len(cands)} candidate paths in {time.monotonic() - t0:.1f}s; top automatic picks:")
     for i, c in enumerate(curate.select(cands, args.list), 1):
@@ -188,7 +192,12 @@ def run(args: argparse.Namespace) -> int:
             if errors:
                 _log(f"curated path {cp.id} skipped: {'; '.join(errors)}")
                 continue
-            chosen.append((cp.id, cp.title, cp.description, cp.subtitle, curate.curated_candidate(g, m, cp, checker)))
+            cand = curate.curated_candidate(g, m, cp, checker)
+            problems = curate.quality_problems(g, cand)
+            if problems:
+                _log(f"curated path {cp.id} skipped: {'; '.join(problems)}")
+                continue
+            chosen.append((cp.id, cp.title, cp.description, cp.subtitle, cand))
     if not chosen:
         _log("using the automatic picks" + ("" if args.auto else f" ({curated_file} has no valid path)"))
         for c in auto:

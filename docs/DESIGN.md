@@ -51,7 +51,8 @@ Run a stage with `python -m musichistory <stage>` (Python 3.13 venv in `.venv`).
 | `musichistory/analysis/`, `musichistory/identity/` | analyze | Python |
 | `influence/MusicHistory.Influence/` | influence | C# (.NET 10) |
 | `layout/MusicHistory.Layout/` | layout | C# (.NET 10, ComputeSharp) — fork of GPU-FDG |
-| `unity/` | viewer | Unity 6000.6.3f1 URP — fork of Unity-FDG |
+| `../MusicHistory-Viewer` (own repository) | viewer | Unity 6000.6.3f1 URP — fork of Unity-FDG |
+| `musichistory/paths/` | paths | Python (featured paths from recording previews) |
 | `tools/` | shared scripts (setup, run-all, sf3→sf2) | |
 | `lists/top_songs.csv` | canon (committed output) | |
 | `tests/<area>/` | each stage | pytest |
@@ -543,7 +544,11 @@ These came out of real runs and calibration; each stage's README has the detail.
   column, `--pinLargestRoot` on by default, subcommands `validate`, `check`, `devices`,
   `run --out|--dry-run`, and exit codes 0–6.
 
-## 11. Unity viewer (`unity/`, fork of Unity-FDG, Unity 6000.6.3f1, URP)
+## 11. Unity viewer (repository `MusicHistory-Viewer`, fork of Unity-FDG, Unity 6000.6.3f1, URP)
+
+The viewer is its own repository next to this one (it lived in `unity/` until it moved; history
+preserved). It finds this repository through `MusicHistory.PipelinePaths`: `-musicHistoryRoot`,
+`MUSICHISTORY_ROOT`, the parent of `MUSICHISTORY_DATA`, a sibling folder named MusicHistory.
 
 * **Loader** reads §10 (default path `<repo>/data/graph/music_graph.db`), creates one node
   per song at its layout position: bubble area ∝ `descendants + 1`, fill = key colour
@@ -670,7 +675,25 @@ GPU. Writes theme_song positions and `themes_layout_run`.
   of R) on the real data. The influence scene's **T** key opens LyricThemes; its **G** key
   comes back.
 
-**Viewer** (`unity/`, scene `LyricThemes`): the ten anchors as labelled discs on the ring,
+**Viewer** (MusicHistory-Viewer, scene `LyricThemes`): the ten anchors as labelled discs on the ring,
 songs as bubbles (blue male, pink female, grey otherwise) at their positions; hover shows
 title, artist, year, singer, text source ("lyrics" / "title only") and the top three themes
 with scores — never lyrics; click plays the song's excerpt through SongPlayer.
+
+## 13. Featured paths (stage `paths`, `musichistory/paths/`)
+
+Curated routes through the identity-lineage graph, played with official 30-second iTunes
+previews (`tools/fetch_previews.py` → `data/audio/<work_id>/preview.mp3`, stored locally only).
+
+* **Measure** every preview's tempo (librosa beat tracking, octave from the MIDI tempo) and key
+  (chroma + key profiles, the MIDI key as a prior); cached in `data/audio/analysis.json`.
+* **Curate** paths of 3–6 songs whose consecutive songs share an edge (earlier → later), from
+  `musichistory/paths/curated.json` (hand-editable) or the automatic picker. Every path must pass
+  the **quality gate**: every handoff within ±4 semitones and ×0.8–×1.25 tempo, no validation
+  extras, no recording more than 5 years later than its place in time (a famous cover of an older
+  composition), and the shared identity audible (chord-chroma check) in at least half its clips.
+* **Render** each step with ffmpeg Rubber Band: it starts in the previous recording's measured key
+  and tempo and glides to its own over two bars (smoothstep), loudness-normalized, with fades;
+  `data/audio/renders/paths.json` (contract version 2) lists paths, steps, keys, tempos, glides.
+* **Viewer**: the Featured Paths panel (P) lists them; hovering lights the route; playing follows
+  it with the recording previews, crossfading at each handoff, while MIDI plays everywhere else.

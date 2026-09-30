@@ -100,6 +100,6 @@ def test_real_paths_json():
         pytest.skip("paths.json not rendered yet")
     doc = json.loads(path.read_text(encoding="utf-8"))
     assert contract.validate(doc, path.parent) == []
-    assert 10 <= len(doc["paths"]) <= 12
+    assert 6 <= len(doc["paths"]) <= 12   # quality gate first: fewer, nicer paths are fine
     for p in doc["paths"]:
         assert "lyric" not in p["description"].lower()

@@ -12,14 +12,13 @@
    ]
   },
   {
-   "id": "axis-u2-to-capaldi",
-   "title": "The axis loop, 1987–2018",
-   "description": "Thirty years of the I–V–vi–IV loop handed from song to song: U2's slow build, Madonna's gospel-pop, the Cranberries, the Black Eyed Peas and a Lewis Capaldi piano ballad.",
+   "id": "axis-lauper-to-capaldi",
+   "title": "The axis loop, 1983–2018",
+   "description": "The I–V–vi–IV loop carried through four decades of ballads: Cyndi Lauper's lilting 1983 hit, Lonestar's country-pop, John Legend's piano ballad and Lewis Capaldi.",
    "works": [
-    "Q1131812",
-    "Q139917982",
-    "Q169298",
-    "Q1460758",
+    "Q1808348",
+    "Q688252",
+    "Q15427702",
     "Q60768202"
    ]
   },
@@ -55,36 +54,6 @@
    ]
   },
   {
-   "id": "minor-shuttle",
-   "title": "The minor shuttle",
-   "description": "A minor chord stepping down two whole tones and back up (i–bVII–bVI–bVII) links Hendrix's All Along the Watchtower, the Stones' Gimme Shelter and Adele's Rolling in the Deep.",
-   "works": [
-    "Q653794",
-    "Q253783",
-    "Q170165"
-   ]
-  },
-  {
-   "id": "chromatic-bass-god-only-knows",
-   "title": "Falling bass: Beach Boys to Ghostbusters",
-   "description": "A bass line sinking by semitones under the chords (degrees b6–5–#4–4) connects God Only Knows, Hello, Goodbye and Ghostbusters.",
-   "works": [
-    "Q632342",
-    "Q281911",
-    "Q1392942"
-   ]
-  },
-  {
-   "id": "chromatic-bass-life-on-mars",
-   "title": "Falling bass: Sinatra to Bowie",
-   "description": "A bass line stepping down chromatically from the sixth degree (6–b6–5–#4) runs from a 1946 Sinatra hit through the baroque pop of Walk Away Renée to Life on Mars?.",
-   "works": [
-    "Q741353",
-    "Q2264484",
-    "Q2077201"
-   ]
-  },
-  {
    "id": "orbison-to-flowers",
    "title": "Orbison to Flowers",
    "description": "Only the Lonely shares an exact bass riff with Duke of Earl; from there the I–vi–ii–V turnaround runs through Oh, Pretty Woman to Miley Cyrus's Flowers.",
@@ -96,16 +65,6 @@
    ]
   },
   {
-   "id": "andalusian-cadence",
-   "title": "The Andalusian cadence",
-   "description": "The falling minor-key cadence i–bVII–bVI–V, from Ray Charles's Hit the Road Jack to Santa Esmeralda's disco Don't Let Me Be Misunderstood and the Turtles' Happy Together.",
-   "works": [
-    "Q1460009",
-    "Q1242318",
-    "Q2733482"
-   ]
-  },
-  {
    "id": "summer-place-to-barbie-girl",
    "title": "A Summer Place to Barbie Girl",
    "description": "The I–vi–ii–V turnaround, from Percy Faith's 1959 string theme through Redbone's Come and Get Your Love to Aqua's Barbie Girl.",
@@ -113,6 +72,16 @@
     "Q3990206",
     "Q2921155",
     "Q790315"
+   ]
+  },
+  {
+   "id": "every-breath-interpolated",
+   "title": "Every Breath You Take, interpolated",
+   "description": "A two-chord drift from 1967 leads into the Police's 1983 arpeggiated guitar figure, which came back note for note in 1997 as the backbone of a Puff Daddy and Faith Evans tribute.",
+   "works": [
+    "Q648157",
+    "Q1330171",
+    "Q2706084"
    ]
   }
  ]

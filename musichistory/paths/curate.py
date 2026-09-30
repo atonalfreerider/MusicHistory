@@ -26,16 +26,19 @@ descriptions); ``validate_curated`` checks it against the rules.
 
 from __future__ import annotations
 
+import functools
 import json
 import math
 import random
 import re
+import sqlite3
 from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
 
+from .. import config
 from . import audio, identity
 from .graph import Edge, Graph, Song
 from .measured import Measured
@@ -389,6 +392,65 @@ def validate_curated(graph: Graph, measured: dict[int, Measured], cp: CuratedPat
     if re.search(r"\blyric|\bsings?\b|\bwords\b", cp.description, flags=re.I):
         errors.append("description must describe music only")
     return errors
+
+
+# --------------------------------------------------------------------------- quality gate
+# Every featured path, curated or automatic, must pass this before it is rendered. A path is
+# only "nice to follow" if every handoff is smooth, every recording plays where it sits in time,
+# no song is a validation extra, and the shared identity can actually be heard in its clips.
+LATE_RECORDING_YEARS = 5   # a famous recording this much later than its work's year plays out of order
+
+
+@functools.lru_cache(maxsize=1)
+def _validation_extras() -> frozenset[str]:
+    """Songs outside the ranked list, kept only to check known influence pairs (graph_meta)."""
+    try:
+        with sqlite3.connect(f"file:{config.GRAPH_DB.as_posix()}?mode=ro", uri=True) as c:
+            row = c.execute("SELECT value FROM graph_meta WHERE key = 'validation_extras'").fetchone()
+    except sqlite3.Error:
+        return frozenset()
+    return frozenset(w for w in ((row[0] if row else "") or "").split(",") if w)
+
+
+@functools.lru_cache(maxsize=1)
+def _late_recordings() -> dict[str, int]:
+    """work_id -> years between the composition (its place in time) and the famous recording
+    the preview is of, for covers recorded more than LATE_RECORDING_YEARS later."""
+    try:
+        with sqlite3.connect(f"file:{config.PIPELINE_DB.as_posix()}?mode=ro", uri=True) as c:
+            rows = c.execute("SELECT work_id, work_year, effective_year FROM work WHERE selected >= 1").fetchall()
+    except sqlite3.Error:
+        return {}
+    return {w: e - y for w, y, e in rows if y is not None and e is not None and e - y > LATE_RECORDING_YEARS}
+
+
+def quality_problems(graph: Graph, cand: Candidate) -> list[str]:
+    """Why a path is not nice to follow (empty = it is)."""
+    problems: list[str] = []
+    extras, late = _validation_extras(), _late_recordings()
+    for nid in cand.nodes:
+        s = graph.songs[nid]
+        if s.work_id in extras:
+            problems.append(f"{s.title} is a validation-control song outside the ranked list")
+        if s.work_id in late:
+            problems.append(f"{s.title}'s recording is {late[s.work_id]} years later than its place in time")
+    for h in cand.hops:
+        if not h.smooth:
+            problems.append(f"rough handoff into {graph.songs[h.edge.target].title} "
+                            f"({h.semitones:+d} st, x{h.ratio:.2f})")
+    checks = heard = 0
+    for h in cand.hops:
+        if h.pair is not None and h.pair.passed is not None:
+            checks += 2
+            heard += 2 if h.pair.passed else 0
+            continue
+        for c in (h.src_check, h.dst_check):
+            if c is not None and c.checked:
+                checks += 1
+                heard += int(bool(c.in_key))
+    if checks and heard * 2 < checks:
+        problems.append(f"the shared identity is audible in only {heard} of {checks} clip checks")
+    return problems
 
 
 def curated_candidate(graph: Graph, measured: dict[int, Measured], cp: CuratedPath, checker: Checker | None = None

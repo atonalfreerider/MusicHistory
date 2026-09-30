@@ -18,7 +18,8 @@ transcriptions and walked in Unity with the music playing.
    null model and roots each song under its most-referenced influencer.
 6. **layout** (C#, a new version of [GPU-FDG](../GPU-FDG)) lays the forest out on the GPU
    with time pinned to the vertical axis.
-7. **unity/** (a new version of [Unity-FDG](../Unity-FDG)) renders the graph and plays a
+7. **[MusicHistory-Viewer](../MusicHistory-Viewer)** (its own repository; a new version of
+   [Unity-FDG](../Unity-FDG)) renders the graph and plays a
    directed walkthrough: each song starts in the key and BPM of the song before it and
    morphs into its own.
 
@@ -53,8 +54,10 @@ User-Agent, which also lifts Wikimedia's anonymous rate limit (10 → 200 reques
 .venv\Scripts\python -m musichistory layout
 ```
 
-Then open `unity/` in Unity 6000.6.3f1, load `Assets/Scenes/SongInfluenceGraph.unity` and
-press Play (see [unity/README.md](unity/README.md) for controls). Every stage is resumable.
+Then open the sibling repository `..\MusicHistory-Viewer` in Unity 6000.6.3f1, load
+`Assets/Scenes/SongInfluenceGraph.unity` and press Play (see its README for controls). The viewer
+finds this repository as its sibling folder (or through `MUSICHISTORY_ROOT` / `MUSICHISTORY_DATA`).
+Every stage is resumable.
 
 ### Lyric themes
 
@@ -72,6 +75,22 @@ Lyrics are read from the songs' own karaoke MIDI events only in memory and disca
 ten theme scores are stored (songs without lyrics are classified from their title). Open
 `Assets/Scenes/LyricThemes.unity`, or press **T** in the influence graph.
 
+### Featured paths with recording previews
+
+The viewer's **Featured paths** panel (P) plays curated routes through the graph using official
+30-second iTunes previews: each clip starts in the key and tempo of the recording heard just
+before it and glides into its own over two bars.
+
+```powershell
+.venv\Scripts\python -m pip install -r requirements-paths.txt   # librosa, once
+.venv\Scripts\python toolsetch_previews.py                   # previews -> data/audio/<work_id>/preview.mp3
+.venv\Scripts\python -m musichistory paths                     # measure, curate, render -> data/audio/renders/paths.json
+```
+
+The paths are listed in `musichistory/paths/curated.json`; every one must pass a quality gate
+(smooth key/tempo handoffs, recordings that play where they sit in time, the shared identity
+audible in the clips). Requires ffmpeg with Rubber Band (`FFMPEG` or PATH).
+
 ## Data sources and credits
 
 * Song lists: Wikipedia (CC BY-SA), [tsort.info](https://tsort.info) top 5000 songs v2.9.0001,
@@ -82,5 +101,7 @@ ten theme scores are stored (songs without lyrics are classified from their titl
   are fan-made; they are used here for personal analysis only and are never committed.
 * Annotations: Hooktheory data via [Sheet Sage](https://github.com/chrisdonahue/sheetsage)
   (CC BY-NC-SA 3.0).
+* Recording previews: Apple's iTunes Search API 30-second previews, stored locally under
+  `data/audio/` for personal use and never committed.
 * Synth: [MeltySynth](https://github.com/sinshu/meltysynth) (MIT); MuseScore's MS Basic
   SoundFont (MIT).

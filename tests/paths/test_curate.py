@@ -155,7 +155,7 @@ def test_subtitle_format():
 def test_committed_curated_json_is_well_formed():
     doc = json.loads(curate.CURATED_PATH.read_text(encoding="utf-8"))
     paths = doc["paths"]
-    assert 10 <= len(paths) <= 12
+    assert 6 <= len(paths) <= 12   # quality gate first: fewer, nicer paths are fine
     ids = [p["id"] for p in paths]
     assert len(set(ids)) == len(ids)
     for p in paths:
@@ -201,3 +201,43 @@ def test_preview_trust_rejects_other_recordings():
     s = song(1, 1960)
     s.preview_issue = "remix"
     assert not curate.trusted(s)
+
+
+# ----------------------------------------------------------------------------- quality gate
+def _gate_fixture(monkeypatch, extras=(), late=None):
+    from types import SimpleNamespace as NS
+    monkeypatch.setattr(curate, "_validation_extras", lambda: frozenset(extras))
+    monkeypatch.setattr(curate, "_late_recordings", lambda: dict(late or {}))
+    songs = {i: NS(title=f"Song {i}", work_id=f"W{i}") for i in (1, 2, 3)}
+    graph = NS(songs=songs)
+
+    def hop(a, b, semis=0, start=100.0, bpm=100.0, heard=(True, True)):
+        edge = NS(source=a, target=b, evidence="axis progression I-V-vi-IV")
+        checks = [NS(checked=True, in_key=h) for h in heard]
+        return curate.Hop(edge, 0.85, "chord progression", semis, start, bpm, checks[0], checks[1], None)
+
+    return graph, hop
+
+
+def test_quality_gate_passes_a_smooth_audible_path(monkeypatch):
+    graph, hop = _gate_fixture(monkeypatch)
+    cand = curate.Candidate([1, 2, 3], [hop(1, 2, semis=2, start=110, bpm=100), hop(2, 3)])
+    assert curate.quality_problems(graph, cand) == []
+
+
+def test_quality_gate_rejects_each_problem(monkeypatch):
+    graph, hop = _gate_fixture(monkeypatch, extras={"W2"}, late={"W3": 13})
+    rough = curate.Candidate([1, 2, 3], [hop(1, 2, start=144, bpm=100), hop(2, 3, semis=5)])
+    problems = " | ".join(curate.quality_problems(graph, rough))
+    assert "Song 2 is a validation-control song" in problems
+    assert "Song 3's recording is 13 years later" in problems
+    assert "rough handoff into Song 2" in problems and "x1.44" in problems
+    assert "rough handoff into Song 3" in problems and "+5 st" in problems
+
+
+def test_quality_gate_requires_the_identity_to_be_audible(monkeypatch):
+    graph, hop = _gate_fixture(monkeypatch)
+    quiet = curate.Candidate([1, 2, 3], [hop(1, 2, heard=(False, False)), hop(2, 3, heard=(True, False))])
+    assert any("audible in only 1 of 4" in p for p in curate.quality_problems(graph, quiet))
+    half = curate.Candidate([1, 2, 3], [hop(1, 2, heard=(True, False)), hop(2, 3, heard=(True, False))])
+    assert curate.quality_problems(graph, half) == []   # half the checks is enough
