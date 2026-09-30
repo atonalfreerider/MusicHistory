@@ -434,7 +434,7 @@ internal static class GraphExport
                 throw new InvalidOperationException($"{songs[i].WorkId}: {treeIn[i]} tree edges in, parent {tree.Parent[i]}");
     }
 
-    private static void Insert(SqliteConnection g, SqliteTransaction tx, string sql, IEnumerable<object?[]> rows)
+    internal static void Insert(SqliteConnection g, SqliteTransaction tx, string sql, IEnumerable<object?[]> rows)
     {
         using var cmd = g.CreateCommand();
         cmd.Transaction = tx;
@@ -528,14 +528,15 @@ internal static class GraphExport
     }
 
     /// <summary>SHA-256 over a canonical dump of every table except graph_meta.generated_at (determinism checks).</summary>
-    public static string ContentHash(SqliteConnection g)
+    /// <param name="extra">Further queries hashed after the §10 tables (the lineage graph's identity tables).</param>
+    public static string ContentHash(SqliteConnection g, IEnumerable<string>? extra = null)
     {
         using var sha = System.Security.Cryptography.IncrementalHash.CreateHash(System.Security.Cryptography.HashAlgorithmName.SHA256);
         foreach (string sql in new[]
                  {
                      "SELECT key, value FROM graph_meta WHERE key <> 'generated_at' ORDER BY key",
                      "SELECT * FROM nodes ORDER BY id", "SELECT * FROM song_node ORDER BY node_id", "SELECT * FROM influence_edges ORDER BY id",
-                 })
+                 }.Concat(extra ?? []))
         {
             using var cmd = g.CreateCommand();
             cmd.CommandText = sql;

@@ -15,10 +15,12 @@ internal static class Program
     private const string Usage = """
         MusicHistory.Influence <command> [options]
 
-          run           --db <pipeline.sqlite> --graph <music_graph.db> [--report <json>] [--root <repo>]
-                        [--threads N] [--generated-at <iso>] [--no-export] [--param name=value]...
+          run           --db <pipeline.sqlite> --graph <music_graph.db> [--mode lineage|evidence] [--report <json>]
+                        [--root <repo>] [--threads N] [--generated-at <iso>] [--no-export] [--param name=value]...
                         Score every time-ordered pair, write pair_score / influence_edge / tree_node and the
                         influence_* meta keys, export the graph DB and data/graph/influence_report.json.
+                        --mode lineage (default): edges are shared identities (DESIGN.md 8b: loop families, named
+                        schemas, progression schemas, strong matches); --mode evidence: the strict v2 graph.
           score-pairs   --db <pipeline.sqlite> --pairs <json | file> [--debug]  [[a_id, b_id], ...]
                         Score pairs (every window of the later song) and print JSON; --debug lists the shared
                         rare n-grams of the winning window.
@@ -26,9 +28,10 @@ internal static class Program
                         Score the calibration benchmark (pairs.json) and print TPR at window FPR 1e-3 per
                         channel and fused, next to the Python V8 when its score files are present.
           export        --db <pipeline.sqlite> --graph <music_graph.db> [--root <repo>] [--generated-at <iso>]
-                        Rewrite the graph DB from the pipeline tables only.
-          retree        --db <pipeline.sqlite> --graph <music_graph.db> [--param name=value]...
-                        Redo credit, tree and export from the stored pair_score rows (no rescoring).
+                        Rewrite the graph DB from the pipeline tables only (the graph the last run stored).
+          retree        --db <pipeline.sqlite> --graph <music_graph.db> [--mode lineage|evidence] [--param name=value]...
+                        Redo credit, tree and export without rescoring: from the stored lineage families, or
+                        (evidence) from the stored pair_score rows. Default: the semantics of the last run.
           make-fixture  --out <db> --songs N [--seed S]
                         Write a synthetic pipeline DB (db.py schema) with planted influence.
           bench         --db <pipeline.sqlite> [--pairs N]
@@ -49,8 +52,17 @@ internal static class Program
         {
             var opts = Parse(args.Skip(1).ToArray());
             var p = new Params();
+            var lp = new LineageParams();
             if (opts.TryGetValue("threads", out var th)) p.Threads = Math.Max(1, int.Parse(th[0], CultureInfo.InvariantCulture));
-            if (opts.TryGetValue("param", out var ps)) foreach (var a in ps) p.Set(a);
+            if (opts.TryGetValue("param", out var ps))
+                foreach (var a in ps)
+                {
+                    int eq = a.IndexOf('=');
+                    if (eq > 0 && LineageParams.Has(a[..eq].Trim())) lp.Set(a);
+                    else p.Set(a);
+                }
+            string? mode = One(opts, "mode");
+            if (mode != null && mode != "lineage" && mode != "evidence") throw new ArgumentException($"--mode must be 'lineage' or 'evidence', got '{mode}'");
             var ro = new RunOptions
             {
                 Db = One(opts, "db") ?? DefaultOptions.Db,
@@ -63,14 +75,15 @@ internal static class Program
             switch (args[0])
             {
                 case "run":
-                    return Runner.Run(ro, p, log);
+                    return mode == "evidence" ? Runner.Run(ro, p, log) : LineageRunner.Run(ro, p, lp, log);
                 case "retree":
-                    return Runner.Retree(ro, p, log);
+                    return (mode ?? StoredMode(ro.Db)) == "lineage" ? LineageRunner.Retree(ro, p, lp, log) : Runner.Retree(ro, p, log);
                 case "export":
                 {
                     var sw = Stopwatch.StartNew();
                     using var conn = PipelineDb.Open(ro.Db);
-                    GraphExport.Export(conn, ro.Graph, RepoRoot.Find(ro.Db, ro.Root), p, ro.Timestamp, log);
+                    if (StoredMode(conn) == "lineage") LineageExport.Export(conn, ro.Graph, RepoRoot.Find(ro.Db, ro.Root), p, lp, ro.Timestamp, log);
+                    else GraphExport.Export(conn, ro.Graph, RepoRoot.Find(ro.Db, ro.Root), p, ro.Timestamp, log);
                     log.WriteLine($"export: {sw.Elapsed.TotalSeconds:F1}s");
                     return 0;
                 }
@@ -120,6 +133,16 @@ internal static class Program
     }
 
     private static string? One(Dictionary<string, List<string>> d, string key) => d.TryGetValue(key, out var v) && v.Count > 0 ? v[^1] : null;
+
+    /// <summary>The semantics of the last run stored in the pipeline (meta influence_edge_semantics): "lineage" or "evidence".</summary>
+    internal static string StoredMode(Microsoft.Data.Sqlite.SqliteConnection conn) =>
+        PipelineDb.Meta(conn, LineageStore.MetaSemantics) == LineageStore.Lineage ? "lineage" : "evidence";
+
+    private static string StoredMode(string db)
+    {
+        using var conn = PipelineDb.Open(db);
+        return StoredMode(conn);
+    }
 
     /// <summary><c>score-pairs</c>: every window of the later song against the earlier one, as JSON on stdout.</summary>
     private static int ScorePairs(RunOptions ro, string pairsArg, Params p, TextWriter log, bool debug)

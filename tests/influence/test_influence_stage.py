@@ -1,7 +1,8 @@
 """The influence stage (C#) end to end on a synthetic pipeline DB, checked from Python.
 
 Builds ``influence/MusicHistory.Influence`` into a temporary folder, writes a fixture with
-planted influence (``make-fixture``), runs ``run`` twice and ``export``, and checks:
+planted influence (``make-fixture``), runs ``run`` twice and ``export``, and checks, for the strict
+evidence graph (``run --mode evidence``, fixture ``fixture_run``):
 
 * the graph DB schema equals DESIGN.md §10 (column names, types, NOT NULL, keys);
 * invariants: node ids 1..N in (time_value, work_id) order, one tree edge into every non-root
@@ -14,6 +15,14 @@ planted influence (``make-fixture``), runs ``run`` twice and ``export``, and che
 * the file opens and answers queries in SQLite **3.15.0**, the version Unity ships
   (Unity-FDG's own sqlite3.dll, copied to a temp dir and loaded with ctypes);
 * ``python -m musichistory influence`` (musichistory/dotnet.py) drives the same executable.
+
+and for the identity lineages (DESIGN.md §8b, ``run`` without ``--mode``, the default; fixture ``lineage_run``):
+
+* graph_meta.edge_semantics = 'identity_lineage', the extra tables identity_family / song_family as §8b
+  declares them, every edge's evidence the label of a family both songs belong to, z only on strong
+  matches, excerpts of 8..24 bars, the §10 invariants;
+* determinism, and ``export`` / ``retree`` reproduce the run; the report's families and tree sections;
+* the evidence graph carries none of it (no identity tables, no edge_semantics: byte-identical to before).
 """
 
 from __future__ import annotations
@@ -55,6 +64,21 @@ def exe(tmp_path_factory) -> Path:
 @pytest.fixture(scope="module")
 def fixture_run(exe, tmp_path_factory):
     root = tmp_path_factory.mktemp("influence-fixture")
+    data = root / "data"
+    db = data / "musichistory.sqlite"
+    subprocess.run([str(exe), "make-fixture", "--out", str(db), "--songs", str(N_SONGS), "--seed", "5"], check=True,
+                   capture_output=True, text=True)
+    graph = data / "graph" / "music_graph.db"
+    r = subprocess.run([str(exe), "run", "--mode", "evidence", "--db", str(db), "--graph", str(graph), "--root", str(root),
+                        "--generated-at", STAMP, *FIXTURE_FPR], capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr
+    return {"root": root, "db": db, "graph": graph, "exe": exe, "log": r.stderr}
+
+
+@pytest.fixture(scope="module")
+def lineage_run(exe, tmp_path_factory):
+    """The default mode (identity lineages) on its own copy of the same fixture."""
+    root = tmp_path_factory.mktemp("influence-lineage")
     data = root / "data"
     db = data / "musichistory.sqlite"
     subprocess.run([str(exe), "make-fixture", "--out", str(db), "--songs", str(N_SONGS), "--seed", "5"], check=True,
@@ -200,7 +224,7 @@ def test_deterministic_and_export_reproduces(fixture_run, tmp_path):
     # A second run (other thread count) and an export-only pass give the same bytes.
     # Same depth below the data folder, so the relative MIDI paths are the same strings.
     g2 = root / "data" / "graph2" / "music_graph.db"
-    r = subprocess.run([str(exe), "run", "--db", str(db), "--graph", str(g2), "--root", str(root), "--generated-at", STAMP,
+    r = subprocess.run([str(exe), "run", "--mode", "evidence", "--db", str(db), "--graph", str(g2), "--root", str(root), "--generated-at", STAMP,
                         "--threads", "2", "--report", str(tmp_path / "r2.json"), *FIXTURE_FPR], capture_output=True, text=True)
     assert r.returncode == 0, r.stderr
     assert hashlib.sha256(g2.read_bytes()).hexdigest() == first
@@ -319,7 +343,9 @@ def test_benchmark_port_reproduces_python_v8(exe):
 
 
 @pytest.mark.skipif(sys.platform != "win32" or not UNITY_SQLITE.exists(), reason="needs Unity-FDG's sqlite3.dll (Windows)")
-def test_opens_in_sqlite_3_15(fixture_run, tmp_path):
+@pytest.mark.parametrize("which", ["fixture_run", "lineage_run"])
+def test_opens_in_sqlite_3_15(which, request, tmp_path):
+    fixture_run = request.getfixturevalue(which)
     dll = tmp_path / "sqlite3_315.dll"
     shutil.copyfile(UNITY_SQLITE, dll)          # never load it from the Unity project itself
     lib = ctypes.CDLL(str(dll))
@@ -354,6 +380,13 @@ def test_opens_in_sqlite_3_15(fixture_run, tmp_path):
             "SELECT source_node, target_node, kind, primary_channel FROM influence_edges ORDER BY id").fetchall()
         assert e315 == [tuple(str(x) for x in r) for r in py]
         assert query("SELECT value FROM graph_meta WHERE key = 'schema_version'") == [("1",)]
+        if which == "lineage_run":
+            # The identity tables and the viewer's family lookup (an edge's identity = a family of both songs with its label).
+            fam = query("SELECT e.id, f.family_id FROM influence_edges e JOIN identity_family f ON f.label = e.evidence "
+                        "JOIN song_family a ON a.family_id = f.family_id AND a.node_id = e.source_node "
+                        "JOIN song_family b ON b.family_id = f.family_id AND b.node_id = e.target_node ORDER BY e.id")
+            assert len({r[0] for r in fam}) == len(e315)
+            assert query("SELECT value FROM graph_meta WHERE key = 'edge_semantics'") == [("identity_lineage",)]
     finally:
         lib.sqlite3_close(db)
 
@@ -373,3 +406,137 @@ def test_cli_drives_the_executable(tmp_path):
     g = sqlite3.connect(data / "graph" / "music_graph.db")
     assert g.execute("SELECT COUNT(*) FROM song_node").fetchone()[0] == 40
     assert (data / "graph" / "influence_report.json").exists()
+    # The default mode is the identity lineages (DESIGN.md §8b).
+    assert g.execute("SELECT value FROM graph_meta WHERE key = 'edge_semantics'").fetchone() == ("identity_lineage",)
+
+
+# ---------------------------------------------------------------------------------------------- identity lineages
+def _design_lineage_tables() -> str:
+    """The §8b DDL of the extra graph tables, as DESIGN.md states it inline."""
+    text = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    sec = text[text.index("**Extra graph tables**"):]
+    out = []
+    for name in ("identity_family", "song_family"):
+        m = re.search(r"`(" + name + r"\(.*?\))`", sec, re.S)
+        assert m, name
+        out.append("CREATE TABLE " + " ".join(m.group(1).split()) + ";")
+    return "\n".join(out)
+
+
+@pytest.mark.parametrize("which", ["fixture_run", "lineage_run"])
+def test_graph_meets_the_unity_loader_contract(which, request):
+    """The viewer side's own conformance check (tests/unity/graph_fixture.py) passes on both graphs."""
+    path = ROOT / "tests" / "unity" / "graph_fixture.py"
+    if not path.exists():
+        pytest.skip("tests/unity/graph_fixture.py not present")
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("mh_unity_graph_fixture", path)
+    gf = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = gf              # dataclasses resolve their module through sys.modules
+    spec.loader.exec_module(gf)
+    assert gf.check_graph(request.getfixturevalue(which)["graph"]) == []
+
+
+def test_lineage_is_the_default_and_marks_the_graph(lineage_run):
+    g = sqlite3.connect(lineage_run["graph"])
+    meta = dict(g.execute("SELECT key, value FROM graph_meta"))
+    assert meta["edge_semantics"] == "identity_lineage"
+    assert int(meta["family_count"]) == g.execute("SELECT COUNT(*) FROM identity_family").fetchone()[0] > 0
+    c = sqlite3.connect(lineage_run["db"])
+    assert dict(c.execute("SELECT key, value FROM meta WHERE key LIKE 'influence%'")) == {
+        k: v for k, v in meta.items() if k.startswith("influence")}
+    assert meta["influence_edge_semantics"] == "identity_lineage"
+
+
+def test_evidence_graph_has_no_identity_tables(fixture_run):
+    """--mode evidence is the strict graph exactly as before: no identity tables, no edge_semantics key."""
+    g = sqlite3.connect(fixture_run["graph"])
+    names = {r[0] for r in g.execute("SELECT name FROM sqlite_master WHERE type = 'table'")}
+    assert names == {"graph_meta", "nodes", "song_node", "influence_edges"}
+    meta = dict(g.execute("SELECT key, value FROM graph_meta"))
+    assert "edge_semantics" not in meta and "influence_edge_semantics" not in meta
+
+
+def test_lineage_graph_schema_matches_design(lineage_run):
+    design = sqlite3.connect(":memory:")
+    design.executescript(_design_graph_schema())
+    design.executescript(_design_lineage_tables())
+    g = sqlite3.connect(lineage_run["graph"])
+    for table in ("graph_meta", "nodes", "song_node", "influence_edges", "identity_family", "song_family"):
+        assert _columns(g, table) == _columns(design, table), table
+    assert g.execute("PRAGMA journal_mode").fetchone()[0] == "delete"
+
+
+def test_lineage_edges_name_a_shared_family(lineage_run):
+    g = sqlite3.connect(lineage_run["graph"])
+    fam = {r[0]: r for r in g.execute("SELECT family_id, label, kind, roman, size FROM identity_family")}
+    members: dict[int, dict[int, tuple]] = {}
+    for node, fid, strength, first in g.execute("SELECT node_id, family_id, strength, first_beat FROM song_family"):
+        members.setdefault(fid, {})[node] = (strength, first)
+        assert 0 < strength <= 1
+    for fid, (_, label, kind, roman, size) in fam.items():
+        assert kind in ("schema", "loop", "progression", "strong")
+        assert size == len(members.get(fid, {}))
+        assert label.isascii() and 0 < len(label) <= 80
+    labels = [f[1] for f in fam.values() if f[2] != "strong"]
+    assert len(labels) == len(set(labels))                      # unique outside strong matches
+    songs = {r[0]: r for r in g.execute("SELECT node_id, time_value, beats_per_bar, tree_parent_node FROM song_node")}
+    edges = g.execute("SELECT source_node, target_node, kind, evidence, z, primary_channel, src_start_beat, src_end_beat, "
+                      "dst_start_beat, dst_end_beat, channels FROM influence_edges").fetchall()
+    assert edges
+    for s, t, kind, ev, z, primary, s0, s1, d0, d1, channels in edges:
+        assert s < t and songs[s][1] < songs[t][1]
+        shared = [f for f in fam.values() if f[1] == ev and s in members.get(f[0], {}) and t in members.get(f[0], {})]
+        assert len(shared) == 1, (s, t, ev)
+        strong = shared[0][2] == "strong"
+        assert (z != 0) == strong
+        assert primary in ("melody", "bass", "chord", "loop")
+        assert primary in channels.split(","), (s, t, channels, primary)   # the viewer's contract
+        if shared[0][2] in ("schema", "loop"):
+            assert primary == "loop"
+        for a, b, node in ((s0, s1, s), (d0, d1, t)):
+            bpb = songs[node][2]
+            assert 8 * bpb - 1e-6 <= b - a <= 24 * bpb + 1e-6
+        if kind == "tree":
+            assert songs[t][3] == s
+
+
+def test_lineage_deterministic_export_and_retree_reproduce(lineage_run, tmp_path):
+    exe, db, root = lineage_run["exe"], lineage_run["db"], lineage_run["root"]
+    first = hashlib.sha256(lineage_run["graph"].read_bytes()).hexdigest()
+    g2 = root / "data" / "graph2" / "music_graph.db"
+    r = subprocess.run([str(exe), "run", "--db", str(db), "--graph", str(g2), "--root", str(root), "--generated-at", STAMP,
+                        "--threads", "2", "--report", str(tmp_path / "r2.json"), *FIXTURE_FPR], capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr
+    assert hashlib.sha256(g2.read_bytes()).hexdigest() == first
+    for cmd, name in (("export", "graph3"), ("retree", "graph4")):
+        gx = root / "data" / name / "music_graph.db"
+        r = subprocess.run([str(exe), cmd, "--db", str(db), "--graph", str(gx), "--root", str(root), "--generated-at", STAMP],
+                           capture_output=True, text=True)
+        assert r.returncode == 0, r.stderr
+        assert hashlib.sha256(gx.read_bytes()).hexdigest() == first, cmd
+
+
+def test_lineage_report_sections(lineage_run):
+    rep = json.loads((lineage_run["graph"].parent / "influence_report.json").read_text(encoding="utf-8"))
+    assert rep["edge_semantics"] == "identity_lineage"
+    g = sqlite3.connect(lineage_run["graph"])
+    fam = rep["families"]
+    assert fam["total"] == g.execute("SELECT COUNT(*) FROM identity_family").fetchone()[0]
+    assert sum(fam["by_kind"].values()) == fam["total"]
+    assert fam["singletons"] == g.execute("SELECT COUNT(*) FROM identity_family WHERE size = 1").fetchone()[0]
+    assert sum(fam["size_histogram"].values()) == fam["total"]
+    for t in fam["top"]:
+        assert {"label", "kind", "size", "root_song", "tree_edges", "tree_shape"} <= set(t)
+    tree = rep["tree"]
+    n_tree = g.execute("SELECT COUNT(*) FROM influence_edges WHERE kind = 'tree'").fetchone()[0]
+    assert tree["tree_edges"] == n_tree == N_SONGS - tree["roots"]
+    assert sum(tree["depth_histogram"].values()) == N_SONGS
+    assert tree["max_chain_songs"] == tree["max_depth"] + 1
+    assert tree["largest_subtrees"] and tree["longest_chains"]
+    assert len(tree["longest_chains"][0]) == tree["max_depth"] + 1
+    assert [v["rule"].split(":")[0] for v in tree["guard"]][-1] == "final"
+    assert tree["hubs"]["max_children"] == max(r[0] for r in g.execute(
+        "SELECT COUNT(*) FROM influence_edges WHERE kind = 'tree' GROUP BY source_node"))
+    assert rep["strict_evidence_graph"]["nodes"] == N_SONGS
+    assert "decision" in rep and rep["lineage_params"]["StrongWeight"] > 0

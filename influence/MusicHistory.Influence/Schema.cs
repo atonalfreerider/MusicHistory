@@ -258,4 +258,12 @@ CREATE TABLE influence_edges(
   evidence TEXT,
   UNIQUE(source_node, target_node), CHECK(source_node < target_node));
 """;
+
+    /// <summary>The identity-lineage graph's extra tables (DESIGN.md §8b; additive, SQLite 3.15 compatible).</summary>
+    public const string GraphLineage = """
+CREATE TABLE identity_family(family_id INTEGER PRIMARY KEY, label TEXT NOT NULL, kind TEXT NOT NULL,
+  roman TEXT, size INTEGER NOT NULL);
+CREATE TABLE song_family(node_id INTEGER NOT NULL, family_id INTEGER NOT NULL, strength REAL NOT NULL, first_beat REAL,
+  PRIMARY KEY(node_id, family_id));
+""";
 }

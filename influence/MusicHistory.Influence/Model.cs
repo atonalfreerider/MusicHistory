@@ -131,6 +131,7 @@ internal sealed class Song
     public NoteLine[] Lanes = [];     // melody_line rows with role 'lane:*' (analyze), in role order
     public string[] LaneRoles = [];
     public ChordLine? Chords;
+    public ChordLine? ChordsL2;       // chord_seq 'chg' L2 (root * 6 + quality with sevenths); loaded by the lineage mode only
     public LoopRow[] Loops = [];
 
     public Features F = null!;

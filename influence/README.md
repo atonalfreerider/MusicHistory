@@ -1,15 +1,22 @@
 # MusicHistory.Influence
 
-The influence stage (DESIGN.md §8) in C# (.NET 10). It reads the analyze stage's identities from the
-pipeline DB, scores the rare material every later song shares with every earlier song (**V2: the "V8"
-analytic corpus null of the calibration benchmark, window max**), decides with an **empirical threshold**,
-builds the "most referenced strong influencer" forest, and exports the graph database of DESIGN.md §10
-for the layout stage and Unity. The defaults are the **V2.1 calibration on the real data** (below): read
-"What the graph can and cannot claim" before using its edges.
+The influence stage (DESIGN.md §8, §8b) in C# (.NET 10). It reads the analyze stage's identities from the pipeline DB
+and exports the graph database of DESIGN.md §10 for the layout stage and Unity. Two edge semantics:
+
+* **identity lineages** (`run --mode lineage`, **the default**, DESIGN.md §8b, section "Identity lineages" below): songs
+  are connected through the identities they share -- loop families, named chord schemas, progression schemas on the bar
+  grid, and the strict evidence's strong matches -- labelled as such ("Shares: 12-bar blues"). Shared musical DNA, not
+  proven copying. Label accuracy audited on the real data: 140 of 140 audited edges correct.
+* **strict evidence** (`run --mode evidence`, the V2.1 graph, byte-identical to before): it scores the rare material every
+  later song shares with every earlier song (**V2: the "V8" analytic corpus null of the calibration benchmark, window
+  max**), decides with an **empirical threshold**, and builds the "most referenced strong influencer" forest. Its
+  defaults are the **V2.1 calibration on the real data** (below): read "What the graph can and cannot claim" before using
+  its edges. Its significant pairs are the lineage mode's strong matches.
 
 ```
 dotnet build -c Release influence/MusicHistory.Influence/MusicHistory.Influence.csproj
-MusicHistory.Influence.exe run --db data/musichistory.sqlite --graph data/graph/music_graph.db
+MusicHistory.Influence.exe run --db data/musichistory.sqlite --graph data/graph/music_graph.db                  # lineages
+MusicHistory.Influence.exe run --mode evidence --db data/musichistory.sqlite --graph data/graph/music_graph.db  # strict
 ```
 
 or, through the Python CLI (builds into `data/tools/influence` first):
@@ -22,11 +29,11 @@ python -m musichistory influence [-- --threads 4 --param name=value ...]
 
 | command | what it does |
 |---|---|
-| `run --db <db> --graph <graph.db> [--report <json>] [--root <repo>] [--threads N] [--generated-at <iso>] [--no-export] [--param name=value]...` | scores every time-ordered pair, decides, writes `pair_score`, `influence_edge`, `tree_node` (previous rows replaced) and the `influence_*` keys of the pipeline `meta` table, the graph DB and `influence_report.json` (next to the graph DB unless `--report`) |
+| `run --db <db> --graph <graph.db> [--mode lineage\|evidence] [--report <json>] [--root <repo>] [--threads N] [--generated-at <iso>] [--no-export] [--param name=value]...` | scores every time-ordered pair, decides, writes `pair_score`, `influence_edge`, `tree_node` (previous rows replaced) and the `influence_*` keys of the pipeline `meta` table, the graph DB and `influence_report.json` (next to the graph DB unless `--report`). `--mode lineage` (default) then builds the identity lineages: `influence_edge` / `tree_node` hold the lineage graph, the private tables `lineage_family`, `lineage_member`, `lineage_edge`, `lineage_excerpt` its families, edges and excerpts, and meta `influence_edge_semantics = identity_lineage`; `--mode evidence` writes exactly what V2.1 wrote. `--param` takes the fields of `Params` and of `LineageParams` |
 | `score-pairs --db <db> --pairs <json or file> [--debug]` | scores `[[a_id, b_id], ...]` (any order; scored earlier -> later) and prints JSON: fused z, winning window and shift, per-channel S / mu / sigma / z and window maximum, the lane match (`lane_role`), the five best windows, how many of B's windows reach half the pair's z (`windows_above_half` / `windows`), the run's stored threshold; `--debug` lists the winning window's shared rare n-grams (channel, family, df, pair df, bits, `b_beat` / `b_end_beat`, the line each song matched in, and up to four occurrences in A as `a_beats`, so the material can be printed side by side) and ranks A among all earlier songs on that window (`window_rank`, `window_others_half`, `window_runner_up`) |
 | `evaluate --benchmark <dir> [--db <pipeline.sqlite>] [--tune] [--threshold-z Z] [--param name=value]...` | scores the calibration benchmark (`pairs.json`, `identities.json.gz`, `df_corpus.npz`, optional `target_lanes.json.gz`) and prints TPR at a window FPR of 1e-3 / 1e-2 per channel and fused: part 1 = the Python V8 port at df cap 5 and uncapped (whatever `DfCap` is), side by side with the Python score files (`scores_v8*.jsonl`, `scores_lanes.jsonl`) and the per-pair max abs dz; part 2 = the production configuration, with the df and documents of the pipeline DB's songs built by the production code when `--db` is given (required for `KeyFreeDf` > 0, else part 2 is skipped); `--tune` = the weight / penalty grid; `--threshold-z` = benchmark recall at a run's pair threshold |
-| `export --db <db> --graph <graph.db> [--root <repo>] [--generated-at <iso>]` | rewrites the graph DB from the pipeline tables only |
-| `retree --db <db> --graph <graph.db> [--param name=value]...` | redoes credit, tree and export from the stored significant `pair_score` rows (no rescoring), for trying tree rules |
+| `export --db <db> --graph <graph.db> [--root <repo>] [--generated-at <iso>]` | rewrites the graph DB from the pipeline tables only (the semantics of the last run, from meta `influence_edge_semantics`) |
+| `retree --db <db> --graph <graph.db> [--mode lineage\|evidence] [--param name=value]...` | redoes credit, tree and export without rescoring, for trying tree rules: from the stored lineage families (lineage), or from the stored significant `pair_score` rows (evidence); default: the semantics of the last run |
 | `make-fixture --out <db> --songs N [--seed S]` | synthetic pipeline DB (db.py schema, realistic sizes) with planted influence in `known_influence`, analyze-style settings meta and `key_region` rows |
 | `bench --db <db> [--pairs N]` | single-thread cost of the V8 engine (index build, N later songs against all their earlier songs) |
 
@@ -36,7 +43,154 @@ default the nearest ancestor of the DB holding `musichistory/config.py`, else th
 parent. `midi_path` and `normalized_midi_path` in `song_node` are relative to the graph DB's
 folder with `/` separators (e.g. `../songs/<work_id>/score.mid`).
 
-## How it works (V2; DESIGN.md §8 steps 1 and 9-12 kept, 2-8 replaced)
+## Identity lineages (the default; DESIGN.md §8b)
+
+`LineageRunner` scores the strict evidence first (exactly as `--mode evidence`; its significant pairs are the strong
+matches), then builds families (`LineageFamilies.cs`, `LineageGrid.cs`, `LineageCatalogue.cs`), scores, credit and tree
+(`LineageTree.cs`), writes the pipeline tables (`LineageStore.cs`), the graph (`LineageExport.cs`) and the report
+(`LineageReport.cs`). Labels are ASCII (`bVII`, `viio`, `-`), like the analyze stage's `loop.roman`.
+
+**Families** (a song belongs to a family with a strength = the share of its beats the family covers, capped at 1):
+
+* **Loop families** from `loop` rows that (a) repeat within a visit (`passes >= 2`: a passes-1 row is a non-repeating
+  phrase whose "cycle" is a reduced chord summary -- Tennessee Waltz's "I-V" row is the phrase I I II V), (b) are *heard*
+  in the chord changes (`chord_seq` 'chg' L1) at one of their visits (`CycleMatch`: the cycle through once in some
+  rotation -- a two-chord vamp twice with neither chord a pickup (shortest >= longest / 3), a three-chord cycle through and
+  back with no chord under a quarter of the longest, a longer cycle once; one ornament chord of at most half a bar may be
+  skipped in cycles of 4+) -- the analyze stage's loop tokens can disagree with its chord sequence (Day-O's "II-VI" row
+  straddles a key-region boundary and sounds as I-V), and (c) cover >= 8 bars of the song (rows of one family summed).
+  The key is the Booth-least rotation of the cycle's roots (repeated roots merged, primitive period); it is
+  **quality-tolerant for cycles of 4+ chords** (a member may differ from the family's majority chords in one chord: E vs
+  Em); 2- and 3-chord cycles are keyed by their exact chords (I-vi and I-VI are different vamps; II-V-I is not ii-V-I).
+  The first visit is where the cycle is first heard.
+* **Named schemas** (`Catalogue`): axis progression I-V-vi-IV and its rotations (i-bVI-bIII-bVII in the minor frame),
+  doo-wop I-vi-IV-V, Pachelbel ground I-V-vi-iii-IV-I-IV-V and its first half, Andalusian cadence i-bVII-bVI-V,
+  Mixolydian vamp I-bVII-IV, bVII-bVI shuttle I-bVII-bVI-bVII and i-bVII-bVI-bVII, Aeolian progression i-bVI-bVII,
+  I-vi-ii-V turnaround, ii-V-I cadence loop, every two-chord cycle as "two-chord vamp"; a family takes a name when its
+  root cycle is the schema's and its majority qualities agree (all of a 3-chord schema, all but one of a longer one; the
+  label shows what the members play: "Andalusian cadence i-bVII-bVI-v"). Everything else is named by its roman numerals
+  in the C/Am frame, shown in the tonic frame (i = the minor tonic of the normalization) when most members are minor
+  songs; `identity_family.roman` always holds the C/Am-frame numerals. Labels are unique outside strong matches (a clash
+  gets `[C/Am <numerals>]`), so the viewer finds an edge's family by its label among the families of both songs.
+* **Progression schemas** (`Progressions`): the **12-bar blues** on the half-bar chord grid (any tonic: >= 11 of 12 bars'
+  first half on I I I I IV IV I I V IV I I with bar 2 IV, bar 10 V and bar 12 V allowed, bars 1, 5, 9, 11 required, >= 2/3
+  of the bars in both halves; a diminished triad counts as the dominant a major third below, G7 transcribed as B dim);
+  its **16-bar variant** is a 12-bar form preceded by 4 more bars of the tonic (on the grid the two are otherwise the
+  same); two **8-bar blues** forms (I-V-IV-IV-I-V-I-V, I-I-I-I-IV-IV-V-I; >= 2 occurrences); the **ii-V-I, iio-V-i,
+  I-IV-V-I and i-iv-V-i cadences** as consecutive chord changes resolving on a bar line, outside loop visits, >= 2
+  occurrences (variant: harmonic rhythm and L2 qualities, "2.2.4|m7.7.maj7"); the **descending chromatic bass line**
+  (bass pitch per half-bar, >= 3 semitone steps, each note held a half-bar to 4 bars), one family per first four scale
+  degrees in the tonic frame ("descending chromatic bass 1-7-b7-6", the line cliche).
+* **Strong matches**: every significant pair of the strict evidence (threshold and parameters unchanged), a family of two
+  songs labelled by its longest contiguous shared passage ("exact melody passage, 19 notes", "exact bass riff, 44 notes",
+  "exact chord passage, 11 changes"); its excerpts are that passage in B and the stretch of A holding most of its n-grams.
+
+**Score, credit, tree.** `specificity(F) = log2(N / |F|)`; for an earlier A and a later B (§8.1 order, same-year rule)
+`score = sum_F specificity x agreement x closeness^2 x min(strength_A, strength_B)^0.5 + StrongWeight (10) x z` of a
+strong match (z >= 30, so >= 300 bits: it dominates any family sum). Agreement is the design's: 1 same phase and rhythm
+signature, 0.75 same phase, 0.5 otherwise (progressions: same variant / same rhythm or form / otherwise). **Closeness**
+(the finer agreement, the degenerate-structure guard) is, for loops, the product of the shares of equal chord qualities
+and duration classes, the loop-length ratio and the strength ratio (each floored at 0.1); for progressions the strength
+ratio times the share of equal L2 qualities; 1 for strong matches. The user's rule is kept: each song credits its
+highest-scoring earlier song (an exact tie goes to the closest version, then the earliest); `ref_count` = songs crediting
+a song; strong influencers = score >= `ParentFraction` (0.5) x max; **parent = the most referenced strong influencer**
+(ties: score, closeness, earlier); up to 8 other strong influencers become secondary edges; songs without an earlier
+family member are roots.
+
+**Excerpts.** An edge's spans are the first visit of its credited family (the family with the largest contribution) in
+both songs, snapped outward to bars, 8..24 bars (`src_*` / `dst_*`); a song's excerpt is its tree edge's `dst` span; a
+root's is the first visit of the family most of its children share, else of its most-covering loop, else its first 16
+bars.
+
+**Graph.** §10 tables plus `identity_family(family_id, label, kind, roman, size)` (kind `schema` | `loop` |
+`progression` | `strong`) and `song_family(node_id, family_id, strength, first_beat)` (every family, singletons included),
+`graph_meta.edge_semantics = 'identity_lineage'` and `family_count`. Edges: `evidence` = the credited family's label,
+`primary_channel` = `loop` (loop and schema families), `chord` (blues, cadences), `bass` (chromatic bass) or the strong
+match's channel, `channels` = the channels of every family the pair shares, `score_bits` = the score, `z` = the strong
+match's fused z or 0, `q` its tail probability, `similarity = 1 - 2^(-score / 8)`. A strict-evidence graph carries no
+`edge_semantics` key and no identity tables (it stays byte-identical to V2.1): a reader treats a missing key as
+`strict_evidence`.
+
+**Report** (`influence_report.json`, lineage mode): `families` (totals by kind, shared and singleton counts, size
+histogram, songs with a family, the 25 largest with their root song, tree edges and shape: distinct parents, largest
+parent share, longest chain), `tree` (rule, roots, depth histogram, largest subtrees, longest root-to-leaf chains, strong
+matches kept, `hubs`: children per parent and the ten biggest parents with their child identities, `guard`: the four tree
+rules compared), `graph`, `validation` (known pairs against the lineage edges); the strict evidence's sections as before,
+its tree as `strict_evidence_graph` / `strict_evidence_validation`; `params` and `lineage_params`.
+
+`LineageParams` (`--param Name=value`; names distinct from `Params`):
+
+| parameter | default | meaning |
+|---|---|---|
+| `MinLoopBars`, `MinPasses` | 8, 2 | a loop family needs >= 8 bars of repeating loops in the song |
+| `StrengthCap` | 1 | strength = covered share of the song's beats |
+| `ProgMinOcc`, `Blues8MinOcc` | 2, 2 | cadence / 8-bar blues occurrences per song |
+| `BluesNeed`, `BluesFullShare` | 11, 0.667 | 12-bar blues tolerance |
+| `DcbMinSteps`, `DcbMaxCells` | 3, 8 | descending chromatic bass: steps, longest note (half-bar cells) |
+| `AgreeSame`, `AgreePhase`, `AgreeOther` | 1, 0.75, 0.5 | the design's agreement |
+| `StrongWeight` | 10 | strong term = 10 x fused z |
+| `FineAgreement`, `ClosenessProduct`, `ClosenessPower` | 1, 1, 2 | closeness in the score, as a product of its parts, squared |
+| `CreditCloseness` | 1 | exact credit ties to the closest version |
+| `LineageHalfBits` | 8 | similarity half-life |
+
+### The degenerate-structure guard (measured on the real data)
+
+The same families and scores under four tree rules (`tree.guard` in the report; 1,012 songs, 659 tree edges):
+
+| rule | largest parent (children) | parents with >= 20 children | largest one-family star | largest hub / non-roots | max ref_count | max depth | ii-V-I family: tree edges, distinct parents |
+|---|---|---|---|---|---|---|---|
+| membership only (every shared family counts fully), credit ties to the earliest | 92 | 8 | 92 | 13.96 % | 88 | 4 | 92, 1 |
+| design score (agreement, strength), ties to the earliest | 88 | 8 | 88 | 13.35 % | 28 | 7 | 98, 7 |
+| design score, ties to the closest version | 117 | 5 | 71 | 17.75 % | 10 | 10 | 96, 11 |
+| **final: closeness^2 in the score, ties to the closest version** | **25** | **2** | **25** | **3.79 %** | 10 | 12 | 126, 36 |
+
+Closest-version credit alone spreads the credit (max `ref_count` 88 -> 10) but leaves stars: every member of a big family
+stays inside the `ParentFraction` band, so the most referenced one still takes them all (the ii-V-I cadence, 157 songs:
+71 children of one song). Closeness inside the score narrows each song's strong influencers to its close versions: the
+ii-V-I family becomes a tree of versions with 36 parents (largest 25 children, Try a Little Tenderness, a clean one-bar
+ii-V-I of 1932) and chains of 8 edges. Closeness^1 gave a largest parent of 41 children and 25 ii-V-I parents,
+closeness^3 19 and 40 (retree on the same families); 2 is the default.
+
+### Results on the real data (2026-09-30, `python -m musichistory influence`, 18-30 s; then `python -m musichistory layout`, 1,500 iterations in 0.16 s on the GPU)
+
+* **Families**: 603 = 54 schema, 469 loop, 13 progression, 67 strong; shared by >= 2 songs: 32 schema, 89 loop, 11
+  progression, 67 strong; 404 singletons (22 schema, 380 loop, 2 progression). 828 of 1,012 songs belong to a family,
+  728 to a shared one. Largest: ii-V-I cadence 157 (root Mack the Knife, 1928), I-IV-V-I cadence 74 (La Bamba, 1939),
+  two-chord vamp I-IV 42 (Earth Angel, 1954), axis progression I-V-vi-IV 40 (No Woman, No Cry, 1974), two-chord vamp V-I
+  29, 12-bar blues 29 (In the Mood, 1939), I-IV-V 28, I-V-IV 26, doo-wop I-vi-IV-V 24, two-chord vamp I-vi 22, Aeolian
+  i-bVI-bVII 21 (Layla, 1970), I-vi-ii-V turnaround 16, two-chord vamp IV-V 16, two-chord vamp i-bVII 14, two-chord vamp
+  V-ii 13; also Andalusian cadence 7 (Hit the Road Jack), bVII-bVI shuttle i-bVII-bVI-bVII 8 (All Along the
+  Watchtower), Pachelbel ground 3 (Hook), five descending chromatic bass lines (4-8 songs each).
+* **Tree**: 659 tree edges (schema 224, progression 221, loop 151, strong 63), 1,054 secondary, 353 roots (56 with
+  children, 297 without an earlier family member), depth 0..12 = 353 / 126 / 120 / 83 / 52 / 50 / 62 / 69 / 43 / 19 / 21 /
+  11 / 3; longest chain 13 songs (Mack the Knife -> Puttin' on the Ritz -> Try a Little Tenderness -> Five Minutes More ->
+  Mockin' Bird Hill (ii-V-I) -> Delicado -> The Great Pretender -> Handy Man (I-IV-V-I) -> Tighten Up -> Stairway to Heaven
+  (I-V-vi) -> Lady Marmalade (vamp i-IV) -> Pump Up the Jam -> Real Love (exact chord passage)). Biggest parents: Try a
+  Little Tenderness 25 (ii-V-I 25), In the Mood 20 (ii-V-I 11, 12-bar blues 9), The Great Pretender 18 (I-IV-V-I),
+  Silhouettes 17, Little Things Mean a Lot 16. Strong matches: 66 of 67 kept as edges (63 tree, 3 secondary).
+* **Known pairs**: the 4 positives with a strict edge are lineage parents too (via their strong match); 7 of 26 present
+  positives share a family; of 42 commonplace negatives 14 share a family and 1 has an edge (Rock Around the Clock ->
+  Blue Suede Shoes, its strong match).
+
+### Label audit (the claim "these songs share identity X" must be true)
+
+`audit_lineage.py` (calibration scratch tools, independent of this code) samples 60 tree edges uniformly (seed 7) plus
+every tree edge of the 5 biggest parents, prints both songs' bar grid (roman numerals, half-bar cells, bar numbers) and
+chord changes inside the exported windows, and checks with its own implementation that the named identity sounds in both
+(loops: the cycle as above; blues: 12 bars on the form, >= 10 of 12; cadences: consecutive changes; chromatic bass: the
+four named degrees stepwise; strong matches: `score-pairs --debug`, at least half of the shared rare n-grams in the target
+window also in the source window) and that the source is earlier. Iterations on the real data: 61 % (loop rows taken as
+loops, quality tolerance on every cycle) -> 92.6 % (repeating loops only) -> 95.8 % (loops checked against the chords,
+exact short cycles) -> 100 % of 179 (cadences on chord changes). The final graph: **140 of 140 correct** (60 random, all 96
+edges of Try a Little Tenderness, In the Mood, The Great Pretender, Silhouettes, Little Things Mean a Lot; 140 of 140
+sources earlier); the grids were also read by hand.
+
+**What the lineage graph claims**: each edge's two songs contain the named identity (heard in both exported excerpts);
+the source is strictly earlier; the parent is the most referenced of the song's closest earlier versions. It does not
+claim borrowing: common identities (ii-V-I, I-IV-V-I, two-chord vamps) connect songs that share a style, and the
+specificity term only ranks them below rarer shared identities.
+
+## How it works (strict evidence, `--mode evidence`; V2; DESIGN.md §8 steps 1 and 9-12 kept, 2-8 replaced)
 
 The diagnosis of the V1 graph (0 of 138 audited edges were borrowings; 1 of 25 known pairs found) and the
 calibration benchmark (1,360 positive and 40,800 negative 16-bar windows of real transcriptions) chose the
@@ -311,3 +465,18 @@ under `KeyFreeDf`, the engine equals the direct formula under the calibrated def
 weights with true leave-two-out, size-adjusted null, filter, extra families), and the defaults themselves. The
 end-to-end fixtures run at `TargetFpr` 1e-3: with 120-150 songs every time-ordered pair is in the null sample,
 planted pairs included, so the 3e-5 default would put the threshold above them.
+
+The identity lineages: `LineageTests` cover the roman numerals in both frames, every catalogue schema (rotations, the
+minor frame, one-quality tolerance, parallel normalization), the loop key (rotation, merged roots, primitive period), the
+chord grid, the 12-bar blues in any key with its quick change, dominant alias and 16-bar variant (and not on an axis loop
+or 8 bars of it), the 8-bar forms, the cadences (bar-line resolution, passing chords, loop visits, L2 variant, strict
+minor forms), the chromatic bass line (degrees in the tonic frame, fills and short lines rejected), the loop check
+(vamps, pickups, passing chords, ornaments, qualities), families (passes, heard, 8 bars, exact vs tolerant keys, strong
+matches and their measured passage on a planted quote), the score formula (agreement, closeness, strong term), strict
+time order and roots, the parent rule (most referenced strong influencer vs highest score, ParentFraction), credit ties,
+secondary caps, excerpts, the guard (a 40-song family: a star under the plain rule, a tree of versions under the final
+one) and the parameter split; `LineageEndToEndTests` run the fixture (lineage run twice, export and retree: identical
+bytes; every edge labelled by a family of both songs; §10 invariants; 8..24-bar excerpts; report sections) and check that
+`--mode evidence` equals `Runner.Run` byte for byte, has no identity tables, and stays identical after a lineage run in the
+same pipeline DB. `tests/influence` runs both modes through the executable (DESIGN.md §10 and §8b schemas, invariants,
+determinism, export / retree, SQLite 3.15).

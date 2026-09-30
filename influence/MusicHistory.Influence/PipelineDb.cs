@@ -236,6 +236,29 @@ internal static class PipelineDb
         return [.. songs];
     }
 
+    /// <summary>The L2 change sequences (<c>chord_seq</c> kind 'chg', level 'L2': root * 6 + quality with sevenths) into <see cref="Song.ChordsL2"/>.</summary>
+    public static void LoadChordsL2(SqliteConnection c, Song[] songs)
+    {
+        var byId = songs.ToDictionary(s => s.WorkId, StringComparer.Ordinal);
+        using var cmd = c.CreateCommand();
+        cmd.CommandText = "SELECT work_id, tokens, starts, durs FROM chord_seq WHERE kind = 'chg' AND level = 'L2'";
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+        {
+            if (!byId.TryGetValue(r.GetString(0), out var s)) continue;
+            var tokens = Ints(r.GetString(1));
+            var starts = Doubles(r.GetString(2));
+            var durs = Doubles(r.GetString(3));
+            int n = new[] { tokens.Length, starts.Length, durs.Length }.Min();
+            var keep = Enumerable.Range(0, n).Where(i => tokens[i] is >= 0 and < 72).ToArray();
+            s.ChordsL2 = new ChordLine
+            {
+                Tokens = keep.Select(i => tokens[i]).ToArray(), Starts = keep.Select(i => starts[i]).ToArray(),
+                Durs = keep.Select(i => durs[i]).ToArray(), Downbeat = new int[keep.Length],
+            };
+        }
+    }
+
     /// <summary>Shannon entropy (bits) of intervals clipped to +-12, repeats included (identity/melody.py).</summary>
     public static double IntervalEntropy(int[] pitches)
     {
@@ -313,8 +336,9 @@ internal static class PipelineDb
     /// <paramref name="meta"/> is given, the stage's <c>influence_*</c> keys of the shared meta table (the decision's
     /// threshold and settings, which export copies to graph_meta).
     /// </summary>
+    /// <param name="extra">Further writes in the same transaction (the lineage mode's own tables), before the commit.</param>
     public static void WriteResults(SqliteConnection c, Song[] songs, IReadOnlyList<PairResult>? pairs, TreeResult tree,
-        IReadOnlyList<(string Key, string Value)>? meta)
+        IReadOnlyList<(string Key, string Value)>? meta, Action<SqliteTransaction>? extra = null)
     {
         EnsureInfluenceTables(c);
         if (meta != null) Exec(c, "CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY, value TEXT)");
@@ -417,6 +441,7 @@ internal static class PipelineDb
                 cmd.ExecuteNonQuery();
             }
         }
+        extra?.Invoke(tx);
         tx.Commit();
     }
 
