@@ -565,6 +565,25 @@ is exactly the weighted barycentre, so a song that is all "I love you" sits on t
 plus softened song–song repulsion so overlapping songs spread into a cloud; deterministic,
 GPU. Writes theme_song positions and `themes_layout_run`.
 
+**As built** (see each module's docstring for detail):
+* Lyrics are taken from candidates with ≥ 20 lyric events **or** Soft-Karaoke files (`@K`) with
+  ≥ 20 text events (642 of 1,012 works); the chosen candidate first, then valid ones, then the
+  most events; a file that decodes to junk falls through to the next.
+* NLI backend: `MoritzLaurer/deberta-v3-large-zeroshot-v2.0` at a pinned revision, fp16 on the
+  GPU; 6-line chunks every 3 lines, max over hypothesis wordings, mean of the top-5 chunks, a
+  learned "Other" threshold (`other_tau`, and a separate `title_other_tau` for title-only songs).
+  Validation (66 hand-labelled songs, 22 held out): top-1 0.62, top-2 0.76; lyrics 0.68 / 0.77;
+  titles 0.47 / 0.74. Themes 2 and 6 are rarely a song's top theme under NLI (they fold into
+  4 and 3); the Claude backend is the upgrade path for those.
+* Singer resolution also reads band membership from P463 ("member of") where a group item has
+  no member list (Fleetwood Mac, Eurythmics, ...), members active in the recording's year, and
+  "X & the Ys" as leader + band. Instrumental requires both "no singing in any MIDI candidate"
+  and Wikidata evidence.
+* Layout `themes`: repulsion 0.35 by default; songs stay exactly in the plane (`--slab H` for a
+  thin slab); measured mean distance from the exact score-weighted barycentre 1.4 units (3.6 %
+  of R) on the real data. The influence scene's **T** key opens LyricThemes; its **G** key
+  comes back.
+
 **Viewer** (`unity/`, scene `LyricThemes`): the ten anchors as labelled discs on the ring,
 songs as bubbles (blue male, pink female, grey otherwise) at their positions; hover shows
 title, artist, year, singer, text source ("lyrics" / "title only") and the top three themes

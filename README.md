@@ -56,6 +56,22 @@ User-Agent, which also lifts Wikimedia's anonymous rate limit (10 → 200 reques
 Then open `unity/` in Unity 6000.6.3f1, load `Assets/Scenes/SongInfluenceGraph.unity` and
 press Play (see [unity/README.md](unity/README.md) for controls). Every stage is resumable.
 
+### Lyric themes
+
+A second view places every song in a cloud between ten lyrical themes ("I love you/him/her",
+"I miss you/him/her", "What is going on in the world?", ...), coloured by singer (blue male,
+pink female, grey for mixed, non-binary, unknown or instrumental):
+
+```powershell
+.venv\Scripts\python -m pip install -r requirements-themes.txt   # PyTorch (CUDA) + transformers, once
+.venv\Scripts\python -m musichistory themes                        # classify, resolve singers, export
+.venv\Scripts\python -m musichistory layout -- themes              # GPU layout on the theme ring
+```
+
+Lyrics are read from the songs' own karaoke MIDI events only in memory and discarded; only the
+ten theme scores are stored (songs without lyrics are classified from their title). Open
+`Assets/Scenes/LyricThemes.unity`, or press **T** in the influence graph.
+
 ## Data sources and credits
 
 * Song lists: Wikipedia (CC BY-SA), [tsort.info](https://tsort.info) top 5000 songs v2.9.0001,
