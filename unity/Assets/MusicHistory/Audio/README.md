@@ -32,8 +32,9 @@ Nothing else needs wiring.
 | `SongPlayer.cs` | MonoBehaviour, `ISongPlayer`. Needs an AudioSource and plays a silent looping clip so `OnAudioFilterRead` keeps running. Loads the SF2 and parses MIDI on worker threads, hands jobs to the audio thread by reference, and raises `Started`/`Finished` from `Update` (execution order −100, so they come before the director's `Update` in the same frame). |
 | `Core/MidiSong.cs` | NAudio.Midi reader in lenient mode. Produces paired notes, controllers, programs, bends and pressure on the beat axis, plus the tempo map. Lyric and text events are never read. |
 | `Core/TempoMap.cs` | Piecewise-constant tempo: beats ↔ seconds, next change after a beat, beat-weighted median BPM. |
-| `Core/Excerpt.cs` | Builds the excerpt window `[start, end)`. The *chase* restores the controller and program state reached before `start`, so instruments are right mid-song: last value per plain controller, (N)RPN sequences and Reset All Controllers kept in order, bank before program. Notes played up to 1/8 beat early are moved onto the downbeat. Notes held across `start` are re-struck. Notes still sounding at `end` get note-offs there. |
-| `Core/PlaybackJob.cs` | One clip ready to play: excerpt, tempo map, `MorphPlan`. `Advance(beat, seconds)` integrates `rate(b) = ratio(b) / secondsPerBeat(b)` with the midpoint rule, and is exact across tempo changes. |
+| `Core/Excerpt.cs` | Builds the excerpt window `[start, end)`. The *chase* restores the controller and program state reached before `start`, so instruments are right mid-song: last value per plain controller, (N)RPN sequences and Reset All Controllers kept in order, bank before program. Notes played up to 1/8 beat early are moved onto the downbeat. Notes held across `start` are re-struck, except on the drum channel (a drum hit is a one-shot whatever length the file writes, so re-striking it would add a hit the song does not have). Notes still sounding at `end` get note-offs there. |
+| `Core/PlaybackJob.cs` | One clip ready to play: excerpt, tempo map, `MorphPlan`. `Advance(beat, seconds)` integrates `rate(b) = ratio(b) / secondsPerBeat(b)` with the midpoint rule, and is exact across tempo changes. `SecondsBetween` / `MeanPlayedBpm` give the time and mean tempo actually played over a span (tempo map × morph). |
+| `Core/HandoffTempo.cs` | The tempo side of a handoff, from what actually sounds: the BPM heard over the previous clip's last bar played, the next file's own mean tempo over its first excerpt bar, and the plan `SongPlayer` plays with (`Morph.Plan(previous, next, bars, heard, entry)`). |
 | `Core/DeckEngine.cs` | Two decks, 64-frame blocks, handoff (details below). |
 | `Core/MeltyDeckSynth.cs` | MeltySynth `Synthesizer` with continuous transposition through RPN 2 (coarse) and RPN 1 (fine, 1/8192 semitone) on every channel except 10. Details below. |
 | `Core/SineDeckSynth.cs` | Fallback synth. A port of Resonance-2's `MusicSynth` idea: sine voices, simple noise/tone drums, volume, expression, pan, sustain and bend. |
@@ -48,14 +49,23 @@ Nothing else needs wiring.
 When a clip ends:
 - its deck keeps ringing for `TailSeconds` (2 s, fading over the last 0.5 s);
 - the next clip starts on the other deck on the next **bar line** of the finished clip's
-  continued pulse;
+  continued pulse. The pulse is the mean tempo played over the clip's last bar (not the tempo
+  written at its end beat, which has not sounded yet);
 - if the next `Play` arrives within `LateJoinSeconds` (0.12 s) of that line, which is the
   normal Finished → director → Play round trip, the clip joins at once, already that far into
   its first beat. The pulse stays continuous and only the first onsets are late.
 
-`Stop` or a new `Play` in the middle of a clip fades the current clip out over 0.35 s.
-Pausing releases the sounding notes and freezes the beat. Resuming strikes the held notes
-again.
+`Stop` or a new `Play` in the middle of a clip fades the current clip out over 0.35 s. A `Stop`
+after a clip already ended naturally cuts nothing and keeps the bar-line grid, so the next
+aligned clip still lands on it; only a `Stop` that interrupts a playing clip clears the grid.
+(The director does not call `Stop` when the next step plays on the same player.)
+
+Pausing freezes the beat and fades the playing deck to silence over `PauseFadeSeconds`
+(10 ms), then cuts its voices, including notes held by the sustain pedal (a note-off would
+leave those ringing through the pause). Resuming strikes the held keys once (the old voices
+are gone, so nothing doubles) and fades back in. Controller state, pedal included, is never
+touched. Replacing a paused clip (`Play` while paused) stops it first, so it never resumes on
+its way out.
 
 With `FollowTimeScale` (on by default), the musical clock is multiplied by
 `Time.timeScale`, the same way the silent player's clock is:
@@ -76,11 +86,23 @@ not allocate.
 
 ## Morph semantics (ISongPlayer)
 
-- `Play(clip, previous)` builds `Morph.Plan(previous, clip, MorphBars)`:
-  - transposition starts at `wrap(prevTonic − tonic)`;
-  - tempo ratio starts at `P′/N` (the previous BPM folded by ×½/×1/×2);
+- `Play(clip, previous)` plays with `Morph.Plan(previous, clip, MorphBars, heard, entry)`
+  (built by `HandoffTempo.Plan` once the MIDI is parsed):
+  - transposition starts at `wrap(previous.ExitTonic − clip.EntryTonic)`: the key the
+    previous excerpt ended in against the key this excerpt starts in (song_node
+    `exit_*` / `entry_*`, home key when NULL);
+  - `heard` is the mean tempo the previous clip actually played over its last bar (to where
+    it was cut, when it was interrupted), measured from this player's last job, morph
+    included; when the previous clip was not this player's last job (the silent clock played
+    it, or its MIDI was still being parsed) it falls back to `previous.NativeBpm`;
+  - `entry` is this file's own mean tempo over the excerpt's first bar, so the tempo ratio
+    starts at `heard′ / entry` (heard folded by ×½/×2 only when more than 0.8 octave away) and
+    the first bar starts at the heard BPM even when the excerpt sits in a section faster or
+    slower than the file's median;
   - both glide to native with a smoothstep over `MorphBars × BeatsPerBar` beats;
   - with `previous == null`, the clip plays natively.
+- `CurrentPlan` is that plan (a provisional median-based one until the MIDI is parsed), and
+  `PlanStartBpm` (`IMorphReadout`) the BPM it starts at; the director's HUD shows both.
 - Tempo: the playback BPM is the file's own tempo at the current beat × `TempoRatio`. Songs
   with tempo maps keep their own rubato and changes.
 - `CurrentBeat` is the position in the file's own beats, starting at `ExcerptStartBeat`.
@@ -103,10 +125,13 @@ DLLs Unity uses, and checks:
 - time-scale following, and the main-thread clock used when no audio callbacks arrive;
 - onset timing against the tempo integral (within 1 ms, no drift over 64 bars, and a real
   MIDI with 700 tempo changes);
-- morph math;
+- morph math, and the heard-tempo / region-key plan (synthetic tempo maps and real
+  tempo-mapped fixture files);
 - the chase;
-- handoff and tails;
-- pause and stop;
+- handoff and tails, including a `Stop` posted after a natural end (grid kept) and the grid
+  taken from the last bar played;
+- pause and stop, including notes held by the sustain pedal;
+- no drum re-strike at the excerpt start;
 - the sine fallback;
 - MIDI reading;
 - CPU cost.

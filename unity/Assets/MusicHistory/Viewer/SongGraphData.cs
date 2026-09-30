@@ -35,6 +35,12 @@ namespace MusicHistory.Viewer
         public string? MidiSource;
         public double ExcerptStartBeat;
         public double ExcerptEndBeat;
+        /// <summary>Key region at the excerpt start when it is not the home key (entry_tonic_pc / entry_mode; null = home key).</summary>
+        public int? EntryTonicPc;
+        public bool? EntryMinor;
+        /// <summary>Key region just before the excerpt end when it is not the home key (exit_tonic_pc / exit_mode; null = home key).</summary>
+        public int? ExitTonicPc;
+        public bool? ExitMinor;
         public int? TreeParent;
         public int TreeRoot;
         public int TreeDepth;
@@ -53,6 +59,9 @@ namespace MusicHistory.Viewer
         public double? LayoutMass;
         public double? LayoutDisplayRadius;
 
+        /// <summary>Outside the ranked list; kept so a known influence pair can be checked.</summary>
+        public bool IsValidationExtra;
+
         public bool IsRoot => TreeParent == null;
 
         public SongClip ToClip() => new()
@@ -69,7 +78,11 @@ namespace MusicHistory.Viewer
             NativeBpm = NativeBpm,
             BeatsPerBar = BeatsPerBar,
             FirstDownbeat = FirstDownbeat,
-            NormShift = NormShift
+            NormShift = NormShift,
+            EntryTonicPc = EntryTonicPc,
+            EntryMinor = EntryMinor,
+            ExitTonicPc = ExitTonicPc,
+            ExitMinor = ExitMinor
         };
     }
 
@@ -146,14 +159,44 @@ namespace MusicHistory.Viewer
     /// </summary>
     public static class SongGraphReader
     {
-        const string SongQuery =
+        const string SongQueryHead =
             "SELECT s.node_id, s.work_id, s.title, s.artist, s.year, s.release_date, s.date_precision, " +
             "s.time_value, s.canon_rank, s.tonic_pc, s.mode, s.key_name, s.norm_shift, s.native_bpm, " +
             "s.beats_per_bar, s.first_downbeat, s.midi_path, s.normalized_midi_path, s.midi_source, " +
             "s.excerpt_start_beat, s.excerpt_end_beat, s.tree_parent_node, s.tree_root_node, s.tree_depth, " +
             "s.ref_count, s.ref_norm, s.katz, s.descendants, s.in_degree, s.out_degree, s.key_confidence, " +
-            "s.melody_confidence, s.main_loop, s.summary, n.position_x, n.position_y, n.position_z " +
-            "FROM song_node s LEFT JOIN nodes n ON n.id = s.node_id ORDER BY s.node_id";
+            "s.melody_confidence, s.main_loop, s.summary, n.position_x, n.position_y, n.position_z";
+        const string SongQueryTail = " FROM song_node s LEFT JOIN nodes n ON n.id = s.node_id ORDER BY s.node_id";
+
+        /// <summary>
+        /// Columns added to song_node after schema_version 1 was first written (DESIGN.md §10). Older
+        /// databases lack them; they are selected as NULL there (= home key).
+        /// </summary>
+        public static readonly string[] OptionalSongColumns = { "entry_tonic_pc", "entry_mode", "exit_tonic_pc", "exit_mode" };
+
+        /// <summary>The song query for a song_node table with <paramref name="columns"/>.</summary>
+        public static string SongQuery(ICollection<string> columns)
+        {
+            System.Text.StringBuilder b = new(SongQueryHead);
+            foreach (string c in OptionalSongColumns)
+                b.Append(columns.Contains(c) ? $", s.{c}" : $", NULL AS {c}");
+            return b.Append(SongQueryTail).ToString();
+        }
+
+        /// <summary>Column names of <paramref name="table"/> (PRAGMA table_info; empty when it does not exist).</summary>
+        public static HashSet<string> TableColumns(SqliteConnection conn, string table)
+        {
+            HashSet<string> columns = new(StringComparer.OrdinalIgnoreCase);
+            using IDbCommand cmd = conn.CreateCommand();
+            cmd.CommandText = $"PRAGMA table_info({table})";
+            using IDataReader r = cmd.ExecuteReader();
+            while (r.Read())
+            {
+                string? name = Str(r, 1);
+                if (name != null) columns.Add(name);
+            }
+            return columns;
+        }
 
         const string EdgeQuery =
             "SELECT id, source_node, target_node, kind, channels, primary_channel, score_bits, z, q, " +
@@ -178,8 +221,22 @@ namespace MusicHistory.Viewer
             ReadLayoutRun(conn, data);
             ReadEdges(conn, data);
             conn.Close();
+            MarkValidationExtras(data);
             Validate(data);
             return data;
+        }
+
+        /// <summary>
+        /// Songs outside the ranked list, added only so known influence pairs can be checked
+        /// (graph_meta.validation_extras: comma-separated work ids).
+        /// </summary>
+        static void MarkValidationExtras(SongGraphData data)
+        {
+            string? list = data.MetaValue("validation_extras");
+            if (string.IsNullOrEmpty(list)) return;
+            HashSet<string> ids = new(list.Split(','), StringComparer.Ordinal);
+            foreach (SongRecord s in data.Songs)
+                s.IsValidationExtra = ids.Contains(s.WorkId);
         }
 
         static void ReadMeta(SqliteConnection conn, SongGraphData data)
@@ -203,8 +260,9 @@ namespace MusicHistory.Viewer
 
         static void ReadSongs(SqliteConnection conn, SongGraphData data)
         {
+            HashSet<string> columns = TableColumns(conn, "song_node");
             using IDbCommand cmd = conn.CreateCommand();
-            cmd.CommandText = SongQuery;
+            cmd.CommandText = SongQuery(columns);
             using IDataReader r = cmd.ExecuteReader();
             int withPosition = 0;
             while (r.Read())
@@ -244,7 +302,11 @@ namespace MusicHistory.Viewer
                     KeyConfidence = Dbl(r, 30),
                     MelodyConfidence = Dbl(r, 31),
                     MainLoop = Str(r, 32),
-                    Summary = Str(r, 33)
+                    Summary = Str(r, 33),
+                    EntryTonicPc = PitchClass(Int(r, 37)),
+                    EntryMinor = Mode(Str(r, 38)),
+                    ExitTonicPc = PitchClass(Int(r, 39)),
+                    ExitMinor = Mode(Str(r, 40))
                 };
                 if (string.IsNullOrEmpty(s.KeyName)) s.KeyName = SongPalette.KeyName(s.TonicPc, s.Minor);
                 double? x = Dbl(r, 34), y = Dbl(r, 35), z = Dbl(r, 36);
@@ -464,6 +526,18 @@ namespace MusicHistory.Viewer
         }
 
         static bool IsFinite(double v) => !double.IsNaN(v) && !double.IsInfinity(v);
+
+        static int? PitchClass(int? pc) => pc.HasValue ? SongPalette.Wrap12(pc.Value) : (int?)null;
+
+        /// <summary>'minor' / 'major' (any case) to a flag; null or anything else = unknown.</summary>
+        static bool? Mode(string? mode)
+        {
+            if (mode == null) return null;
+            string m = mode.Trim();
+            if (string.Equals(m, "minor", StringComparison.OrdinalIgnoreCase)) return true;
+            if (string.Equals(m, "major", StringComparison.OrdinalIgnoreCase)) return false;
+            return null;
+        }
 
         static string? Str(IDataRecord r, int i) =>
             r.IsDBNull(i) ? null : Convert.ToString(r.GetValue(i), CultureInfo.InvariantCulture);

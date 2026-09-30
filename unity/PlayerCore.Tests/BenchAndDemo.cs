@@ -50,19 +50,31 @@ namespace MusicHistory.Audio.Tests
 
         /// <summary>
         /// Plays A's excerpt, then B's with the key/BPM morph, the way the walkthrough does it:
-        /// Play(B, A) arrives ~40 ms after A's end (main-thread round trip), then renders to a WAV.
+        /// Play(B, A) arrives ~40 ms after A's end (main-thread round trip), with the plan
+        /// SongPlayer builds (B starts at the tempo A's last bar was heard at, against B's own
+        /// first-bar tempo), then renders to a WAV.
         /// </summary>
         public static void DemoWav(Report r)
         {
             var (a, b) = Pair();
-            MorphPlan plan = Morph.Plan(a.Clip, b.Clip, 4);
-            r.Note($"{a.Name}: tonic {a.Clip.TonicPc}, {a.Clip.NativeBpm:F1} BPM, beats {a.Clip.ExcerptStartBeat}-{a.Clip.ExcerptEndBeat}");
-            r.Note($"{b.Name}: tonic {b.Clip.TonicPc}, {b.Clip.NativeBpm:F1} BPM, beats {b.Clip.ExcerptStartBeat}-{b.Clip.ExcerptEndBeat}");
-            r.Note($"morph plan: start {plan.StartSemitones:+0;-0} semitones, tempo ratio {plan.StartTempoRatio:F3} (starts at {b.Clip.NativeBpm * plan.StartTempoRatio:F1} BPM), over {plan.MorphBeats} beats");
+            PlaybackJob jobA = Job(1, a, MorphPlan.None, false);
+            double heard = HandoffTempo.HeardBpm(jobA, jobA.EndBeat);
+            MorphPlan plan = HandoffTempo.Plan(a.Clip, b.Clip, 4, heard, b.Song.Tempo);
+            PlaybackJob jobB = Job(2, b, plan, true);
+            r.Note($"{a.Name}: tonic {a.Clip.TonicPc}, {a.Clip.NativeBpm:F1} BPM (median), beats {a.Clip.ExcerptStartBeat}-{a.Clip.ExcerptEndBeat}; last bar heard at {heard:F1} BPM");
+            r.Note($"{b.Name}: tonic {b.Clip.TonicPc}, {b.Clip.NativeBpm:F1} BPM (median), beats {b.Clip.ExcerptStartBeat}-{b.Clip.ExcerptEndBeat}; first bar of the file at {jobB.EntryFileBpm:F1} BPM");
+            r.Note($"morph plan: start {plan.StartSemitones:+0;-0} semitones, tempo ratio {plan.StartTempoRatio:F3} (starts at {jobB.StartBpm:F1} BPM), over {plan.MorphBeats} beats");
+            double firstBar = 4 * 60.0 / Timing.Seconds(jobB, jobB.StartBeat, jobB.StartBeat + 4);
+            double glided = Timing.GlidedFirstBar(jobB);
+            PlaybackJob medianJob = Job(2, b, Morph.Plan(a.Clip, b.Clip, 4), true);
+            r.Note($"B's first bar plays at {firstBar:F1} BPM (the plan's glide from {heard:F1} gives {glided:F1}); " +
+                   $"the median-based plan started B at {medianJob.StartBpm:F1} BPM ({(medianJob.StartBpm / heard - 1) * 100:+0.0;-0.0}% vs heard)");
+            Assert.Near(jobB.StartBpm, heard, 1e-6, "B starts at the heard BPM");
+            Assert.Near(firstBar, glided, glided * 0.01, "B's first bar plays at the heard BPM, gliding");
             var engine = DeckEngine.CreateMelty(Env.SoundFont, Rate);
             var log = new EventLog();
             engine.Observer = log;
-            engine.Post(Job(1, a, MorphPlan.None, false));
+            engine.Post(jobA);
             double seconds = 26;
             int frames = (int)(seconds * Rate);
             var left = new float[frames];
@@ -76,7 +88,7 @@ namespace MusicHistory.Audio.Tests
                 EngineState s = engine.ReadState();
                 if (s.FinishedJobId == 1 && latencyBuffers < 0) latencyBuffers = 0;
                 else if (latencyBuffers >= 0 && ++latencyBuffers == 2)
-                    engine.Post(Job(2, b, plan, true));
+                    engine.Post(jobB);
                 if (s.ActiveJobId == 2) semis.Add(((i + n) / (double)Rate, s.Semitones, s.Bpm));
             }
             string outDir = Path.Combine(Env.DataDir, "screens");

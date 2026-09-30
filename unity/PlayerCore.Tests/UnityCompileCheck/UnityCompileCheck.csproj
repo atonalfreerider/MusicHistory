@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!--
     Proves the Unity layer compiles without opening Unity: SongPlayer.cs + Core/*.cs + the
-    ISongPlayer contract, as C# 9, against Unity's own netstandard 2.1 reference assembly and
-    the editor's UnityEngine.CoreModule / AudioModule, warnings as errors.
+    ISongPlayer contract and Playback/MorphReadout.cs, as C# 9, against Unity's own netstandard
+    2.1 reference assembly and the editor's UnityEngine.CoreModule / AudioModule, warnings as errors.
     dotnet build unity/PlayerCore.Tests/UnityCompileCheck [-p:UnityEditorData="...\Editor\Data"]
   -->
   <PropertyGroup>
@@ -20,6 +20,7 @@
   <ItemGroup>
     <Compile Include="$(AudioDir)\**\*.cs" />
     <Compile Include="$(AssetsDir)\MusicHistory\Contracts\ISongPlayer.cs" />
+    <Compile Include="$(AssetsDir)\MusicHistory\Playback\MorphReadout.cs" />
     <Reference Include="netstandard"><HintPath>$(UnityEditorData)\NetStandard\ref\2.1.0\netstandard.dll</HintPath></Reference>
     <Reference Include="UnityEngine.CoreModule"><HintPath>$(UnityEditorData)\Managed\UnityEngine\UnityEngine.CoreModule.dll</HintPath></Reference>
     <Reference Include="UnityEngine.AudioModule"><HintPath>$(UnityEditorData)\Managed\UnityEngine\UnityEngine.AudioModule.dll</HintPath></Reference>

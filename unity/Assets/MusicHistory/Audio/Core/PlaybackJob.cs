@@ -62,6 +62,64 @@ namespace MusicHistory.Audio
         /// <summary>Transposition relative to the file at <paramref name="beat"/>.</summary>
         public double SemitonesAt(double beat) => ConstantSemitones + Plan.Semitones(beat - Excerpt.StartBeat);
 
+        /// <summary>
+        /// The file's own mean BPM over the excerpt's first bar (the fixed BPM when set): what
+        /// <see cref="MorphPlan.StartTempoRatio"/> is relative to under
+        /// <see cref="Morph.Plan(SongClip, SongClip, double, double, double)"/>.
+        /// </summary>
+        public double EntryFileBpm => FixedBpm > 0 ? FixedBpm : Tempo.MeanBpm(StartBeat, StartBeat + BeatsPerBar);
+
+        /// <summary>Tempo the clip starts at: its entry tempo times the plan's start ratio.</summary>
+        public double StartBpm => EntryFileBpm * Plan.StartTempoRatio;
+
+        /// <summary>
+        /// Wall time (musical seconds) to play from <paramref name="from"/> to <paramref name="to"/>:
+        /// the integral of secondsPerBeat(b) / ratio(b), exact per tempo segment outside the morph
+        /// and by Simpson's rule inside it. Allocation-free (the engine calls it on the audio thread).
+        /// </summary>
+        public double SecondsBetween(double from, double to)
+        {
+            if (!(to > from)) return 0;
+            double total = 0, b = from;
+            for (int guard = 0; b < to && guard < 1_000_000; guard++)
+            {
+                double segEnd = Math.Min(to, NextChange(b));
+                if (!(segEnd > b)) break;
+                total += SecondsPerBeat(b) * InverseRatioIntegral(b, segEnd);
+                b = segEnd;
+            }
+            return total;
+        }
+
+        /// <summary>Mean BPM actually played over [from, to) (tempo map x morph, or the fixed BPM).</summary>
+        public double MeanPlayedBpm(double from, double to)
+        {
+            if (!(to > from)) return BpmAt(from);
+            double seconds = SecondsBetween(from, to);
+            return seconds > 0 ? (to - from) * 60.0 / seconds : BpmAt(from);
+        }
+
+        /// <summary>∫ 1 / ratio(b) db over [a, c].</summary>
+        double InverseRatioIntegral(double a, double c)
+        {
+            double morphEnd = Excerpt.StartBeat + Plan.MorphBeats;
+            if (Plan.MorphBeats <= 0 || Plan.StartTempoRatio == 1 || a >= morphEnd) return c - a;
+            double total = 0;
+            if (c > morphEnd)
+            {
+                total += c - morphEnd;
+                c = morphEnd;
+            }
+            const int n = 32;
+            double h = (c - a) / n, s = 0;
+            for (int i = 0; i <= n; i++)
+            {
+                double f = 1.0 / Ratio(a + i * h);
+                s += f * (i == 0 || i == n ? 1 : (i & 1) == 1 ? 4 : 2);
+            }
+            return total + s * h / 3;
+        }
+
         /// <summary>The beat reached after playing <paramref name="seconds"/> from <paramref name="beat"/>.</summary>
         public double Advance(double beat, double seconds)
         {

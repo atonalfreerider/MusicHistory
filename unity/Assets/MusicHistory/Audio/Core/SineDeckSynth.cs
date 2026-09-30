@@ -71,6 +71,11 @@ namespace MusicHistory.Audio
                 if (voices[i].Active) { voices[i].Released = true; voices[i].Held = false; voices[i].Target = 0; }
         }
 
+        public void SilenceAll()
+        {
+            for (int i = 0; i < MaxVoices; i++) voices[i].Active = false;
+        }
+
         public void Send(int status, int data1, int data2)
         {
             int command = status & 0xF0, ch = status & 0x0F;

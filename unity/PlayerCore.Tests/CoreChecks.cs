@@ -287,7 +287,124 @@ namespace MusicHistory.Audio.Tests
             Assert.Near(s1.Bpm, 87, 1e-9, "BPM after morph");
         }
 
+        /// <summary>
+        /// Keys hand off exit-to-entry, and the tempo from what was heard: the new Morph.Plan
+        /// overload, HandoffTempo (what SongPlayer uses) on synthetic tempo maps, and real
+        /// tempo-mapped fixture files where the median-based plan was far off.
+        /// </summary>
+        public static void MorphHeardTempo(Report r)
+        {
+            // Keys: the previous excerpt's exit key against this excerpt's entry key.
+            var prevKeys = new SongClip { TonicPc = 0, NativeBpm = 120, BeatsPerBar = 4, ExitTonicPc = 2, ExitMinor = false };
+            var nextKeys = new SongClip { TonicPc = 9, Minor = true, NativeBpm = 120, BeatsPerBar = 4, EntryTonicPc = 4, EntryMinor = true };
+            Assert.Near(Morph.Plan(prevKeys, nextKeys, 4).StartSemitones, Morph.Wrap(2 - 4), 0, "exit key D -> entry key E: -2 st");
+            Assert.Near(Morph.Plan(prevKeys, nextKeys, 4, 120, 120).StartSemitones, -2, 0, "same keys through the heard-tempo overload");
+            var plainPrev = new SongClip { TonicPc = 0, NativeBpm = 120, BeatsPerBar = 4 };
+            var plainNext = new SongClip { TonicPc = 9, Minor = true, NativeBpm = 120, BeatsPerBar = 4 };
+            Assert.Near(Morph.Plan(plainPrev, plainNext, 4).StartSemitones, Morph.Wrap(0 - 9), 0, "no regions: home keys");
+
+            // Tempo overload: the ratio is heard / entry file tempo, folded only beyond 0.8 octave.
+            Assert.Near(Morph.Plan(plainPrev, plainNext, 4, 168.4, 142.6).StartTempoRatio, 168.4 / 142.6, 1e-12, "heard 168.4 over entry 142.6");
+            Assert.Near(Morph.Plan(plainPrev, plainNext, 4, 70, 140).StartTempoRatio, 1, 1e-12, "70 heard vs 140 entry is double time");
+            Assert.Near(Morph.Plan(plainPrev, plainNext, 4, 200, 90).StartTempoRatio, 100.0 / 90, 1e-12, "200 folds to 100");
+            Assert.True(Morph.Plan(null!, plainNext, 4, 120, 120).MorphBeats == 0, "no previous clip: native");
+
+            // Synthetic: X's excerpt ends in a 150 BPM section (its median is 120); Y's excerpt starts
+            // in a 100 BPM verse (its median is 140). The listener hears 150 and Y must start at 150.
+            var xb = new SongBuilder().Tempo(0, 120).Tempo(60, 150).Tempo(64, 120);
+            for (int beat = 0; beat < 200; beat++) xb.Note(beat, beat + 0.5, 0, 60);
+            MidiSong xs = xb.Build();
+            var yb = new SongBuilder().Tempo(0, 100).Tempo(64, 140);
+            for (int beat = 0; beat < 256; beat++) yb.Note(beat, beat + 0.5, 0, 64);
+            MidiSong ys = yb.Build();
+            var clipX = new SongClip { NodeId = 1, TonicPc = 0, NativeBpm = xs.Tempo.MedianBpm(0, 200), BeatsPerBar = 4, ExcerptStartBeat = 32, ExcerptEndBeat = 64 };
+            var clipY = new SongClip { NodeId = 2, TonicPc = 0, NativeBpm = ys.Tempo.MedianBpm(0, 256), BeatsPerBar = 4, ExcerptStartBeat = 16, ExcerptEndBeat = 48 };
+            PlaybackJob jobX = Job(1, xs, 32, 64, MorphPlan.None);
+            double heard = HandoffTempo.HeardBpm(jobX, jobX.EndBeat);
+            Assert.Near(heard, 150, 1e-9, "heard BPM = X's last bar");
+            MorphPlan plan = HandoffTempo.Plan(clipX, clipY, 4, heard, ys.Tempo);
+            PlaybackJob jobY = Job(2, ys, 16, 48, plan, align: true);
+            double firstBeat = 60.0 / Timing.Seconds(jobY, 16, 17);
+            MorphPlan median = Morph.Plan(clipX, clipY, 4);
+            double medianFirstBeat = 60.0 / Timing.Seconds(Job(2, ys, 16, 48, median, align: true), 16, 17);
+            r.Note($"synthetic: X medians {clipX.NativeBpm:F0}, heard {heard:F1}; Y median {clipY.NativeBpm:F0}, entry {jobY.EntryFileBpm:F1}: " +
+                   $"Y's first beat plays at {firstBeat:F2} BPM (median plan: {medianFirstBeat:F2})");
+            Assert.Near(jobY.BpmAt(16), heard, 1e-9, "Y's first beat plays at the heard BPM");
+            Assert.Near(jobY.StartBpm, heard, 1e-9, "the job reports the heard start BPM");
+            Assert.Near(firstBeat, heard, heard * 0.002, "first beat (played) at the heard BPM");
+            Assert.Near(jobY.BpmAt(16 + plan.MorphBeats + 1), 100, 1e-9, "after the morph Y plays its own tempo map");
+
+            // A clip cut short mid-morph: the heard BPM is its last bar before the cut, morph included.
+            var glide = Job(3, xs, 0, 64, new MorphPlan(0, 0.8, 16));
+            double cut = HandoffTempo.HeardBpm(glide, 10);
+            double expected = 4 * 60.0 / Timing.Seconds(glide, 6, 10);
+            Assert.Near(cut, expected, expected * 1e-6, "heard BPM of a clip cut at beat 10");
+            Assert.True(HandoffTempo.HeardBpm(glide, 0) == 0, "nothing played: no heard BPM");
+            r.Note($"cut at beat 10 while gliding 0.8->1: heard {cut:F3} BPM (reference {expected:F3})");
+
+            // Real tempo-mapped fixture files (the review's probe pairs), excerpts 16..80 as in the fixture graph.
+            string songs = Path.Combine(Env.DataDir, "fixtures", "unity", "songs");
+            var files = new Dictionary<int, (string Id, int Tonic, double Bpm)>
+            {
+                [5] = ("R4ce68b01e51c", 10, 92.97), [6] = ("R90644fa9b3be", 6, 156.25), [7] = ("Ra111ed27ceee", 0, 135.94),
+                [11] = ("R52931717f6bc", 2, 109.37), [12] = ("R432201d7868e", 0, 136.0),
+            };
+            if (!files.Values.All(f => File.Exists(Path.Combine(songs, f.Id, "score.mid"))))
+            {
+                r.Note("fixture MIDI files missing (python tests/unity/graph_fixture.py build): real-file part skipped");
+                return;
+            }
+            var parsed = files.ToDictionary(kv => kv.Key, kv => MidiSongReader.Read(Path.Combine(songs, kv.Value.Id, "score.mid")));
+            // These files are tempo-mapped to recordings: single beats swing by 20-30 %, so the plan
+            // (and this check) works on the first bar, the unit the pulse is heard in.
+            SongClip Clip(int node) => new SongClip { NodeId = node, TonicPc = files[node].Tonic, NativeBpm = files[node].Bpm, BeatsPerBar = 4, ExcerptStartBeat = 16, ExcerptEndBeat = 80 };
+            double worst = 0, worstOld = 0;
+            foreach (var (a, bNode) in new[] { (6, 7), (11, 12), (12, 5), (6, 12) })
+            {
+                SongClip pa = Clip(a), nb = Clip(bNode);
+                PlaybackJob prevJob = Job(1, parsed[a], 16, 80, MorphPlan.None);
+                double heardReal = HandoffTempo.HeardBpm(prevJob, prevJob.EndBeat);
+                MorphPlan p = HandoffTempo.Plan(pa, nb, 4, heardReal, parsed[bNode].Tempo);
+                PlaybackJob nextJob = Job(2, parsed[bNode], 16, 80, p, align: true);
+                double firstBar = 4 * 60.0 / Timing.Seconds(nextJob, 16, 20);
+                PlaybackJob oldJob = Job(2, parsed[bNode], 16, 80, Morph.Plan(pa, nb, 4), align: true);
+                double oldBar = 4 * 60.0 / Timing.Seconds(oldJob, 16, 20);
+                // The first bar already glides a little toward native: compare with the file's
+                // first-bar tempo under the plan's ratio curve over that bar.
+                double target = Timing.GlidedFirstBar(nextJob), start = nextJob.StartBpm;
+                r.Note($"fixture {a}->{bNode}: heard {heardReal:F1} BPM; next file's first bar {nextJob.EntryFileBpm:F1} (median {nb.NativeBpm:F1}); " +
+                       $"plan starts at {start:F1}, first bar plays at {firstBar:F1} (glided reference {target:F1}); " +
+                       $"median plan: starts at {oldJob.StartBpm:F1}, first bar {oldBar:F1}");
+                Assert.Near(start, heardReal, 1e-6, $"{a}->{bNode}: start BPM is the heard BPM");
+                Assert.Near(firstBar, target, target * 0.01, $"{a}->{bNode}: first bar plays at the heard BPM (with the glide)");
+                worst = Math.Max(worst, Math.Abs(start / heardReal - 1));
+                worstOld = Math.Max(worstOld, Math.Abs(oldJob.StartBpm / heardReal - 1));
+            }
+            r.Metric("worst start-BPM jump from the heard bar, heard-tempo plan (real files)", worst * 100, "%", "F2");
+            r.Metric("worst start-BPM jump from the heard bar, median plan (real files)", worstOld * 100, "%", "F1");
+        }
+
         // ------------------------------------------------------------------ excerpt
+
+        /// <summary>Drum hits written long before the window start are not re-struck on its first beat.</summary>
+        public static void ExcerptDrumRestrike(Report r)
+        {
+            MidiSong song = new SongBuilder().Tempo(0, 120)
+                .Note(15.5, 16.5, 9, 38)     // snare on the "and" of 4, written a beat long: not in the excerpt
+                .Note(15.9, 16.1, 9, 42)     // hi-hat played slightly early: snapped onto the downbeat
+                .Note(16, 16.25, 9, 36)      // kick on the downbeat
+                .Note(12, 20, 0, 60)         // a held pad note: re-struck
+                .Note(14, 17, 9, 49)         // a crash written 3 beats long: not re-struck
+                .Build();
+            ExcerptEvents ex = ExcerptBuilder.Build(song, 16, 32);
+            var ons = ex.Events.Where(e => e.IsNoteOn).Select(e => (e.Beat, e.Channel, (int)e.Data1)).ToArray();
+            r.Note("note-ons: " + string.Join(", ", ons.Select(o => $"ch{o.Channel + 1}:{o.Item3}@{o.Beat}")));
+            Assert.True(!ons.Any(o => o.Channel == 9 && (o.Item3 == 38 || o.Item3 == 49)), "drum hits struck before the window must not be re-struck");
+            Assert.True(ons.Contains((16.0, 9, 42)), "early drum hit snapped onto the downbeat");
+            Assert.True(ons.Contains((16.0, 9, 36)), "kick on the downbeat");
+            Assert.True(ons.Contains((16.0, 0, 60)), "held pitched note re-struck");
+            Assert.True(ons.Length == 3, "exactly three note-ons");
+        }
 
         public static void ExcerptChase(Report r)
         {
@@ -487,6 +604,146 @@ namespace MusicHistory.Audio.Tests
             }
         }
 
+        /// <summary>
+        /// Runs X (16 beats, 120 BPM) to its natural end, then, <paramref name="delaySeconds"/> later,
+        /// optionally posts a Stop and then the aligned job Y. Returns (X end sample, Y start sample,
+        /// Y beat-1 onset error against X's continued pulse in ms).
+        /// </summary>
+        static (double End, long StartY, double Beat1ErrMs) StopThenAligned(double delaySeconds, bool stopFirst, MidiSong x, MidiSong y, MorphPlan plan)
+        {
+            var engine = new DeckEngine(new NullSynth(Rate), new NullSynth(Rate));
+            var log = new EventLog();
+            engine.Observer = log;
+            engine.LatestRequestId = 1;
+            engine.Post(Job(1, x, 0, 16, MorphPlan.None));
+            bool posted = false;
+            var l = new float[1024];
+            var rr = new float[1024];
+            for (int i = 0; i < 16 * Rate; i += 1024)
+            {
+                engine.RenderStereo(l, rr, 0, 1024);
+                EngineState s = engine.ReadState();
+                if (!posted && s.FinishedJobId == 1 && s.SampleClock >= 16 * Rate / 2 + delaySeconds * Rate)
+                {
+                    posted = true;
+                    if (stopFirst)
+                    {
+                        // What SongPlayer.Stop does (the director used to call it before every Play).
+                        engine.LatestRequestId = 2;
+                        engine.PostStop();
+                    }
+                    engine.LatestRequestId = 3;
+                    engine.Post(Job(3, y, 0, 16, plan, align: true));
+                }
+            }
+            double end = log.Finished.Single(f => f.Job == 1).Sample;
+            long startY = log.Started.Single(s => s.Job == 3).Sample;
+            var beat1 = log.Dispatched.First(d => d.Job == 3 && d.Message.IsNoteOn && d.Message.Beat >= 1);
+            double expected = end + Timing.Seconds(Job(3, y, 0, 16, plan, align: true), 0, 1) * Rate;
+            return (end, startY, (beat1.Sample - expected) / Rate * 1000);
+        }
+
+        /// <summary>
+        /// A Stop posted after a clip already ended naturally (nothing is interrupted) must not
+        /// throw away the handoff grid: the next aligned clip still joins the continued pulse or
+        /// waits for the next bar line. Only a Stop that cuts a playing clip invalidates the grid.
+        /// </summary>
+        public static void HandoffSurvivesStop(Report r)
+        {
+            MidiSong x = Chords(60, 0), y = Chords(65, 48);
+            var clipX = new SongClip { TonicPc = 0, NativeBpm = 120, BeatsPerBar = 4 };
+            var clipY = new SongClip { TonicPc = 5, NativeBpm = 120, BeatsPerBar = 4 };
+            MorphPlan plan = Morph.Plan(clipX, clipY, 4);
+            const double bar = 4 * Rate / 2.0;   // 4 beats at 120 BPM
+
+            foreach (bool stopFirst in new[] { false, true })
+            {
+                // ~43 ms round trip: late join, beat 1 on the continued pulse.
+                var fast = StopThenAligned(0.043, stopFirst, x, y, plan);
+                // 0.5 s (a parse on a worker): wait for the next bar line of X's pulse.
+                var slow = StopThenAligned(0.5, stopFirst, x, y, plan);
+                r.Note($"{(stopFirst ? "Stop then Play" : "Play only    ")}: +43 ms -> Y beat 1 {fast.Beat1ErrMs:+0.000;-0.000;0.000} ms off X's pulse; " +
+                       $"+500 ms -> Y starts {(slow.StartY - slow.End) / Rate * 1000:F1} ms after X's end (bar = {bar / Rate * 1000:F0} ms)");
+                Assert.True(Math.Abs(fast.Beat1ErrMs) < 1.0, $"{(stopFirst ? "after Stop: " : "")}late join lost the pulse ({fast.Beat1ErrMs:F1} ms)");
+                Assert.Near(slow.StartY - slow.End, bar, 33, $"{(stopFirst ? "after Stop: " : "")}Y starts on X's next bar line");
+            }
+
+            // A Stop that interrupts a playing clip does clear the grid: the next aligned job starts at once.
+            {
+                var engine = new DeckEngine(new NullSynth(Rate), new NullSynth(Rate));
+                var log = new EventLog();
+                engine.Observer = log;
+                engine.Post(Job(1, x, 0, 16, MorphPlan.None));
+                var l = new float[1024];
+                var rr = new float[1024];
+                int phase = 0;
+                long zPosted = -1;
+                double end1 = 0;
+                for (int i = 0; i < 20 * Rate; i += 1024)
+                {
+                    engine.RenderStereo(l, rr, 0, 1024);
+                    EngineState s = engine.ReadState();
+                    if (phase == 0 && s.FinishedJobId == 1)
+                    {
+                        phase = 1;
+                        end1 = log.Finished[0].Sample;
+                        engine.Post(Job(2, y, 0, 16, plan, align: true));      // Y on the grid
+                    }
+                    else if (phase == 1 && s.ActiveJobId == 2 && s.Beat > 2)
+                    {
+                        phase = 2;
+                        engine.PostStop();                                      // cut Y mid-bar
+                        engine.Post(Job(3, x, 0, 16, plan, align: true));      // Z: nothing to align to
+                        zPosted = s.SampleClock;
+                    }
+                }
+                long startZ = log.Started.Single(s => s.Job == 3).Sample;
+                // Both decks are busy (X's tail, Y's cut tail): Z waits only for the deck recycle fade.
+                double limit = engine.Settings.RecycleSeconds * Rate + 2 * DeckEngine.BlockSize;
+                r.Note($"Stop cutting a playing clip: the next aligned clip started {(startZ - zPosted) / (double)Rate * 1000:F1} ms after it was posted " +
+                       $"(deck recycle fade {engine.Settings.RecycleSeconds * 1000:F0} ms; X's next bar line was {NextGridLine(end1, 2.0 * Rate, zPosted) / Rate * 1000:F0} ms away)");
+                Assert.True(startZ - zPosted <= limit, "an interrupted clip leaves no grid: the next clip starts at once");
+            }
+        }
+
+        static double NextGridLine(double origin, double unit, double now) => origin + Math.Ceiling((now - origin) / unit) * unit - now;
+
+        /// <summary>
+        /// The handoff grid continues the pulse actually played over the last bar, not the tempo at
+        /// the end beat: a tempo change written at the excerpt end has not sounded yet.
+        /// </summary>
+        public static void HandoffGridLastBar(Report r)
+        {
+            // Last bar [12, 16): two beats at 120 (1 s) + two at 80 (1.5 s) = 2.5 s -> 96 BPM.
+            // The file slows to 60 BPM exactly at the end beat (never heard).
+            var b = new SongBuilder().Tempo(0, 120).Tempo(14, 80).Tempo(16, 60);
+            for (int beat = 0; beat < 20; beat++) b.Note(beat, beat + 0.5, 0, 60);
+            MidiSong x = b.Build();
+            MidiSong y = Chords(65, 48);
+            var engine = new DeckEngine(new NullSynth(Rate), new NullSynth(Rate));
+            var log = new EventLog();
+            engine.Observer = log;
+            engine.Post(Job(1, x, 0, 16, MorphPlan.None));
+            bool posted = false;
+            var l = new float[1024];
+            var rr = new float[1024];
+            for (int i = 0; i < 20 * Rate; i += 1024)
+            {
+                engine.RenderStereo(l, rr, 0, 1024);
+                EngineState s = engine.ReadState();
+                if (!posted && s.FinishedJobId == 1 && s.SampleClock >= log.Finished[0].Sample + 0.5 * Rate)
+                {
+                    posted = true;
+                    engine.Post(Job(2, y, 0, 16, MorphPlan.None, align: true));
+                }
+            }
+            double end = log.Finished.Single(f => f.Job == 1).Sample;
+            long startY = log.Started.Single(s => s.Job == 2).Sample;
+            double gap = (startY - end) / Rate;
+            r.Note($"last bar played at 96 BPM (2.5 s), tempo at the end beat 60 BPM (a 4 s bar): Y started {gap:F4} s after X's end");
+            Assert.Near(gap, 2.5, 64.0 / Rate, "Y starts one heard bar (2.5 s) after X's end");
+        }
+
         public static void PauseResume(Report r)
         {
             var song = new SongBuilder().Tempo(0, 120).Program(0, 0, 19).Note(0, 32, 0, 60).Note(0, 32, 0, 64).Note(0, 32, 0, 67).Build();
@@ -504,6 +761,56 @@ namespace MusicHistory.Audio.Tests
             Assert.Near(beatAfterPause, beatAtPause, 1e-12, "beat advanced while paused");
             Assert.True(rPaused < rBefore * 0.05, "notes kept sounding while paused");
             Assert.True(rResumed > rBefore * 0.5, "held notes not re-struck on resume");
+        }
+
+        /// <summary>
+        /// Pause silences notes held by the sustain pedal too, and resume re-strikes the held keys
+        /// once (no doubled voices), with and without the pedal.
+        /// </summary>
+        public static void PauseSustainPedal(Report r)
+        {
+            foreach (bool pedal in new[] { true, false })
+            {
+                var b = new SongBuilder().Tempo(0, 120).Program(0, 0, 48);   // strings: sustained, long release
+                if (pedal) b.Control(0, MidiCommand.ControlChange, MidiCommand.CcSustain, 127);
+                b.Note(0, 32, 0, 60).Note(0, 32, 0, 64).Note(0, 32, 0, 67);
+                MidiSong song = b.Build();
+
+                // Long pause: silence throughout, the same level after resume.
+                var engine = DeckEngine.CreateMelty(Env.SoundFont, Rate);
+                engine.Post(Job(1, song, 0, 32, MorphPlan.None));
+                var before = Render(engine, 1.0).L;
+                engine.Paused = true;
+                var paused = Render(engine, 4.0).L;
+                engine.Paused = false;
+                var resumed = Render(engine, 1.0).L;
+                double rBefore = Dsp.Rms(before, Rate / 2, Rate / 2);
+                double rFade = Dsp.Rms(paused, (int)(0.05 * Rate), Rate / 20);
+                double rLate = Dsp.Rms(paused, (int)(3.5 * Rate), Rate / 2);
+                double rResumed = Dsp.Rms(resumed, Rate / 2, Rate / 2);
+                r.Note($"pedal {(pedal ? "down" : "up  ")}: before {Dsp.Db(rBefore):F1} dB, 50-100 ms into the pause {Dsp.Db(rFade):F1} dB, " +
+                       $"3.5-4 s into it {Dsp.Db(rLate):F1} dB, after resume {Dsp.Db(rResumed):F1} dB");
+                Assert.True(rFade < rBefore * 1e-3 && rLate < rBefore * 1e-3, $"pedal {pedal}: notes kept sounding while paused");
+                Assert.True(Math.Abs(Dsp.Db(rResumed) - Dsp.Db(rBefore)) < 2.0, $"pedal {pedal}: resume level {Dsp.Db(rResumed):F1} dB vs {Dsp.Db(rBefore):F1} dB");
+
+                // Short pause (shorter than the strings' release): resume must not stack new voices on old ones.
+                var quick = DeckEngine.CreateMelty(Env.SoundFont, Rate);
+                quick.Post(Job(1, song, 0, 32, MorphPlan.None));
+                var q0 = Render(quick, 1.0).L;
+                quick.Paused = true;
+                Render(quick, 0.1);
+                quick.Paused = false;
+                var q1 = Render(quick, 1.0).L;
+                int voices = quick.DeckSynth(0).ActiveVoices + quick.DeckSynth(1).ActiveVoices;
+                var reference = DeckEngine.CreateMelty(Env.SoundFont, Rate);
+                reference.Post(Job(1, song, 0, 32, MorphPlan.None));
+                Render(reference, 1.0);
+                int refVoices = reference.DeckSynth(0).ActiveVoices + reference.DeckSynth(1).ActiveVoices;
+                double qBefore = Dsp.Rms(q0, Rate / 2, Rate / 2), qAfter = Dsp.Rms(q1, Rate / 2, Rate / 2);
+                r.Note($"pedal {(pedal ? "down" : "up  ")}, 0.1 s pause: {voices} voices after resume (uninterrupted: {refVoices}); level {Dsp.Db(qAfter):F1} dB vs {Dsp.Db(qBefore):F1} dB before");
+                Assert.True(voices <= refVoices, $"pedal {pedal}: {voices} voices after a short pause, {refVoices} without one (doubled notes)");
+                Assert.True(Math.Abs(Dsp.Db(qAfter) - Dsp.Db(qBefore)) < 2.0, $"pedal {pedal}: short-pause resume level");
+            }
         }
 
         public static void StopSilences(Report r)

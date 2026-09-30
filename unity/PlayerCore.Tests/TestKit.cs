@@ -177,6 +177,7 @@ namespace MusicHistory.Audio.Tests
         public void Send(int status, int data1, int data2) => Messages.Add((status, data1, data2));
         public void SetTranspose(double semitones) => Transpose = semitones;
         public void ReleaseAll() { }
+        public void SilenceAll() { }
         public void Render(float[] left, float[] right, int offset, int count)
         {
             Array.Clear(left, offset, count);
@@ -204,6 +205,7 @@ namespace MusicHistory.Audio.Tests
         public void Send(int status, int data1, int data2) => inner.Send(status, data1, data2);
         public void SetTranspose(double semitones) => inner.SetTranspose(semitones);
         public void ReleaseAll() => inner.ReleaseAll();
+        public void SilenceAll() => inner.SilenceAll();
 
         public void Render(float[] left, float[] right, int offset, int count)
         {
@@ -291,6 +293,21 @@ namespace MusicHistory.Audio.Tests
 
     public static class Timing
     {
+        /// <summary>
+        /// Mean BPM of a job's first bar if the file kept its first-bar mean tempo, under the job's
+        /// morph ratio curve: f * bar / (integral of 1/ratio over the bar). The first bar already
+        /// glides a little toward native, so this, not the start BPM, is what it should play at.
+        /// </summary>
+        public static double GlidedFirstBar(PlaybackJob job)
+        {
+            double bar = job.BeatsPerBar, f = job.EntryFileBpm;
+            const int n = 400;
+            double h = bar / n, s = 0;
+            for (int i = 0; i <= n; i++)
+                s += 1.0 / job.Plan.TempoRatio(i * h) * (i == 0 || i == n ? 1 : (i & 1) == 1 ? 4 : 2);
+            return f * bar / (s * h / 3);
+        }
+
         /// <summary>
         /// Reference wall time from <paramref name="from"/> to <paramref name="to"/> under a job:
         /// the integral of secondsPerBeat(b) / ratio(b), by composite Simpson per tempo segment

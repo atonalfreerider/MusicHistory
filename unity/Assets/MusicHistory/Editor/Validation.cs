@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using FDG;
+using Mono.Data.Sqlite;
 using MusicHistory.Playback;
 using MusicHistory.Viewer;
 using MusicHistory.Walkthrough;
@@ -142,6 +143,7 @@ namespace MusicHistory.EditorTools
             report.Number("tree_edges", data.TreeEdgeCount, "0");
             report.Number("roots", data.RootCount, "0");
             report.Check("§10 invariants hold", data.Problems.Count == 0, string.Join(" | ", data.Problems.Take(5)));
+            ValidateRegionKeys(report, loader, dbPath, "main graph");
             report.Check("one SongNode per song", loader.Nodes.Count == n && Object.FindObjectsByType<SongNode>().Length == n);
             report.Check("song_count matches graph_meta", data.MetaInt("song_count") is not int sc || sc == n, $"meta {data.MetaInt("song_count")}");
             report.Check("edge_count matches graph_meta", data.MetaInt("edge_count") is not int ec || ec == data.Edges.Count);
@@ -307,11 +309,12 @@ namespace MusicHistory.EditorTools
                 director.Next();
                 SongClip clip = director.CurrentClip!;
                 SongClip prev = director.PreviousClip!;
-                MorphPlan expected = Morph.Plan(prev, clip, director.MorphBars);
-                report.Check("tour: step 2 morphs from the previous song",
-                    Math.Abs(director.CurrentPlan.StartSemitones - expected.StartSemitones) < 1e-9 &&
-                    Math.Abs(director.CurrentPlan.StartTempoRatio - expected.StartTempoRatio) < 1e-9 &&
-                    director.CurrentPlan.MorphBeats > 0,
+                // The HUD shows the plan the player actually plays; the silent clock's is median-based.
+                MorphPlan playing = director.ActivePlayer!.CurrentPlan;
+                MorphPlan expected = director.ActivePlayer is SilentSongPlayer ? Morph.Plan(prev, clip, director.MorphBars) : playing;
+                report.Check("tour: step 2 morphs from the previous song (the player's own plan)",
+                    prev != null && prev.NodeId == director.Steps[0] &&
+                    SamePlan(director.CurrentPlan, playing) && SamePlan(playing, expected) && director.CurrentPlan.MorphBeats > 0,
                     $"start {expected.StartSemitones:+0;-0;0} st, tempo ×{expected.StartTempoRatio:0.000}, {expected.MorphBeats} beats");
                 InfluenceEdge? edge = loader.NodeById(clip.NodeId).TreeEdge;
                 report.Check("tour: tree edge starts collapsed", edge != null && edge.VisibleFraction < .01f);
@@ -334,6 +337,9 @@ namespace MusicHistory.EditorTools
                     .All(l => l.Priority >= 1e7f), "dimmed labels hidden during tours");
                 report.Check("tour: HUD shows 'Key X → Y · BPM a → b'", director.HudText.Contains("Key ") && director.HudText.Contains(" → ") &&
                     director.HudText.Contains("BPM"), FirstLines(director.HudText, 3));
+                double startBpm = director.ActivePlayer is IMorphReadout readout ? readout.PlanStartBpm : clip.NativeBpm * playing.StartTempoRatio;
+                string startBpmText = $"BPM {startBpm.ToString("0.#", CultureInfo.InvariantCulture)} → ";
+                report.Check("tour: HUD start BPM is the player's plan start", director.HudText.Contains(startBpmText), startBpmText);
                 string walk = Path.Combine(outDir, "walkthrough.png");
                 Capture(cam, loader, walk, width, height, out _);
                 report.Check("walkthrough.png written", File.Exists(walk));
@@ -357,14 +363,103 @@ namespace MusicHistory.EditorTools
                 bool paused = director.ActivePlayer != null && director.ActivePlayer.Paused;
                 director.TogglePause();
                 report.Check("tour: Space pauses and resumes", paused && director.ActivePlayer != null && !director.ActivePlayer.Paused);
+
+                // Apples to apples: the target key comes from the song's norm_shift (graph_meta normalization).
+                director.ApplesToApples = true;
+                director.GoTo(director.StepIndex);
+                string normalized = WalkthroughDirector.NormalizedKeyName(director.CurrentClip!);
+                report.Check("tour: apples-to-apples HUD names the normalized key from norm_shift, no morph",
+                    director.HudText.Contains($"→ {normalized} (normalized)") && director.CurrentPlan.MorphBeats == 0,
+                    $"{director.CurrentClip!.TonicPc}/{(director.CurrentClip.Minor ? "minor" : "major")} shift {director.CurrentClip.NormShift:+0;-0;0} → {normalized}");
+                director.ApplesToApples = false;
+                director.GoTo(director.StepIndex);
+
+                int leaving = director.CurrentClip!.NodeId, stepBefore = director.StepIndex;
                 director.Previous();
-                report.Check("tour: previous step", director.StepIndex >= 0);
+                report.Check("tour: previous step morphs from the song just heard, not from steps[i-1]",
+                    director.StepIndex == Math.Max(0, stepBefore - 1) && director.PreviousClip != null && director.PreviousClip.NodeId == leaving,
+                    $"back to step {director.StepIndex + 1}, previous clip node {director.PreviousClip?.NodeId} (left node {leaving})");
+                int current = director.CurrentClip!.NodeId;
+                director.GoTo(director.StepIndex);
+                report.Check("tour: a restart morphs from the same song", director.PreviousClip != null && director.PreviousClip.NodeId == current);
             }
             director.Exit();
             report.Check("tour: Esc restores free camera and hover", !director.IsTouring && cam.GetComponent<CameraControl>().InputEnabled &&
                 !loader.Highlighter.Suspended && loader.Edges.Where(e => e.IsTree).All(e => e.VisibleFraction > .999f));
             loader.Highlighter.Select(null);
         }
+
+        static bool SamePlan(MorphPlan a, MorphPlan b) =>
+            Math.Abs(a.StartSemitones - b.StartSemitones) < 1e-9 && Math.Abs(a.StartTempoRatio - b.StartTempoRatio) < 1e-9 &&
+            Math.Abs(a.MorphBeats - b.MorphBeats) < 1e-9;
+
+        /// <summary>
+        /// song_node entry_* / exit_* (DESIGN.md §10): read when the columns exist, NULL (home key)
+        /// on older databases, carried into clips, and used by the key handoff.
+        /// </summary>
+        static void ValidateRegionKeys(Report report, SongGraphLoader loader, string dbPath, string label)
+        {
+            SongGraphData data = loader.Data!;
+            using SqliteConnection conn = new("URI=file:" + Path.GetFullPath(dbPath));
+            conn.Open();
+            HashSet<string> columns = SongGraphReader.TableColumns(conn, "song_node");
+            bool present = SongGraphReader.OptionalSongColumns.All(columns.Contains);
+            int readEntry = data.Songs.Count(x => x.EntryTonicPc != null), readExit = data.Songs.Count(x => x.ExitTonicPc != null);
+            int readEntryMinor = data.Songs.Count(x => x.EntryMinor == true), readExitMinor = data.Songs.Count(x => x.ExitMinor == true);
+            report.Number($"{Slug(label)}_excerpts_entering_outside_home_key", readEntry, "0");
+            report.Number($"{Slug(label)}_excerpts_leaving_outside_home_key", readExit, "0");
+            if (present)
+            {
+                int dbEntry = Count(conn, "SELECT COUNT(*) FROM song_node WHERE entry_tonic_pc IS NOT NULL");
+                int dbExit = Count(conn, "SELECT COUNT(*) FROM song_node WHERE exit_tonic_pc IS NOT NULL");
+                int dbEntryMinor = Count(conn, "SELECT COUNT(*) FROM song_node WHERE entry_mode = 'minor'");
+                int dbExitMinor = Count(conn, "SELECT COUNT(*) FROM song_node WHERE exit_mode = 'minor'");
+                report.Check($"{label}: entry/exit keys read from song_node", readEntry == dbEntry && readExit == dbExit &&
+                    readEntryMinor == dbEntryMinor && readExitMinor == dbExitMinor,
+                    $"entry {readEntry}/{dbEntry} ({readEntryMinor}/{dbEntryMinor} minor), exit {readExit}/{dbExit} ({readExitMinor}/{dbExitMinor} minor)");
+            }
+            else
+            {
+                report.Check($"{label}: song_node without entry/exit columns (older DB) reads them as NULL = home key",
+                    readEntry == 0 && readExit == 0 && data.Songs.All(x => x.EntryMinor == null && x.ExitMinor == null) && data.Problems.Count == 0,
+                    $"columns present: {string.Join(",", SongGraphReader.OptionalSongColumns.Where(columns.Contains))}");
+            }
+            report.Check($"{label}: clips carry the excerpt's entry/exit keys", data.Songs.All(x =>
+            {
+                SongClip c = x.ToClip();
+                return c.EntryTonicPc == x.EntryTonicPc && c.EntryMinor == x.EntryMinor && c.ExitTonicPc == x.ExitTonicPc && c.ExitMinor == x.ExitMinor &&
+                       c.EntryTonic == (x.EntryTonicPc ?? x.TonicPc) && c.ExitTonic == (x.ExitTonicPc ?? x.TonicPc);
+            }));
+            // A tree edge whose handoff differs when region keys are used: the player must use them.
+            SongRecord? child = data.Songs.FirstOrDefault(x => x.TreeParent is int pid &&
+                Morph.Wrap((data.Song(pid).ExitTonicPc ?? data.Song(pid).TonicPc) - (x.EntryTonicPc ?? x.TonicPc)) != Morph.Wrap(data.Song(pid).TonicPc - x.TonicPc));
+            if (child == null)
+            {
+                if (present && (readEntry > 0 || readExit > 0)) report.Text($"{Slug(label)}_region_key_handoff", "no tree edge where the region keys change the handoff");
+                return;
+            }
+            SongRecord parentSong = data.Song(child.TreeParent!.Value);
+            SilentSongPlayer silent = loader.Director.Silent;
+            bool apples = silent.ApplesToApples;
+            silent.ApplesToApples = false;
+            silent.Play(child.ToClip(), parentSong.ToClip());
+            MorphPlan plan = silent.CurrentPlan;
+            silent.Stop();
+            silent.ApplesToApples = apples;
+            int expected = Morph.Wrap((parentSong.ExitTonicPc ?? parentSong.TonicPc) - (child.EntryTonicPc ?? child.TonicPc));
+            report.Check($"{label}: the key handoff runs from the previous excerpt's exit key to this excerpt's entry key",
+                Math.Abs(plan.StartSemitones - expected) < 1e-9,
+                $"node {parentSong.NodeId} → {child.NodeId}: {plan.StartSemitones:+0;-0;0} st (home keys would give {Morph.Wrap(parentSong.TonicPc - child.TonicPc):+0;-0;0})");
+        }
+
+        static int Count(SqliteConnection conn, string sql)
+        {
+            using SqliteCommand cmd = conn.CreateCommand();
+            cmd.CommandText = sql;
+            return Convert.ToInt32(cmd.ExecuteScalar(), CultureInfo.InvariantCulture);
+        }
+
+        static string Slug(string label) => label.Replace(' ', '_');
 
         /// <summary>Drawn labels must never overlap on screen (decluttering), and the years must all show.</summary>
         static void CheckLabels(Report report, SongGraphLoader loader, string view)
@@ -420,6 +515,7 @@ namespace MusicHistory.EditorTools
             SongGraphData data = loader.Data!;
             report.Number("fixture_songs", data.Songs.Count, "0");
             report.Check("fixture: §10 invariants hold", data.Problems.Count == 0, string.Join(" | ", data.Problems.Take(5)));
+            ValidateRegionKeys(report, loader, fixturePath, "fixture");
             report.Check("fixture: positions NULL → fallback layout", !data.HasPositions && loader.Frame.Description.StartsWith("fallback"));
             report.Check("fixture: fallback pins time exactly", loader.Frame.MaxResidualYears < 1e-3, $"{loader.Frame.MaxResidualYears:0.000000} y");
             string folder = Path.GetDirectoryName(fixturePath) ?? "";
@@ -451,6 +547,7 @@ namespace MusicHistory.EditorTools
             string path = Path.Combine(outDir, "fixture_walkthrough.png");
             Capture(cam, loader, path, width, height, out _);
             director.Exit();
+            ValidateDirectorWithProbe(report, loader, deepest);
             loader.FrameOverview(cam);
             string overview = Path.Combine(outDir, "fixture_overview.png");
             Capture(cam, loader, overview, width, height, out _);
@@ -465,6 +562,146 @@ namespace MusicHistory.EditorTools
                     Mathf.Abs(Vector3.Dot(loader.Timeline.AxisPoint(y), vertical.TimeDir) - vertical.TimeCoord(y)) < 1e-3f));
             Capture(cam, loader, Path.Combine(outDir, "fixture_vertical.png"), width, height, out _);
             loader.TimeAxis = TimeAxisView.LeftToRight;
+        }
+
+        /// <summary>
+        /// A recording <see cref="ISongPlayer"/>: the director's calls into a real synth, observable.
+        /// </summary>
+        sealed class ProbePlayer : ISongPlayer
+        {
+            public readonly List<string> Calls = new();
+            public SongClip? Clip, Previous;
+            public bool Paused { get; set; }
+            public bool IsPlaying { get; private set; }
+            public double CurrentBeat { get; set; }
+            public double CurrentSemitones => 0;
+            public double CurrentBpm => Clip?.NativeBpm ?? 0;
+            public MorphPlan CurrentPlan { get; private set; } = MorphPlan.None;
+            public float MorphBars { get; set; } = 4;
+            public bool ApplesToApples { get; set; }
+            public event Action<SongClip>? Started;
+            public event Action<SongClip>? Finished;
+            public int Stops => Calls.Count(c => c == "stop");
+
+            public void Play(SongClip clip, SongClip previous)
+            {
+                Calls.Add($"play {clip.NodeId} after {(previous != null ? previous.NodeId.ToString(CultureInfo.InvariantCulture) : "none")}");
+                Clip = clip;
+                Previous = previous;
+                IsPlaying = true;
+                Paused = false;
+                CurrentBeat = clip.ExcerptStartBeat;
+                CurrentPlan = ApplesToApples ? MorphPlan.None : Morph.Plan(previous!, clip, MorphBars);
+                Started?.Invoke(clip);
+            }
+
+            public void Stop()
+            {
+                Calls.Add("stop");
+                IsPlaying = false;
+            }
+
+            /// <summary>The excerpt ends naturally.</summary>
+            public void Finish()
+            {
+                if (Clip == null) return;
+                IsPlaying = false;
+                CurrentBeat = Clip.ExcerptEndBeat;
+                Finished?.Invoke(Clip);
+            }
+        }
+
+        /// <summary>
+        /// The director's player protocol, with a probe standing in for the synth (fixture songs have
+        /// real MIDI files): no Stop on the way to a step the same player plays (a Stop would throw
+        /// away the bar-line handoff of a naturally finished clip), "previous" = the clip heard just
+        /// before, and the progress-based watchdog.
+        /// </summary>
+        static void ValidateDirectorWithProbe(Report report, SongGraphLoader loader, int deepest)
+        {
+            WalkthroughDirector director = loader.Director;
+            SongGraphData data = loader.Data!;
+            ISongPlayer? original = director.Player;
+            string originalDescription = director.PlayerDescription;
+            ProbePlayer probe = new();
+            director.UsePlayer(probe, "validation probe");
+            try
+            {
+                director.StartTour(TourMode.Lineage, loader.NodeById(deepest));
+                IReadOnlyList<int> s = director.Steps;
+                if (!report.Check("probe: fixture lineage has at least 5 steps", s.Count >= 5, $"{s.Count} steps")) return;
+                report.Check("probe: the tour's first song plays natively", probe.Calls.SequenceEqual(new[] { $"play {s[0]} after none" }),
+                    string.Join("; ", probe.Calls));
+
+                probe.Finish();
+                director.Tick(.05f);
+                report.Check("probe: natural advance calls Play without Stop (keeps the bar-line handoff)",
+                    director.StepIndex == 1 && probe.Stops == 0 && probe.Previous?.NodeId == s[0], string.Join("; ", probe.Calls));
+
+                director.Next();
+                report.Check("probe: Next mid-clip replaces the clip on the same player without Stop",
+                    director.StepIndex == 2 && probe.Stops == 0 && probe.Previous?.NodeId == s[1], string.Join("; ", probe.Calls));
+
+                director.Previous();
+                report.Check("probe: B/← plays from the song just heard (step 3), not steps[i-1]",
+                    director.StepIndex == 1 && probe.Previous?.NodeId == s[2] && director.PreviousClip?.NodeId == s[2], probe.Calls[^1]);
+
+                director.GoTo(director.StepIndex);
+                report.Check("probe: a restart plays from the same song", probe.Previous?.NodeId == s[1] && probe.Stops == 0, probe.Calls[^1]);
+
+                // A step whose MIDI file is missing moves to the silent clock: the synth is stopped once.
+                SongRecord missing = data.Song(s[2]);
+                string savedPath = missing.MidiPath;
+                missing.MidiPath = Path.Combine(data.DbFolder, "missing-for-validation.mid");
+                try
+                {
+                    director.Next();
+                }
+                finally
+                {
+                    missing.MidiPath = savedPath;
+                }
+                report.Check("probe: switching to the silent clock stops the synth", director.ActivePlayer is SilentSongPlayer && probe.Stops == 1,
+                    string.Join("; ", probe.Calls.Skip(Math.Max(0, probe.Calls.Count - 3))));
+                director.Next();
+                report.Check("probe: back on the synth, playing from the song heard on the silent clock",
+                    ReferenceEquals(director.ActivePlayer, probe) && probe.Previous?.NodeId == s[2] && probe.Stops == 1, probe.Calls[^1]);
+
+                // Watchdog: a slow section keeps making progress past the old median-BPM budget.
+                SongClip clip = director.CurrentClip!;
+                int step = director.StepIndex;
+                double length = clip.ExcerptEndBeat - clip.ExcerptStartBeat;
+                double oldBudget = SilentSongPlayer.ExpectedSeconds(clip, director.CurrentPlan) * 1.25 + 8.0;
+                double run = oldBudget + 10;
+                double beatsPerSecond = Math.Min(0.4 * clip.NativeBpm / 60.0, 0.9 * length / run);
+                for (double t = 0; t < run; t += .1)
+                {
+                    probe.CurrentBeat += .1 * beatsPerSecond;
+                    director.Tick(.1f);
+                }
+                report.Check("watchdog: steady progress past the old duration budget is not cut",
+                    director.StepIndex == step && ReferenceEquals(director.CurrentClip, clip),
+                    $"{run:0} s at {beatsPerSecond * 60:0.#} BPM (median {clip.NativeBpm:0.#}); old budget {oldBudget:0.0} s");
+                // ...but a player that stops moving is advanced after WatchdogSeconds.
+                double stalled = 0;
+                while (director.StepIndex == step && stalled < director.WatchdogSeconds + 5)
+                {
+                    director.Tick(.1f);
+                    stalled += .1;
+                }
+                report.Check("watchdog: no progress for WatchdogSeconds advances the tour",
+                    director.StepIndex == step + 1 && stalled > director.WatchdogSeconds && stalled < director.WatchdogSeconds + 1,
+                    $"advanced after {stalled:0.0} s without progress (WatchdogSeconds {director.WatchdogSeconds:0})");
+                director.TogglePause();
+                for (int i = 0; i < 300; i++) director.Tick(.1f);
+                report.Check("watchdog: a paused player is never advanced", director.StepIndex == step + 1 && director.StallSeconds == 0);
+                director.TogglePause();
+            }
+            finally
+            {
+                director.Exit();
+                if (original != null) director.UsePlayer(original, originalDescription);
+            }
         }
 
         // ------------------------------------------------------------------ player clock
@@ -482,6 +719,8 @@ namespace MusicHistory.EditorTools
                 player.MorphBars = 4;
                 player.Play(next, previous);
                 MorphPlan plan = player.Plan;
+                report.Check("silent player: CurrentPlan is the plan it plays", SamePlan(player.CurrentPlan, plan) &&
+                    Math.Abs(player.PlanStartBpm - 118) < 1e-6);
                 report.Check("silent player: starts in the previous key (+3 st) and folded BPM (118)",
                     Math.Abs(player.CurrentSemitones - 3) < 1e-9 && Math.Abs(player.CurrentBpm - 118) < 1e-6,
                     $"{player.CurrentSemitones:0.00} st, {player.CurrentBpm:0.00} BPM");
@@ -512,6 +751,17 @@ namespace MusicHistory.EditorTools
                     Math.Abs(player.CurrentBpm - 120) < 1e-9 && Math.Abs(player.CurrentSemitones - next.NormShift) < 1e-9 && player.Plan.MorphBeats == 0);
                 player.Play(next, null!);
                 report.Check("silent player: first song plays natively (no previous)", player.Plan.MorphBeats == 0);
+                player.ApplesToApples = false;
+                SongClip leavesInD = new() { NodeId = 3, Title = "C", TonicPc = 0, NativeBpm = 118, BeatsPerBar = 4, ExcerptStartBeat = 0, ExcerptEndBeat = 64, ExitTonicPc = 2, ExitMinor = false };
+                SongClip entersInF = new() { NodeId = 4, Title = "D", TonicPc = 4, NativeBpm = 96, BeatsPerBar = 4, ExcerptStartBeat = 0, ExcerptEndBeat = 64, EntryTonicPc = 5, EntryMinor = false };
+                player.Play(entersInF, leavesInD);
+                report.Check("silent player: the key handoff runs from the exit key (D) to the entry key (F): -3 st",
+                    Math.Abs(player.CurrentPlan.StartSemitones - (-3)) < 1e-9, $"{player.CurrentPlan.StartSemitones:+0;-0;0} st");
+                report.Check("walkthrough: normalized target key follows norm_shift (relative and parallel)",
+                    WalkthroughDirector.NormalizedKeyName(new SongClip { TonicPc = 2, Minor = true, NormShift = -5 }) == "A minor" &&
+                    WalkthroughDirector.NormalizedKeyName(new SongClip { TonicPc = 2, Minor = true, NormShift = -2 }) == "C minor" &&
+                    WalkthroughDirector.NormalizedKeyName(new SongClip { TonicPc = 9, Minor = true, NormShift = 3 }) == "C minor" &&
+                    WalkthroughDirector.NormalizedKeyName(new SongClip { TonicPc = 4, Minor = false, NormShift = -4 }) == "C major");
             }
             finally
             {

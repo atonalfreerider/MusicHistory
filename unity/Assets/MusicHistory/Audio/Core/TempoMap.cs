@@ -91,6 +91,17 @@ namespace MusicHistory.Audio
             return beats[lo] + (seconds - secondsAtStart[lo]) / secondsPerBeat[lo];
         }
 
+        /// <summary>
+        /// Mean BPM over [from, to): beats divided by the file time they take. This is the pulse a
+        /// listener hears across the span (a bar), unlike the tempo of one segment at a point.
+        /// </summary>
+        public double MeanBpm(double from, double to)
+        {
+            if (!(to > from)) return BpmAt(from);
+            double seconds = SecondsAt(to) - SecondsAt(from);
+            return seconds > 0 ? (to - from) * 60.0 / seconds : BpmAt(from);
+        }
+
         /// <summary>Beat-weighted median BPM over [from, to) (tempo segments below 20 or above 400 BPM ignored).</summary>
         public double MedianBpm(double from, double to)
         {

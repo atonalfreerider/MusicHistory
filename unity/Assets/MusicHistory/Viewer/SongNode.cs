@@ -36,7 +36,8 @@ namespace MusicHistory.Viewer
         public BubbleState State => state;
         public MeshRenderer BubbleRenderer => bubbleRenderer;
         public int NodeId => Song.NodeId;
-        public string LabelText => $"<b><noparse>{Song.Title}</noparse></b>\n<size=78%><color=#c3c8d0><noparse>{Song.Artist}</noparse> · {Song.Year}</color></size>";
+        public string LabelText => $"<b><noparse>{Song.Title}</noparse></b>\n<size=78%><color=#c3c8d0><noparse>{Song.Artist}</noparse> · {Song.Year}</color></size>" +
+                                   (Song.IsValidationExtra ? "\n<size=64%><color=#ffcf4a><i>validation control, outside the ranked list</i></color></size>" : "");
 
         public static SongNode Create(SongRecord song, Vector3 position, float radius, Transform parent)
         {

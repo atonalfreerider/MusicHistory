@@ -11,7 +11,7 @@ namespace MusicHistory.Playback
     /// walkthrough uses it when no synth is installed or a song's MIDI file is missing, so tours,
     /// timing and the HUD behave exactly as with sound.
     /// </summary>
-    public sealed class SilentSongPlayer : MonoBehaviour, ISongPlayer
+    public sealed class SilentSongPlayer : MonoBehaviour, ISongPlayer, IMorphReadout
     {
         [Tooltip("BPM of the normalized files (graph_meta target_bpm).")]
         public double TargetBpm = 120;
@@ -23,6 +23,18 @@ namespace MusicHistory.Playback
 
         public SongClip? Clip => clip;
         public MorphPlan Plan => plan;
+        /// <summary>The silent clock has no tempo map: its plan is the median-based <see cref="Morph.Plan(SongClip, SongClip, double)"/>.</summary>
+        public MorphPlan CurrentPlan => plan;
+
+        public double PlanStartBpm
+        {
+            get
+            {
+                if (clip == null) return 0;
+                if (ApplesToApples) return TargetBpm;
+                return (clip.NativeBpm > 0 ? clip.NativeBpm : 120) * plan.StartTempoRatio;
+            }
+        }
         public bool Paused { get; set; }
         public bool IsPlaying => playing;
         public double CurrentBeat { get; private set; }
@@ -67,6 +79,7 @@ namespace MusicHistory.Playback
         {
             playing = false;
             Paused = false;
+            plan = MorphPlan.None;
         }
 
         void Update() => Advance(Time.deltaTime);

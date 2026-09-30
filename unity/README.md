@@ -45,10 +45,12 @@ Each walkthrough step does four things:
 
 - The camera flies to frame the song and its tree parent.
 - The tree edge grows out of the influencer.
-- The song's excerpt plays. It starts in the key and BPM of the song played just before it and glides to its own over `MorphBars` bars (`Morph.Plan` in the Contracts).
-- The panel at the bottom shows `Key X → Y · BPM a → b` with the live transposition and tempo.
+- The song's excerpt plays. It starts in the key and BPM of the song heard just before it and glides to its own over `MorphBars` bars (`Morph.Plan` in the Contracts): from the key the previous excerpt ended in to the key this one starts in, and from the tempo the previous excerpt's last bar was actually played at.
+- The panel at the bottom shows `Key X → Y · BPM a → b` with the live transposition and tempo, from the plan the player actually plays (`ISongPlayer.CurrentPlan`). In compare mode the target key is the song's home key moved by its `norm_shift` (A minor under relative normalization, C minor under parallel).
 
-The next step starts when the player raises `Finished`.
+"The song heard just before" is the clip the tour was on when the step changed, whichever way it moved: the previous step on a forward advance, the step you left on B/←, the same song on a restart (Enter, C). Only a tour's first song plays natively.
+
+The next step starts when the player raises `Finished`. When the next step plays on the same player, the director does not stop it first, so a song that ended naturally hands off on its bar line. A watchdog advances only when the player makes no progress (its beat stands still, unpaused) for `WatchdogSeconds` (20 s), so an excerpt in a section slower than the song's median tempo is never cut short.
 
 ## Visual encoding
 
@@ -66,7 +68,10 @@ The next step starts when the player raises `Finished`.
 
 The viewer reads `graph_meta`, `nodes`, `song_node` and `influence_edges` exactly as specified in
 DESIGN §10. `node_layout_metadata` (`mass`, `display_radius`) and the latest `layout_run`
-(`time_axis`, `time_direction`, `year_scale`, `min_time`, `params_json`) are optional.
+(`time_axis`, `time_direction`, `year_scale`, `min_time`, `params_json`) are optional. The
+`song_node` columns `entry_tonic_pc`, `entry_mode`, `exit_tonic_pc` and `exit_mode` are read
+when present (`PRAGMA table_info`); older databases without them read as NULL, which means the
+home key.
 
 The viewer also relies on these invariants, and reports any that fail as warnings (validation
 treats them as failures):

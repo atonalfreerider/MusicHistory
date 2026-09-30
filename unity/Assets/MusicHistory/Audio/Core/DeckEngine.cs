@@ -26,6 +26,11 @@ namespace MusicHistory.Audio
         public double InterruptSeconds = 0.35;
         /// <summary>Fade used when a deck still ringing must be reused at once.</summary>
         public double RecycleSeconds = 0.012;
+        /// <summary>
+        /// Pause fades the playing deck to silence over this long, then cuts its voices (so notes
+        /// held by the sustain pedal stop too); resume re-strikes the held keys and fades back in.
+        /// </summary>
+        public double PauseFadeSeconds = 0.01;
         public HandoffGrid Handoff = HandoffGrid.Bar;
         /// <summary>Align to the grid only when the next clip arrives within this many bars of the end.</summary>
         public double HandoffWindowBars = 4;
@@ -102,6 +107,13 @@ namespace MusicHistory.Audio
             // Gain envelope: FadeFrom until FadeStart, then linear to 0 at FadeEnd.
             public double FadeFrom = 1;
             public long FadeStart = long.MaxValue, FadeEnd = long.MaxValue;
+            // Pause envelope (multiplies the gain): PauseFrom until PauseStart, linear to PauseTo at PauseEnd.
+            public double PauseFrom = 1, PauseTo = 1;
+            public long PauseStart, PauseEnd;
+            /// <summary>Voices are cut once the pause fade reaches silence.</summary>
+            public bool CutWhenSilent;
+            /// <summary>The voices were cut while paused: resume re-strikes the held keys.</summary>
+            public bool Cut;
 
             public Deck(int index, IDeckSynth synth)
             {
@@ -129,6 +141,29 @@ namespace MusicHistory.Audio
             {
                 FadeFrom = 1;
                 FadeStart = FadeEnd = long.MaxValue;
+                ClearPause();
+            }
+
+            public double PauseGainAt(long sample)
+            {
+                if (sample >= PauseEnd) return PauseTo;
+                if (sample <= PauseStart) return PauseFrom;
+                return PauseFrom + (PauseTo - PauseFrom) * (sample - PauseStart) / (PauseEnd - PauseStart);
+            }
+
+            public void RampPause(long now, double to, long length)
+            {
+                PauseFrom = PauseGainAt(now);
+                PauseTo = to;
+                PauseStart = now;
+                PauseEnd = now + Math.Max(1, length);
+            }
+
+            public void ClearPause()
+            {
+                PauseFrom = PauseTo = 1;
+                PauseStart = PauseEnd = 0;
+                CutWhenSilent = Cut = false;
             }
         }
 
@@ -308,6 +343,13 @@ namespace MusicHistory.Audio
             }
             if (d.State == DeckState.Playing && !isPaused) Step(d);
             Mix(d);
+            if (d.CutWhenSilent && d.PauseTo == 0 && clock + BlockSize >= d.PauseEnd)
+            {
+                // The pause fade has reached silence: stop every voice, pedal-held ones included.
+                d.Synth.SilenceAll();
+                d.CutWhenSilent = false;
+                d.Cut = true;
+            }
             if (d.State == DeckState.Tail && clock + BlockSize >= d.FadeEnd)
             {
                 d.Synth.Reset();
@@ -321,7 +363,7 @@ namespace MusicHistory.Audio
         void Mix(Deck d)
         {
             d.Synth.Render(d.L, d.R, 0, BlockSize);
-            double g0 = d.GainAt(clock), g1 = d.GainAt(clock + BlockSize);
+            double g0 = d.GainAt(clock) * d.PauseGainAt(clock), g1 = d.GainAt(clock + BlockSize) * d.PauseGainAt(clock + BlockSize);
             if (g0 == 1 && g1 == 1)
             {
                 for (int k = 0; k < BlockSize; k++)
@@ -395,7 +437,12 @@ namespace MusicHistory.Audio
             d.FadeFrom = 1;
             d.FadeStart = clock + tail - fade;
             d.FadeEnd = clock + tail;
-            double beatSamples = rate / (job.RateAt(job.EndBeat) * Math.Max(1e-6, stepSeconds / blockSeconds));
+            // The pulse the listener just heard: the mean rate over the last bar played, not the
+            // instantaneous tempo at the end beat (a tempo change there has not sounded yet).
+            double lastBarStart = Math.Max(job.StartBeat, job.EndBeat - job.BeatsPerBar);
+            double lastBarSeconds = job.SecondsBetween(lastBarStart, job.EndBeat);
+            double beatsPerSecond = lastBarSeconds > 0 ? (job.EndBeat - lastBarStart) / lastBarSeconds : job.RateAt(job.EndBeat);
+            double beatSamples = rate / (beatsPerSecond * Math.Max(1e-6, stepSeconds / blockSeconds));
             double barSamples = beatSamples * job.BeatsPerBar;
             gridUnit = Settings.Handoff == HandoffGrid.Beat ? beatSamples : barSamples;
             gridOrigin = endSample;
@@ -428,9 +475,15 @@ namespace MusicHistory.Audio
 
         void StopActive()
         {
-            if (active != null) Interrupt(active, (long)(Settings.InterruptSeconds * rate));
+            // A clip that already ended naturally keeps its handoff grid: the next aligned job
+            // still lands on the finished clip's bar line (the grid expires after
+            // HandoffWindowBars anyway). Only an interrupted clip invalidates it.
+            if (active != null)
+            {
+                Interrupt(active, (long)(Settings.InterruptSeconds * rate));
+                gridValid = false;
+            }
             active = null;
-            gridValid = false;
             Interlocked.Exchange(ref pubActive, 0);
         }
 
@@ -497,17 +550,28 @@ namespace MusicHistory.Audio
 
         void PauseChanged(bool nowPaused)
         {
+            long fade = (long)(Settings.PauseFadeSeconds * rate);
             foreach (Deck d in decks)
             {
                 if (d.State != DeckState.Playing) continue;
                 if (nowPaused)
                 {
-                    d.Synth.ReleaseAll();
+                    // Fade to silence, then cut the voices (Process). A note-off would leave
+                    // pedal-held voices ringing for the whole pause.
+                    d.RampPause(clock, 0, fade);
+                    d.CutWhenSilent = true;
                     continue;
                 }
-                // Resume: strike again what was sounding when we paused.
-                for (int i = 0; i < d.Sounding.Length; i++)
-                    if (d.Sounding[i] > 0) d.Synth.Send(MidiCommand.NoteOn | (i >> 7), i & 0x7F, d.Sounding[i]);
+                d.CutWhenSilent = false;
+                if (d.Cut)
+                {
+                    // Resume: strike again what was held when we paused (the old voices are gone,
+                    // so nothing doubles); the controller state, pedal included, was never touched.
+                    for (int i = 0; i < d.Sounding.Length; i++)
+                        if (d.Sounding[i] > 0) d.Synth.Send(MidiCommand.NoteOn | (i >> 7), i & 0x7F, d.Sounding[i]);
+                    d.Cut = false;
+                }
+                d.RampPause(clock, 1, fade);
             }
         }
 

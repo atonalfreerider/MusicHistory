@@ -29,6 +29,20 @@ namespace MusicHistory.Playback
         public double FirstDownbeat;
         /// <summary>Semitones that take the native key to the target key (already applied in the normalized file).</summary>
         public int NormShift;
+        /// <summary>Key region at the excerpt start, when the excerpt starts outside the home key (null = home key).</summary>
+        // Nullable fields are runtime-only: Unity's serializer cannot store them (UAC1001).
+        [NonSerialized] public int? EntryTonicPc;
+        [NonSerialized] public bool? EntryMinor;
+        /// <summary>Key region just before the excerpt end, when it ends outside the home key (null = home key).</summary>
+        [NonSerialized] public int? ExitTonicPc;
+        [NonSerialized] public bool? ExitMinor;
+
+        /// <summary>Tonic heard when the excerpt starts.</summary>
+        public int EntryTonic => EntryTonicPc ?? TonicPc;
+        public bool EntryIsMinor => EntryMinor ?? Minor;
+        /// <summary>Tonic heard when the excerpt ends (what the next song starts in).</summary>
+        public int ExitTonic => ExitTonicPc ?? TonicPc;
+        public bool ExitIsMinor => ExitMinor ?? Minor;
     }
 
     /// <summary>How a clip enters: it starts transposed and re-tempoed, then glides to native.</summary>
@@ -83,22 +97,40 @@ namespace MusicHistory.Playback
 
         /// <summary>
         /// The song starts in the key and BPM of the song played before it and glides to its
-        /// own over <paramref name="morphBars"/> bars. The previous BPM is used as is unless it
-        /// is more than <see cref="FoldOctaves"/> away from the native BPM; then it is halved or
-        /// doubled (x1/2, x2) to whichever is closest, so the pulse carries over.
+        /// own over <paramref name="morphBars"/> bars. The key is the previous excerpt's exit
+        /// key against this excerpt's entry key. Without tempo maps the tempos are the files'
+        /// median BPMs; players that know what actually sounded use
+        /// <see cref="Plan(SongClip, SongClip, double, double, double)"/>.
         /// </summary>
         public static MorphPlan Plan(SongClip previous, SongClip next, double morphBars)
         {
-            if (previous == null || next == null || morphBars <= 0) return MorphPlan.None;
-            int semis = Wrap(previous.TonicPc - next.TonicPc);
+            if (previous == null || next == null) return MorphPlan.None;
             double n = next.NativeBpm > 0 ? next.NativeBpm : 120;
             double p = previous.NativeBpm > 0 ? previous.NativeBpm : n;
+            return Plan(previous, next, morphBars, p, n);
+        }
+
+        /// <summary>
+        /// As <see cref="Plan(SongClip, SongClip, double)"/>, with the tempo the listener actually
+        /// heard at the end of the previous excerpt (<paramref name="heardBpm"/>) and the next
+        /// file's own tempo over the first bar of its excerpt (<paramref name="entryFileBpm"/>).
+        /// The heard BPM is used as is unless it is more than <see cref="FoldOctaves"/> away;
+        /// then it is halved or doubled toward the entry tempo so the pulse carries over.
+        /// StartTempoRatio is relative to the file's own tempo, so the first beat plays at the
+        /// heard BPM.
+        /// </summary>
+        public static MorphPlan Plan(SongClip previous, SongClip next, double morphBars, double heardBpm, double entryFileBpm)
+        {
+            if (previous == null || next == null || morphBars <= 0) return MorphPlan.None;
+            int semis = Wrap(previous.ExitTonic - next.EntryTonic);
+            double f = entryFileBpm > 0 ? entryFileBpm : next.NativeBpm > 0 ? next.NativeBpm : 120;
+            double p = heardBpm > 0 ? heardBpm : f;
             double best = p;
-            if (Math.Abs(Math.Log(p / n, 2)) > FoldOctaves)
+            if (Math.Abs(Math.Log(p / f, 2)) > FoldOctaves)
                 foreach (double candidate in new[] { p / 2, p * 2, p / 4, p * 4 })
-                    if (Math.Abs(Math.Log(candidate / n)) < Math.Abs(Math.Log(best / n))) best = candidate;
+                    if (Math.Abs(Math.Log(candidate / f)) < Math.Abs(Math.Log(best / f))) best = candidate;
             double beatsPerBar = next.BeatsPerBar > 0 ? next.BeatsPerBar : 4;
-            return new MorphPlan(semis, best / n, morphBars * beatsPerBar);
+            return new MorphPlan(semis, best / f, morphBars * beatsPerBar);
         }
     }
 
@@ -120,6 +152,8 @@ namespace MusicHistory.Playback
         double CurrentSemitones { get; }
         /// <summary>Effective quarter-note BPM right now.</summary>
         double CurrentBpm { get; }
+        /// <summary>The plan the current clip actually plays with (tempo from what was heard), for the HUD.</summary>
+        MorphPlan CurrentPlan { get; }
         /// <summary>Glide length in bars (default 4).</summary>
         float MorphBars { get; set; }
         /// <summary>Play the normalized file (C major / A minor, 120 BPM) without morphing.</summary>

@@ -9,7 +9,11 @@ namespace MusicHistory.Audio
     {
         /// <summary>Notes starting at most this many beats before the window are moved onto its first beat (early-played downbeats).</summary>
         public double EarlyToleranceBeats = 0.125;
-        /// <summary>Re-strike notes that are held across the window start (pads, long bass notes).</summary>
+        /// <summary>
+        /// Re-strike notes that are held across the window start (pads, long bass notes). Never on
+        /// the drum channel: a drum hit is a one-shot whatever length the file writes, so
+        /// re-striking it would add a hit the song does not have.
+        /// </summary>
         public bool RestrikeHeldNotes = true;
         /// <summary>...but only when at least this much of the note remains.</summary>
         public double MinHeldRemainingBeats = 0.5;
@@ -63,7 +67,8 @@ namespace MusicHistory.Audio
                 if (on < start)
                 {
                     bool early = start - on <= options.EarlyToleranceBeats;
-                    bool held = options.RestrikeHeldNotes && n.Off - start >= options.MinHeldRemainingBeats;
+                    bool held = options.RestrikeHeldNotes && n.Channel != MidiCommand.PercussionChannel &&
+                                n.Off - start >= options.MinHeldRemainingBeats;
                     if (!early && !held) continue;
                     on = start;
                 }

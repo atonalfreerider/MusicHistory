@@ -13,11 +13,15 @@ namespace MusicHistory.Walkthrough
     /// Guided tours through the influence tree (docs/DESIGN.md §11). Each step flies the camera to
     /// frame the song and its tree parent, grows the tree edge from the influencer, and plays the
     /// song's excerpt through the <see cref="ISongPlayer"/>, starting in the key and BPM of the song
-    /// played just before and gliding to its own (<see cref="Morph.Plan"/>). The next step starts
+    /// heard just before and gliding to its own (<see cref="Morph.Plan"/>). The next step starts
     /// when the player reports the excerpt finished.
     ///
+    /// "The song heard just before" is the clip the tour was on when the step changed, whichever
+    /// way it moved: the previous tour step on a forward advance, the step the listener left on
+    /// B/←, the same song on a restart (Enter, C). Only the tour's first song plays natively.
+    ///
     /// Keys: 1/2/3 mode (lineage, subtree, chronological), Enter start (from the clicked song),
-    /// Space pause, N or → next, B or ← previous, Esc exit, C toggles "compare in C / 120 BPM".
+    /// Space pause, N or → next, B or ← previous, Esc exit, C toggles "compare normalized".
     /// </summary>
     public sealed class WalkthroughDirector : MonoBehaviour
     {
@@ -25,12 +29,16 @@ namespace MusicHistory.Walkthrough
         [Min(.1f)] public float FlyDuration = 1.8f;
         [Min(.1f)] public float EdgeGrowDuration = 1.6f;
         [Min(0f)] public float MorphBars = 4f;
-        [Tooltip("Play the normalized MIDI (C major / A minor, 120 BPM) without morphing.")]
+        [Tooltip("Play the normalized MIDI (graph_meta target_key, target_bpm) without morphing.")]
         public bool ApplesToApples;
         [Min(1f)] public float FramingMargin = 1.35f;
         [Tooltip("Screen area (normalized) a step is framed into, clear of the HUD panels.")]
         public Rect TourViewport = new(.14f, .24f, .72f, .46f);
         [Min(.5f)] public float MinFramingDistance = 7f;
+        [Tooltip("Safety net for a player that stops without raising Finished: advance after this many " +
+                 "seconds in which its beat did not move (unpaused). Longer than a MIDI parse plus the " +
+                 "wait for the previous song's next bar line.")]
+        [Min(1f)] public float WatchdogSeconds = 20f;
 
         public SongGraphLoader Loader = null!;
         public ISongPlayer? Player { get; private set; }
@@ -42,11 +50,15 @@ namespace MusicHistory.Walkthrough
         public int StepIndex { get; private set; }
         public IReadOnlyList<int> Steps => steps;
         public SongClip? CurrentClip { get; private set; }
+        /// <summary>The clip heard just before the current one (null = the current one plays natively).</summary>
         public SongClip? PreviousClip { get; private set; }
-        public MorphPlan CurrentPlan { get; private set; } = MorphPlan.None;
+        /// <summary>The plan the active player actually plays the current clip with (tempo from what was heard).</summary>
+        public MorphPlan CurrentPlan => ActivePlayer?.CurrentPlan ?? MorphPlan.None;
         public ISongPlayer? ActivePlayer { get; private set; }
         public bool Flying => flyT < 1f;
         public string HudText { get; private set; } = "";
+        /// <summary>Seconds the active player has made no progress (the watchdog's clock).</summary>
+        public double StallSeconds => stallSeconds;
 
         List<int> steps = new();
         Vector3 flyFromPosition, flyToPosition;
@@ -56,9 +68,9 @@ namespace MusicHistory.Walkthrough
         InfluenceEdge? animatedEdge;
         bool advancePending;
         float hudCountdown;
-        // Safety net for a synth that stops without raising Finished: wall-clock budget per step.
-        double stepElapsed;
-        double stepBudget;
+        // Safety net for a synth that stops without raising Finished: time without beat progress.
+        double stallSeconds;
+        double lastProgressBeat = double.NegativeInfinity;
         (TourMode, SongNode?, bool, string) idleKey;
         bool idleKeyValid;
         const float HudInterval = 1f / 12f;
@@ -80,6 +92,24 @@ namespace MusicHistory.Walkthrough
             if (double.TryParse(loader.Data?.MetaValue("target_bpm"), System.Globalization.NumberStyles.Float,
                     System.Globalization.CultureInfo.InvariantCulture, out double target) && target > 0)
                 Silent.TargetBpm = target;
+            RefreshIdleHud(true);
+        }
+
+        /// <summary>
+        /// Replaces the discovered player (a custom synth, or a probe in validation). Songs whose
+        /// MIDI file is missing still play on the silent clock.
+        /// </summary>
+        public void UsePlayer(ISongPlayer player, string description)
+        {
+            if (player == null) throw new ArgumentNullException(nameof(player));
+            if (Player != null && !ReferenceEquals(Player, Silent)) Player.Finished -= OnClipFinished;
+            Player = player;
+            PlayerDescription = description;
+            if (!ReferenceEquals(player, Silent))
+            {
+                player.Finished -= OnClipFinished;
+                player.Finished += OnClipFinished;
+            }
             RefreshIdleHud(true);
         }
 
@@ -129,6 +159,9 @@ namespace MusicHistory.Walkthrough
             Mode = mode;
             steps = planned;
             IsTouring = true;
+            // A new tour's first song plays natively, whatever was sounding before.
+            CurrentClip = null;
+            PreviousClip = null;
             SetCameraInput(false);
             GoTo(0);
             return true;
@@ -137,10 +170,12 @@ namespace MusicHistory.Walkthrough
         public void GoTo(int index)
         {
             if (!IsTouring || steps.Count == 0) return;
+            // What the listener heard just before this step: the clip being left, whichever way
+            // the tour moves (null only at the tour start).
+            SongClip? heard = CurrentClip;
             StepIndex = Mathf.Clamp(index, 0, steps.Count - 1);
             advancePending = false;
             TourComplete = false;
-            ActivePlayer?.Stop();
             if (animatedEdge != null) animatedEdge.VisibleFraction = 1f;
 
             SongNode child = Loader.NodeById(steps[StepIndex]);
@@ -164,20 +199,34 @@ namespace MusicHistory.Walkthrough
             }
 
             CurrentClip = child.Song.ToClip();
-            PreviousClip = StepIndex > 0 ? Loader.NodeById(steps[StepIndex - 1]).Song.ToClip() : null;
-            CurrentPlan = ApplesToApples ? MorphPlan.None : Morph.Plan(PreviousClip!, CurrentClip, MorphBars);
-            ActivePlayer = ChoosePlayer(CurrentClip);
-            stepElapsed = 0;
-            stepBudget = SilentSongPlayer.ExpectedSeconds(CurrentClip, CurrentPlan, ApplesToApples, Silent.TargetBpm) * 1.25 + 8.0;
+            PreviousClip = heard;
+            ISongPlayer chosen = ChoosePlayer(CurrentClip);
+            // Stop only when the step moves to another player object. The same player replaces its
+            // own clip: one still playing is cut by the new Play (short fade), and one that ended
+            // naturally keeps its bar-line handoff grid, which a Stop would throw away.
+            if (ActivePlayer != null && !ReferenceEquals(ActivePlayer, chosen)) ActivePlayer.Stop();
+            ActivePlayer = chosen;
+            ResetWatchdog();
             try
             {
-                ActivePlayer.MorphBars = MorphBars;
-                ActivePlayer.ApplesToApples = ApplesToApples;
-                ActivePlayer.Play(CurrentClip, PreviousClip!);
+                chosen.MorphBars = MorphBars;
+                chosen.ApplesToApples = ApplesToApples;
+                chosen.Play(CurrentClip, PreviousClip!);
             }
             catch (Exception e)
             {
                 Debug.LogWarning($"MusicHistory: player failed on '{CurrentClip.Title}' ({e.Message}); continuing silently.");
+                if (!ReferenceEquals(chosen, Silent))
+                {
+                    try
+                    {
+                        chosen.Stop();
+                    }
+                    catch (Exception stopError)
+                    {
+                        Debug.LogWarning($"MusicHistory: player could not stop ({stopError.Message}).");
+                    }
+                }
                 ActivePlayer = Silent;
                 Silent.MorphBars = MorphBars;
                 Silent.ApplesToApples = ApplesToApples;
@@ -248,6 +297,12 @@ namespace MusicHistory.Walkthrough
             if (enabled) control.SyncRotationFromTransform();
         }
 
+        void ResetWatchdog()
+        {
+            stallSeconds = 0;
+            lastProgressBeat = double.NegativeInfinity;
+        }
+
         /// <summary>Advances animations by <paramref name="dt"/> seconds (public so edit-mode validation can drive it).</summary>
         public void Tick(float dt)
         {
@@ -267,11 +322,23 @@ namespace MusicHistory.Walkthrough
             ISongPlayer? active = ActivePlayer;
             if (active != null && !active.Paused && !TourComplete && !advancePending)
             {
-                stepElapsed += dt * Time.timeScale;
-                bool silentlyStopped = !ReferenceEquals(active, Silent) && !active.IsPlaying && stepElapsed > 3.0;
-                if (stepElapsed > stepBudget || silentlyStopped)
+                // Progress, not a precomputed duration: the real player follows the file's tempo map,
+                // which can be far slower than its median BPM in places. The clock counts real
+                // time, but stands still while Time.timeScale freezes the music.
+                double beat = active.CurrentBeat;
+                if (beat > lastProgressBeat + 1e-9)
                 {
-                    Debug.LogWarning($"MusicHistory: '{CurrentClip?.Title}' did not report Finished; advancing.");
+                    lastProgressBeat = beat;
+                    stallSeconds = 0;
+                }
+                else
+                {
+                    stallSeconds += dt * Math.Min(1f, Math.Max(0f, Time.timeScale));
+                }
+                bool silentlyStopped = !ReferenceEquals(active, Silent) && !active.IsPlaying && stallSeconds > 3.0;
+                if (stallSeconds > WatchdogSeconds || silentlyStopped)
+                {
+                    Debug.LogWarning($"MusicHistory: '{CurrentClip?.Title}' made no progress for {stallSeconds:0.0} s and did not report Finished; advancing.");
                     advancePending = true;
                 }
             }
@@ -300,6 +367,12 @@ namespace MusicHistory.Walkthrough
             }
         }
 
+        /// <summary>
+        /// The key the normalized file plays <paramref name="clip"/> in: its home key moved by its
+        /// norm_shift, so "A minor" under relative normalization and "C minor" under parallel.
+        /// </summary>
+        public static string NormalizedKeyName(SongClip clip) => SongPalette.KeyName(clip.TonicPc + clip.NormShift, clip.Minor);
+
         void UpdateTourHud()
         {
             if (CurrentClip == null || steps.Count == 0) return;
@@ -326,18 +399,25 @@ namespace MusicHistory.Walkthrough
             string morph;
             if (ApplesToApples)
             {
-                morph = $"Key {GraphHud.Esc(child.Song.KeyName)} → {(CurrentClip.Minor ? "A minor" : "C major")} (normalized) · BPM {Fmt(Silent.TargetBpm, "0")} (normalized)";
+                morph = $"Key {GraphHud.Esc(child.Song.KeyName)} → {NormalizedKeyName(CurrentClip)} (normalized) · BPM {Fmt(Silent.TargetBpm, "0")} (normalized)";
             }
             else
             {
+                // The player's own plan: its tempo ratio is relative to the file's entry tempo, so
+                // the start BPM comes from the player when it knows it.
                 MorphPlan plan = CurrentPlan;
-                string startKey = SongPalette.KeyName(CurrentClip.TonicPc + (int)Math.Round(plan.StartSemitones), CurrentClip.Minor);
-                string nativeKey = SongPalette.KeyName(CurrentClip.TonicPc, CurrentClip.Minor);
+                int entryTonic = CurrentClip.EntryTonic;
+                bool entryMinor = CurrentClip.EntryIsMinor;
+                string startKey = SongPalette.KeyName(entryTonic + (int)Math.Round(plan.StartSemitones), entryMinor);
+                string nativeKey = SongPalette.KeyName(entryTonic, entryMinor);
+                double startBpm = p is IMorphReadout readout && readout.PlanStartBpm > 0
+                    ? readout.PlanStartBpm
+                    : CurrentClip.NativeBpm * plan.StartTempoRatio;
                 double semis = p?.CurrentSemitones ?? plan.StartSemitones;
-                double bpm = p?.CurrentBpm ?? CurrentClip.NativeBpm * plan.StartTempoRatio;
-                string nowKey = SongPalette.PitchName(CurrentClip.TonicPc + (int)Math.Round(semis), CurrentClip.Minor);
+                double bpm = p?.CurrentBpm ?? startBpm;
+                string nowKey = SongPalette.PitchName(entryTonic + (int)Math.Round(semis), entryMinor);
                 morph = $"Key {startKey} → {nativeKey} <color={GraphHud.Muted}>(now {nowKey}, {Fmt(semis, "+0.0;-0.0;0.0")} st)</color>" +
-                        $" · BPM {Fmt(CurrentClip.NativeBpm * plan.StartTempoRatio, "0.#")} → {Fmt(CurrentClip.NativeBpm, "0.#")}" +
+                        $" · BPM {Fmt(startBpm, "0.#")} → {Fmt(CurrentClip.NativeBpm, "0.#")}" +
                         $" <color={GraphHud.Muted}>(now {Fmt(bpm, "0.0")})</color>";
             }
             morph += $" · beat {Fmt(into, "0.0")}/{Fmt(length, "0")}";

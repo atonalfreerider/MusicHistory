@@ -20,6 +20,11 @@ namespace MusicHistory.Audio
         void SetTranspose(double semitones);
         /// <summary>Note-off for every sounding voice (release stage, not a hard cut).</summary>
         void ReleaseAll();
+        /// <summary>
+        /// Stops every voice at once, sustain-pedal-held ones included, without touching the
+        /// channel state (programs, controllers, pedal). Used after a fade to silence.
+        /// </summary>
+        void SilenceAll();
         /// <summary>Renders <paramref name="count"/> frames into the two buffers (overwriting them).</summary>
         void Render(float[] left, float[] right, int offset, int count);
         int ActiveVoices { get; }

@@ -13,7 +13,9 @@ namespace MusicHistory.Audio
 {
     /// <summary>
     /// The walkthrough's synthesizer: plays <see cref="SongClip"/> excerpts through MeltySynth
-    /// (General MIDI SoundFont) with the key/BPM morph of <see cref="Morph.Plan"/>.
+    /// (General MIDI SoundFont) with the key/BPM morph of <see cref="Morph.Plan"/>. The morph starts
+    /// at the tempo actually heard: the mean tempo the previous clip played over its last bar
+    /// (<see cref="HandoffTempo"/>), against this file's own tempo over the excerpt's first bar.
     ///
     /// Rendering happens in <see cref="OnAudioFilterRead"/> on Unity's audio thread, kept alive by
     /// a silent looping clip on the required AudioSource; that thread only runs the
@@ -30,7 +32,7 @@ namespace MusicHistory.Audio
     [RequireComponent(typeof(AudioSource))]
     [DisallowMultipleComponent]
     [DefaultExecutionOrder(-100)]   // raise Finished before the director's Update in the same frame
-    public sealed class SongPlayer : MonoBehaviour, ISongPlayer
+    public sealed class SongPlayer : MonoBehaviour, ISongPlayer, IMorphReadout
     {
         public const string DefaultSoundFontName = "MS_Basic.sf2";
 
@@ -40,7 +42,7 @@ namespace MusicHistory.Audio
         [SerializeField, Tooltip("Bars over which a clip glides from the previous song's key/BPM to its own.")]
         float morphBars = 4f;
 
-        [SerializeField, Tooltip("Play the normalized files (C major / A minor, 120 BPM) without morphing.")]
+        [SerializeField, Tooltip("Play the normalized files (graph_meta target_key / target_bpm) without morphing.")]
         bool applesToApples;
 
         [Tooltip("BPM of the normalized files (graph_meta target_bpm); used when a clip has no normalized file.")]
@@ -93,6 +95,29 @@ namespace MusicHistory.Audio
         public double CurrentSemitones => semitoneOffset + semitones;
         public double CurrentBpm => bpm;
 
+        /// <summary>
+        /// The plan the current clip plays with. Until its MIDI is parsed this is a provisional
+        /// plan against the file's median BPM; then the job's own plan (against its first-bar tempo).
+        /// </summary>
+        public MorphPlan CurrentPlan
+        {
+            get
+            {
+                PlaybackJob? built = Volatile.Read(ref builtJob);
+                return built != null && built.Id == jobId ? built.Plan : currentPlan;
+            }
+        }
+
+        /// <summary>BPM at the current clip's first beat under <see cref="CurrentPlan"/> (the heard tempo, folded).</summary>
+        public double PlanStartBpm
+        {
+            get
+            {
+                PlaybackJob? built = Volatile.Read(ref builtJob);
+                return built != null && built.Id == jobId ? built.StartBpm : startBpm;
+            }
+        }
+
         /// <summary>The SoundFont file in use (null while loading or with the sine fallback).</summary>
         public string? LoadedSoundFont { get; private set; }
         public bool UsingFallbackSynth { get; private set; }
@@ -114,8 +139,14 @@ namespace MusicHistory.Audio
         long requestCounter;                 // last id handed out (read by workers)
         volatile PlaybackJob? lastJob;       // re-posted after an audio device change
         PlaybackJob? pendingJob;             // built, waiting for the engine (CAS, newest id wins)
+        PlaybackJob? builtJob;               // newest job built (its plan is CurrentPlan)
         bool playing, paused, startedRaised, finishedRaised;
         double beat, semitones, bpm, semitoneOffset;
+        MorphPlan currentPlan = MorphPlan.None;
+        double startBpm;
+        // Last position the engine reported for a job (to measure a clip cut short by Stop).
+        long trackedJobId;
+        double trackedBeat;
 
         readonly ConcurrentQueue<string> warnings = new ConcurrentQueue<string>();
 
@@ -169,9 +200,14 @@ namespace MusicHistory.Audio
                 Debug.LogWarning("MusicHistory.Audio.SongPlayer: no audio callbacks (audio disabled or batchmode?); keeping the clip clock on the main thread, silently.");
             }
 
+            EngineState s = e.ReadState();
+            if (s.ActiveJobId != 0)
+            {
+                trackedJobId = s.ActiveJobId;
+                trackedBeat = s.Beat;
+            }
             SongClip? c = clip;
             if (c == null) return;
-            EngineState s = e.ReadState();
             long id = jobId;
             if (s.ActiveJobId == id || s.FinishedJobId == id)
             {
@@ -219,7 +255,16 @@ namespace MusicHistory.Audio
             }
             if (path == null) throw new FileNotFoundException($"MIDI file for '{next.Title}' not found", next.MidiPath);
 
-            MorphPlan plan = apples ? MorphPlan.None : Morph.Plan(previous!, next, morphBars);
+            // What the listener heard last, measured before this request replaces it. The final
+            // plan needs this file's tempo map (Build); until then a median-based one stands in.
+            double heard = !apples && previous != null ? HeardBpm(previous) : 0;
+            double entry = fixedBpm > 0 ? fixedBpm : next.NativeBpm > 0 ? next.NativeBpm : 120;
+            MorphPlan provisional = apples || previous == null
+                ? MorphPlan.None
+                : Morph.Plan(previous, next, morphBars, heard > 0 ? heard : previous.NativeBpm, entry);
+            DeckEngine? e = driver.Engine;
+            // A paused clip is replaced, not resumed: stop it before unpausing.
+            if (paused && e != null) e.PostStop();
             long id = Interlocked.Increment(ref requestCounter);
             jobId = id;
             clip = next;
@@ -228,12 +273,13 @@ namespace MusicHistory.Audio
             Paused = false;
             semitoneOffset = offset;
             beat = next.ExcerptStartBeat;
-            semitones = constantSemitones + plan.StartSemitones;
-            bpm = (fixedBpm > 0 ? fixedBpm : next.NativeBpm > 0 ? next.NativeBpm : 120) * plan.StartTempoRatio;
-            DeckEngine? e = driver.Engine;
+            currentPlan = provisional;
+            startBpm = entry * provisional.StartTempoRatio;
+            semitones = constantSemitones + provisional.StartSemitones;
+            bpm = startBpm;
             if (e != null) e.LatestRequestId = id;
 
-            var request = new Request(id, next, path, plan, constantSemitones, fixedBpm, previous != null);
+            var request = new Request(id, next, previous, path, apples, morphBars, heard, constantSemitones, fixedBpm);
             MidiSong? cached = FromCache(path);
             if (cached != null) Submit(Build(request, cached));
             else Task.Run(() => Submit(Build(request, LoadSong(request))));
@@ -244,14 +290,39 @@ namespace MusicHistory.Audio
             long id = Interlocked.Increment(ref requestCounter);
             jobId = id;
             playing = false;
-            Paused = false;
+            currentPlan = MorphPlan.None;
+            startBpm = 0;
             DeckEngine? e = driver.Engine;
             if (e != null)
             {
                 e.LatestRequestId = id;
-                e.PostStop();
+                e.PostStop();   // before unpausing, so a paused clip never resumes on its way out
             }
+            Paused = false;
         }
+
+        /// <summary>
+        /// Mean tempo <paramref name="previous"/> played over the last bar it actually played (to its
+        /// end, or to where it was cut), when it was this player's last job; 0 = unknown.
+        /// </summary>
+        double HeardBpm(SongClip previous)
+        {
+            PlaybackJob? last = lastJob;
+            DeckEngine? e = driver.Engine;
+            if (last == null || e == null || !SameClip(last.Tag as SongClip, previous)) return 0;
+            EngineState s = e.ReadState();
+            double reached;
+            if (s.ActiveJobId == last.Id) reached = s.Beat;                  // still playing (or waiting to start)
+            else if (s.FinishedJobId == last.Id) reached = last.EndBeat;     // ended naturally
+            else if (trackedJobId == last.Id) reached = trackedBeat;         // cut short by Stop
+            else return 0;
+            return HandoffTempo.HeardBpm(last, reached);
+        }
+
+        static bool SameClip(SongClip? a, SongClip? b) =>
+            ReferenceEquals(a, b) ||
+            (a != null && b != null && a.NodeId != 0 && a.NodeId == b.NodeId &&
+             a.ExcerptStartBeat == b.ExcerptStartBeat && a.ExcerptEndBeat == b.ExcerptEndBeat);
 
         // ------------------------------------------------------------------ jobs
 
@@ -259,27 +330,34 @@ namespace MusicHistory.Audio
         {
             public readonly long Id;
             public readonly SongClip Clip;
+            public readonly SongClip? Previous;
             public readonly string Path;
-            public readonly MorphPlan Plan;
+            public readonly bool ApplesToApples;
+            public readonly double MorphBars, HeardBpm;
             public readonly double ConstantSemitones, FixedBpm;
-            public readonly bool Align;
 
-            public Request(long id, SongClip clip, string path, MorphPlan plan, double constantSemitones, double fixedBpm, bool align)
+            public Request(long id, SongClip clip, SongClip? previous, string path, bool applesToApples, double morphBars,
+                           double heardBpm, double constantSemitones, double fixedBpm)
             {
                 Id = id;
                 Clip = clip;
+                Previous = previous;
                 Path = path;
-                Plan = plan;
+                ApplesToApples = applesToApples;
+                MorphBars = morphBars;
+                HeardBpm = heardBpm;
                 ConstantSemitones = constantSemitones;
                 FixedBpm = fixedBpm;
-                Align = align;
             }
         }
 
+        /// <summary>Main thread or worker: the excerpt and the plan against this file's own tempo map.</summary>
         static PlaybackJob Build(Request r, MidiSong song)
         {
             ExcerptEvents excerpt = ExcerptBuilder.Build(song, r.Clip.ExcerptStartBeat, r.Clip.ExcerptEndBeat);
-            return new PlaybackJob(r.Id, excerpt, song.Tempo, r.Plan, r.Clip.BeatsPerBar, r.Align, r.ConstantSemitones, r.FixedBpm, r.Clip);
+            MorphPlan plan = r.ApplesToApples ? MorphPlan.None : HandoffTempo.Plan(r.Previous, r.Clip, r.MorphBars, r.HeardBpm, song.Tempo);
+            return new PlaybackJob(r.Id, excerpt, song.Tempo, plan, r.Clip.BeatsPerBar, r.Previous != null,
+                                   r.ConstantSemitones, r.FixedBpm, r.Clip);
         }
 
         MidiSong LoadSong(Request r)
@@ -304,6 +382,12 @@ namespace MusicHistory.Audio
         /// <summary>Main thread or worker: park the job (a newer one is never replaced by an older one), then post if possible.</summary>
         void Submit(PlaybackJob job)
         {
+            while (true)
+            {
+                PlaybackJob? built = Volatile.Read(ref builtJob);
+                if (built != null && built.Id >= job.Id) break;
+                if (Interlocked.CompareExchange(ref builtJob, job, built) == built) break;
+            }
             while (true)
             {
                 PlaybackJob? current = Volatile.Read(ref pendingJob);

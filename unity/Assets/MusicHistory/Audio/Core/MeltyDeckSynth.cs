@@ -157,6 +157,8 @@ namespace MusicHistory.Audio
 
         public void ReleaseAll() => synth.NoteOffAll(false);
 
+        public void SilenceAll() => synth.NoteOffAll(true);
+
         public void Render(float[] left, float[] right, int offset, int count) =>
             synth.Render(left.AsSpan(offset, count), right.AsSpan(offset, count));
     }
