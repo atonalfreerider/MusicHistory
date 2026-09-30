@@ -123,3 +123,95 @@ def test_lines_keep_their_downbeats_when_bar_lines_are_off_the_absolute_grid():
     assert bass.met[:2] == [0, 1] and bass.met.count(0) == 40
     # Without a meter (or on the absolute grid) quantization is unchanged.
     assert m.quantize(off) == 0.25 and m.quantize(4.51, M44) == 4.5
+
+
+# --------------------------------------------------------------------------- analyze v2
+def test_bass_line_keeps_the_repeated_notes_of_a_riff():
+    """Under Pressure: six Ds then an A every bar (beats 0, .5, 1, 1.5, 1.75, 2 and 2.5). The
+    stored bass keeps every repeated note with its onset; grace notes (also a same-pitch double
+    strike) are still removed and onsets still quantized."""
+    riff = [(0.0, 38), (0.5, 38), (1.0, 38), (1.5, 38), (1.75, 38), (2.0, 38), (2.5, 33)]
+    notes = []
+    for b in range(16):
+        notes += [n(4 * b + t + (0.02 if b == 5 and t == 1.0 else 0.0), 0.25, p, 2, 2, 0.9) for t, p in riff]
+    notes.append(n(4 * 3 + 0.9375, 0.05, 37, 2, 2, 0.9))      # grace note a semitone below beat 1 of bar 3
+    notes.append(n(4 * 7 + 1.9375, 0.05, 38, 2, 2, 0.9))      # double strike just before beat 2 of bar 7
+    bass = m.select_bass(notes, {"tracks": [{"index": 2, "role": "bass", "role_src": "program", "n_notes": 114}]},
+                         lambda b: 0, M44)
+    assert len(bass) == 16 * 7
+    assert bass.pitches[:7] == [38, 38, 38, 38, 38, 38, 33]
+    assert bass.onsets[:7] == [0.0, 0.5, 1.0, 1.5, 1.75, 2.0, 2.5]
+    assert bass.onsets[5 * 7 + 2] == 21.0                        # 21.02 quantized to the grid
+    assert bass.durs[:6] == [0.5, 0.5, 0.5, 0.25, 0.25, 0.5]     # each repeat lasts until the next one
+    assert all(bass.pitches[7 * b:7 * b + 7] == [38] * 6 + [33] for b in range(16))
+
+
+def _lane_song():
+    """Tune (track 3), bass (track 2), a pad repeating one chord (track 1), a strings figure
+    (track 4), a drone (track 5), an octave doubling of the tune (track 6), a sparse lane (track 7)."""
+    notes = _song()
+    for b in range(40):
+        t = b * 4
+        notes += [n(t + k, 1, 76 + (2 * k + b) % 5, 4, 4, 0.7) for k in range(0, 4, 2)]   # strings: 80 notes
+        notes += [n(t + k, 1, 48, 5, 5, 0.5) for k in range(4)]                           # drone: 160 notes, 1 pc
+        notes += [n(t + k, 1, 84 + (k * 2 + b) % 7, 6, 6, 0.6) for k in range(4)]        # tune an octave up
+    notes += [n(4 * b, 1, 70 + b % 3, 7, 7, 0.5) for b in range(20)]                       # 20 notes: too few
+    return notes
+
+
+def test_select_lanes_stores_the_other_melodic_lanes():
+    notes = _lane_song()
+    mel = m.select_melody(notes, None, lambda b: 0, M44)
+    bass = m.select_bass(notes, None, lambda b: 0, M44, exclude=(mel.track, mel.channel))
+    assert (mel.track, bass.track) == (3, 2)
+    used = m.source_lanes(mel, notes, None) | m.source_lanes(bass, notes, None)
+    assert used == {(3, 3), (2, 2)}
+    lanes = m.select_lanes(notes, lambda b: 0, M44, exclude=used, kept=(mel, bass))
+    # Only the strings figure: the pad's top voice never moves (one pitch class), the drone has
+    # one pitch class, track 6 doubles the tune, track 7 has 20 notes.
+    assert [(ln.track, ln.channel) for ln in lanes] == [(4, 4)]
+    assert all(ln.method == "lane" for ln in lanes)
+    strings = lanes[0]
+    assert len(strings) == 80 and strings.pitches[0] == 76 and strings.onsets[:2] == [0.0, 2.0]
+    assert strings.met[:2] == [0, 1] and strings.durs[:2] == [2.0, 2.0]
+    assert m.lane_role(4, 4) == "lane:4:4"
+    # Lanes are normalized like the lead line: every pitch moves with the region shift.
+    shifted = m.select_lanes(notes, lambda b: 3, M44, exclude=used, kept=(mel, bass))
+    assert [p - 3 for p in shifted[0].pitches] == strings.pitches
+    # Without the kept lines, the larger of the tune and its octave doubling is kept, not both.
+    lanes = [(ln.track, ln.channel) for ln in m.select_lanes(notes, lambda b: 0, M44, exclude={(2, 2)})]
+    assert lanes == [(3, 3), (4, 4)]
+
+
+def test_melodic_needs_three_pitch_classes_and_some_changes():
+    def line(pitches):
+        return m.Line([float(i) for i in range(len(pitches))], [1.0] * len(pitches), pitches, [1] * len(pitches),
+                      1, 1, "lane", 0.0)
+    assert not m.melodic(line([48, 55] * 20))                       # two-note pump
+    assert not m.melodic(line([60, 64, 67] * 5))                    # 15 notes: too short
+    assert m.melodic(line([60] * 7 + [67] + [60] * 7 + [64] + [60] * 7 + [67] + [60] * 7 + [64] + [62] * 8))
+    assert not m.melodic(line([60] * 30 + [62, 64, 60]))           # three changes only: a drone
+
+
+def test_source_lanes_by_selection_method():
+    notes = [n(b, 1, 70, 1, 1) for b in range(40)] + [n(b, 1, 74, 1, 2) for b in range(40)] + \
+            [n(b, 1, 40, 2, 3) for b in range(40)]
+    named = m.Line([0.0], [1.0], [70], [0], 1, 1, "name", 0.9)
+    assert m.source_lanes(named, notes, None) == {(1, 1), (1, 2)}
+    classified = m.Line([0.0], [1.0], [70], [0], 1, 2, "classifier", 0.5)
+    assert m.source_lanes(classified, notes, None) == {(1, 2)}
+    feats = {"tracks": [{"index": 1, "role": "bass", "role_src": "program", "n_notes": 80}]}
+    bass = m.Line([0.0], [1.0], [70], [0], 1, 1, "bass", 1.0)
+    assert m.source_lanes(bass, notes, feats) == {(1, 1), (1, 2)}   # a named bass track: all its channels
+    assert m.source_lanes(bass, notes, None) == {(1, 1)}            # the lowest-lane rule: that lane
+    assert m.source_lanes(m.Line([], [], [], [], None, None, "skyline", 0.2), notes, None) == set()
+    assert m.source_lanes(None, notes, None) == set()
+
+
+def test_register_tests_can_use_their_own_frame():
+    """The lane choice uses ``register_at`` (extract passes the ensemble home's one shift), so a
+    region cleanup that moves the song down a fifth does not drop a lead line written low."""
+    notes = [[x[0], x[1], x[2] - 21 if x[3] == 3 else x[2], x[3], x[4], x[5]] for x in _song()]   # tune at ~53
+    assert m.select_melody(notes, None, lambda b: -5, M44).track != 3                 # 48 < 50: gated out
+    line = m.select_melody(notes, None, lambda b: -5, M44, register_at=lambda b: 0)
+    assert (line.track, line.pitches[0]) == (3, 72 - 21 - 5)                          # built with shift_at

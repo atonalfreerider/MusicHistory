@@ -13,14 +13,28 @@ Lead selection, first that succeeds (DESIGN.md §7):
    of onsets that start a chord of 3+ notes (a tune doubled in thirds is still a tune);
 4. **skyline** over every pitched note at (normalized) pitch >= 55.
 
-Register tests use *normalized* pitches (native + region shift), so the choice does not
-depend on the key the file was written in: a transposed copy picks the same lane.
+Register tests use *normalized* pitches (native + one shift for the whole song: the
+ensemble home key's, see ``extract``), so the choice depends neither on the key the file was
+written in (a transposed copy picks the same lane) nor on how the key regions were cleaned.
 
-The chosen notes become one line: skyline (highest note per onset, cut at the next onset),
-grace notes removed (< 1/8 beat before a note within 2 semitones), onsets quantized to
-1/12 beat (16ths and triplets) of their bar's grid, rests absorbed (each note lasts until
-the next onset).
-The bass line is the lowest-note skyline of the bass lane, cleaned the same way.
+What a stored line (``melody_line``) contains, for every role:
+
+* one note per onset: the highest note sounding at that onset (the lowest for the bass),
+  cut at the next onset;
+* grace notes removed: a note shorter than 1/8 beat that is followed within 1/8 beat by a
+  note at most 2 semitones away (also the same pitch: a double strike, not a repeat);
+* onsets quantized to 1/12 beat (16ths and triplets) of their bar's grid; two notes in one
+  slot keep the higher (bass: the lower);
+* rests absorbed: each note lasts until the next onset (the last note keeps its length);
+* **repeated notes kept**: consecutive notes of the same pitch are separate entries with
+  their own onsets (Under Pressure's riff, six Ds then an A per bar, is seven notes a bar),
+  so a riff is representable; consumers that want pitch changes collapse repeats themselves;
+* pitches are MIDI pitch + the shift of the key region the note starts in (normalized).
+
+Roles: ``melody`` (the lead line above), ``bass`` (the lowest-note skyline of the bass lane)
+and ``lane:<track>:<channel>`` (``select_lanes``: the highest-note skyline of every other
+pitched lane with at least 32 notes and some melodic content, so a borrowed figure played by
+strings or a guitar can be matched too).
 """
 
 from __future__ import annotations
@@ -40,6 +54,11 @@ NAME_MIN_NOTES = 32
 CLASSIFIER_MIN_NOTES = 64
 CLASSIFIER_MAX_POLY = 0.3     # share of onsets starting a >= 3-note chord
 CLASSIFIER_MIN_PITCH = 50.0   # normalized mean pitch; a lead line below D3 is a bass part
+LANE_MIN_NOTES = 32           # notes a lane needs to be stored as a lane line
+LANE_MIN_LINE = 16            # notes its cleaned skyline needs
+LANE_MIN_PCS = 3              # distinct pitch classes (a pedal or a two-note pump is not melodic)
+LANE_MIN_CHANGES = 8          # pitch changes (a drone is not melodic; a strummed part or a riff is)
+LANE_DUPLICATE = 0.9          # share of (onset, pitch class) already in a kept line: a doubling
 
 Note = list  # [beat, length, pitch, track, channel, velocity]
 Lane = tuple[int, int]  # (track, channel)
@@ -239,7 +258,10 @@ def classify(stats: list[LaneStats], programs: dict[int, int]) -> list[tuple[flo
 
 
 def select_melody(notes: list[Note], features: dict | None, shift_at: Callable[[float], int],
-                  meter: Meter) -> Line | None:
+                  meter: Meter, *, register_at: Callable[[float], int] | None = None) -> Line | None:
+    """The lead line (module docstring). ``register_at`` is the shift the register tests use
+    (default ``shift_at``); the line itself is always built with ``shift_at``."""
+    reg = register_at or shift_at
     pitched = [n for n in notes if n[4] != DRUMS]
     if not pitched:
         return None
@@ -254,7 +276,7 @@ def select_melody(notes: list[Note], features: dict | None, shift_at: Callable[[
                 return build_line(tn, shift_at, meter, highest=True, track=track, channel=_main_channel(tn),
                                   method=method, confidence=conf)
     span = max(n[0] + n[1] for n in notes) - min(n[0] for n in notes)
-    stats = [lane_stats(k, v, span, shift_at) for k, v in sorted(lanes(pitched).items())]
+    stats = [lane_stats(k, v, span, reg) for k, v in sorted(lanes(pitched).items())]
     programs = {int(t["index"]): int(t.get("program", -1)) for t in (features or {}).get("tracks") or ()}
     scored = classify(stats, programs)
     if scored:
@@ -263,17 +285,19 @@ def select_melody(notes: list[Note], features: dict | None, shift_at: Callable[[
         lane = best[1].lane
         return build_line(lanes(pitched)[lane], shift_at, meter, highest=True, track=lane[0], channel=lane[1],
                           method="classifier", confidence=0.45 + min(0.35, 0.35 * margin / 1.5))
-    high = [n for n in pitched if n[2] + shift_at(n[0]) >= 55]
+    high = [n for n in pitched if n[2] + reg(n[0]) >= 55]
     if not high:
         return None
     return build_line(high, shift_at, meter, highest=True, track=None, channel=None, method="skyline", confidence=0.2)
 
 
 def select_bass(notes: list[Note], features: dict | None, shift_at: Callable[[float], int], meter: Meter,
-                exclude: Lane | None = None) -> Line | None:
+                exclude: Lane | None = None, *, register_at: Callable[[float], int] | None = None) -> Line | None:
     """Lowest-note skyline of the bass lane: a track the sanitizer called ``bass`` (by name
-    or GM program), else the lowest pitched lane (>= 32 notes, normalized mean < 60)."""
-    lane_notes = bass_notes(notes, features, shift_at, exclude)
+    or GM program), else the lowest pitched lane (>= 32 notes, normalized mean < 60; the
+    register uses ``register_at``, default ``shift_at``). Repeated notes are kept: a riff such
+    as Under Pressure's (six Ds then an A, every bar) is stored note for note."""
+    lane_notes = bass_notes(notes, features, register_at or shift_at, exclude)
     if lane_notes is None:
         return None
     tn, track, channel = lane_notes
@@ -298,3 +322,63 @@ def bass_notes(notes: list[Note], features: dict | None, shift_at: Callable[[flo
     if best is None or (shift_at is not None and best[0] >= 60):
         return None
     return best[2], best[1][0], best[1][1]
+
+
+# --------------------------------------------------------------------------- other lanes
+def lane_role(track: int, channel: int) -> str:
+    """``melody_line.role`` of a lane line."""
+    return f"lane:{int(track)}:{int(channel)}"
+
+
+def source_lanes(line: Line | None, notes: list[Note], features: dict | None) -> set[Lane]:
+    """The lanes a melody or bass line was built from: every channel of a track chosen by name
+    (a named bass track, a vocal, lead or lyric track), else the one lane the classifier or the
+    lowest-lane rule picked. Nothing for the all-lanes skyline fallback."""
+    if line is None or line.track is None:
+        return set()
+    if line.method == "classifier":
+        return {(line.track, line.channel)}
+    named_bass = {int(t["index"]) for t in _named(features, ("bass",), name_only=False)}
+    if line.method in ("name", "lyric_timing") or (line.method == "bass" and line.track in named_bass):
+        return {lane for lane in lanes(notes) if lane[0] == line.track}
+    return {(line.track, line.channel)}
+
+
+def melodic(line: Line) -> bool:
+    """Some melodic content: enough notes, at least three pitch classes and a few pitch changes.
+    A pedal, a drone or a two-note pump is not a line; a strummed part's top voice (it carries
+    the progression) and a repeated-note riff are."""
+    if len(line) < LANE_MIN_LINE or len({p % 12 for p in line.pitches}) < LANE_MIN_PCS:
+        return False
+    return sum(1 for a, b in zip(line.pitches, line.pitches[1:]) if a != b) >= LANE_MIN_CHANGES
+
+
+def _grid_keys(line: Line) -> set[tuple[float, int]]:
+    return {(round(o, 3), p % 12) for o, p in zip(line.onsets, line.pitches)}
+
+
+def select_lanes(notes: list[Note], shift_at: Callable[[float], int], meter: Meter, *,
+                 exclude: set[Lane] | frozenset[Lane] = frozenset(),
+                 kept: tuple[Line | None, ...] = ()) -> list[Line]:
+    """Every other pitched lane as a line: the highest-note skyline of each lane with at least
+    ``LANE_MIN_NOTES`` notes that is not in ``exclude`` (the melody's and the bass's lanes),
+    cleaned and normalized exactly like the lead line (``build_line``), kept when it is
+    ``melodic`` and not a doubling (``LANE_DUPLICATE`` of its onset/pitch-class pairs already in
+    a ``kept`` line or a larger lane). Lanes are tried largest first; the result is ordered by
+    (track, channel). ``method`` is ``'lane'``."""
+    seen = [_grid_keys(ln) for ln in kept if ln is not None and len(ln)]
+    out: list[Line] = []
+    by_lane = lanes(notes)
+    for lane, ln in sorted(by_lane.items(), key=lambda kv: (-len(kv[1]), kv[0])):
+        if lane in exclude or len(ln) < LANE_MIN_NOTES:
+            continue
+        line = build_line(ln, shift_at, meter, highest=True, track=lane[0], channel=lane[1], method="lane",
+                          confidence=0.0)
+        if not melodic(line):
+            continue
+        keys = _grid_keys(line)
+        if any(len(keys & s) >= LANE_DUPLICATE * len(keys) for s in seen):
+            continue
+        seen.append(keys)
+        out.append(line)
+    return sorted(out, key=lambda x: (x.track, x.channel))

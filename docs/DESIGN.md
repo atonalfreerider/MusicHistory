@@ -261,7 +261,19 @@ tonic and mode — Resonance chord-Viterbi home region (duration-weighted mode o
 counted double) 0.25, Krumhansl–Kessler 0.10, original MIDI key signature (only if not
 C major) 0.20, root of the final section's last chord +0.1. Relative-major/minor
 disagreement is harmless; a fifth apart sets `key_ambiguous_fifth`; anything else sets
-`key_review`. Key regions come from Resonance `key_changes` (≥ 8 bars). Region shift
+`key_review`. Key regions come from Resonance `key_changes` (≥ 8 bars), cleaned with pitch
+evidence (analyze v2, `key.resolve`): the evidence for key a over a related key b is the
+duration of the notes whose pitch class only a's diatonic collection contains against those
+only b's contains (≥ 1 % of the notes, ≥ 2×, and ≤ 2 % on the other side for collections one
+accidental apart; a minor key's leading tone never counts against it). A run in Resonance's
+home key keeps it only when its notes favour it over the ensemble home; a run whose notes
+favour a related key some source proposed (a fifth away, the parallel mode, one accidental
+away) and whose tonic fits about as well takes it; the home is re-decided when a key a fifth
+(or one accidental) away then covers most beats; a region a fifth from, the relative or
+parallel mode of, or one accidental from the home or a neighbouring region merges into it
+unless long and well supported (its notes favour it and ≥ 8 bars, or they favour neither key
+and ≥ 16 bars; relative modes by a profile-correlation margin). Real lifts (a whole step)
+are never merged. A re-decided home sets `key_ambiguous_fifth`. Region shift
 `((target − tonic + 5) mod 12) − 5` with target 0 (major) / 9 (minor, relative) or 0
 (parallel), in [−5, 6].
 
@@ -270,7 +282,14 @@ encodings in `db.py`), loops (`loop`: repeating families with 2–8 chord change
 period, Booth least rotation → `cycle_id`, phase, rhythm signature), melody and bass lines
 (`melody_line`): lead track by name → karaoke lyric timing → per-track classifier →
 skyline fallback; skyline of the chosen track; grace notes removed, onsets quantized to
-1/12 beat, rests absorbed; pitches shifted per key region; metric class from `measures`.
+1/12 beat, rests absorbed; **repeated notes kept** (a riff such as Under Pressure's six Ds and
+an A is seven notes a bar); pitches shifted per key region; metric class from `measures`.
+The lane choice's register tests use one shift for the whole song (the ensemble home's), so
+the region cleanup never changes which lane is the lead or the bass. Role
+`lane:<track>:<channel>`: the highest-note skyline of every other pitched lane with ≥ 32 notes
+and some melodic content (≥ 16 line notes, ≥ 3 pitch classes, ≥ 8 pitch changes), cleaned and
+normalized the same way, doublings of a kept line (≥ 90 % of its onset/pitch-class pairs)
+skipped, so influence can match a lead line against any lane.
 `interval_entropy` gates the melody channel (< 2.0 bits halves it, < 1.5 drops it).
 
 **Playback facts** in `song`: `native_bpm` (beat-weighted median tempo, ignoring
@@ -447,7 +466,9 @@ These came out of real runs and calibration; each stage's README has the detail.
   graph lists them in `graph_meta.validation_extras`.
 * **analyze** slims carry `slim_version` and `midi_sha256` (reuse check); `keyfree` is L1
   only; `melody_line.durs` run to the next onset; a key signature votes for both relative
-  keys of its pitch collection.
+  keys of its pitch collection. Analyze v2: evidence-based key-region cleanup (§7; thresholds
+  tuned on the transcription benchmark), `melody_line` role `lane:<track>:<channel>` rows
+  (≈ 4.5 per song) beside `melody` and `bass`.
 * **influence** (`influence/README.md`, "Calibration"): Stouffer Z over counting channels
   only (loop counts only beside melody, bass or chord), σ floor 4 bits, commonplace cap (n-grams
   in > 2 % of songs score ≤ 8 bits per channel per pair), loop null from random earlier songs'

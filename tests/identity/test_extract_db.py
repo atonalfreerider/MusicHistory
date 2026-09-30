@@ -73,13 +73,15 @@ def test_to_db_writes_and_replaces_rows(tmp_path):
     assert conn.execute("SELECT COUNT(*) FROM key_region WHERE work_id='Q1'").fetchone()[0] == 1
     assert conn.execute("SELECT cycle_id FROM loop WHERE work_id='Q1'").fetchone()[0] == "0.21.28.15"
     roles = {r[0] for r in conn.execute("SELECT role FROM melody_line WHERE work_id='Q1'")}
-    assert roles == {"melody", "bass"}
+    # Analyze v2 also stores every other pitched lane with melodic content: here the chord
+    # track's top voice (track 1, channel 1: 32 triads whose fifth follows i-VI-III-VII).
+    assert roles == {"melody", "bass", "lane:1:1"}
     mel = conn.execute("SELECT * FROM melody_line WHERE work_id='Q1' AND role='melody'").fetchone()
     assert len(json.loads(mel["onsets"])) == len(json.loads(mel["pitches"])) == len(json.loads(mel["met"]))
     # Re-running replaces instead of duplicating.
     ident.to_db(conn, "Q1", midi_path="data/songs/Q1/score.mid")
     assert conn.execute("SELECT COUNT(*) FROM chord_seq WHERE work_id='Q1'").fetchone()[0] == 7
-    assert conn.execute("SELECT COUNT(*) FROM melody_line WHERE work_id='Q1'").fetchone()[0] == 2
+    assert conn.execute("SELECT COUNT(*) FROM melody_line WHERE work_id='Q1'").fetchone()[0] == 3
 
 
 def test_no_text_from_the_file_reaches_the_identity():
@@ -87,3 +89,46 @@ def test_no_text_from_the_file_reaches_the_identity():
     ident = extract.extract(s, None)
     blob = json.dumps(ident.summary) + (ident.main_loop or "") + ident.form_grammar
     assert "Lyrics" not in blob and "lyric" not in blob.lower()
+
+
+def shape_of_you_like():
+    """C#m F#m A B, one chord a bar (pad track 1, bass track 2) and the E F# G# F# hook on track 3,
+    92 bars; Resonance's runs call two thirds of it F# minor (it never plays a D, but plays D#)."""
+    loop = [(1, "m"), (6, "m"), (9, ""), (11, "")]
+    chords, notes = [], []
+    for b in range(92):
+        root, q = loop[b % 4]
+        third = 3 if q == "m" else 4
+        chords.append([b * 4.0, b * 4.0 + 4, root, q])
+        notes += [[b * 4.0, 4.0, 60 + (root + x) % 12, 1, 1, 0.6] for x in (0, third, 7)]
+        notes.append([b * 4.0, 4.0, 36 + root, 2, 2, 0.9])
+        notes += [[b * 4.0 + i, 1.0, p, 3, 3, 1.0] for i, p in enumerate((64, 66, 68, 66))]
+    runs = [[0.0, 108.0, 6, True], [108.0, 200.0, 1, True], [200.0, 268.0, 6, True], [268.0, 300.0, 1, False],
+            [300.0, 368.0, 6, True]]
+    return slim(chords, notes, end_beat=368.0, key_runs=runs)
+
+
+def test_extract_cleans_regions_and_rehomes_on_pitch_evidence():
+    ident = extract.extract(shape_of_you_like(), None)
+    assert ident.key_votes["resonance"] == [6, "minor"]                  # Resonance's home was F# minor
+    assert (ident.tonic_pc, ident.mode, ident.key_name) == (1, "minor", "C# minor")
+    assert ident.key_ambiguous_fifth and ident.norm_shift == -4 and ident.shift_parallel == -1
+    assert [(r.start, r.end, r.shift) for r in ident.regions] == [(0.0, 368.0, -4)]
+    assert ident.summary["key"] == "C# minor" and ident.summary["modulations"] == []
+    # The hook E F# G# F# is stored at the same degrees (C D E D) in every bar.
+    assert {tuple(ident.melody.pitches[i:i + 4]) for i in range(0, len(ident.melody), 4)} == {(60, 62, 64, 62)}
+    assert ident.melody.track == 3 and ident.bass.track == 2
+
+
+def test_extract_stores_lanes_normalized_like_the_lead(tmp_path):
+    s = minor_song(tonic=4)                                              # E minor: shift +5
+    ident = extract.extract(s, None)
+    assert [(ln.track, ln.channel, ln.method) for ln in ident.lanes] == [(1, 1, "lane")]
+    pad = ident.lanes[0]
+    assert len(pad) == 32 and pad.pitches[:4] == [48 + (4 + o) % 12 + 7 + 5 for o in (0, 8, 3, 10)]
+    assert [r for r, _ in ident.lines()] == ["melody", "bass", "lane:1:1"]
+    conn = db.connect(tmp_path / "p.sqlite")
+    ident.to_db(conn, "Q2", midi_path="data/songs/Q2/score.mid")
+    row = conn.execute("SELECT * FROM melody_line WHERE work_id='Q2' AND role='lane:1:1'").fetchone()
+    assert json.loads(row["pitches"]) == pad.pitches and json.loads(row["onsets"]) == pad.onsets
+    assert json.loads(row["met"])[:2] == [0, 0]

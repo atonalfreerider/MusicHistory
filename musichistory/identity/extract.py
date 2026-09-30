@@ -65,6 +65,12 @@ class SongIdentity:
     resonance_commit: str
     main_loop: str | None
     summary: dict = field(default_factory=dict)
+    lanes: list[Line] = field(default_factory=list)   # other pitched lanes (melody_line role 'lane:<track>:<channel>')
+
+    def lines(self) -> list[tuple[str, Line]]:
+        """Every stored line with its ``melody_line.role``: melody, bass, then the lanes."""
+        out = [(role, ln) for role, ln in (("melody", self.melody), ("bass", self.bass)) if ln is not None and len(ln)]
+        return out + [(melmod.lane_role(ln.track, ln.channel), ln) for ln in self.lanes if len(ln)]
 
     def tokens(self, kind: str = "chg", level: str = "L1") -> list[int]:
         seq = self.chords.get((kind, level))
@@ -117,7 +123,7 @@ class SongIdentity:
         conn.executemany(
             "INSERT OR REPLACE INTO melody_line(work_id, role, onsets, durs, pitches, met) VALUES (?,?,?,?,?,?)",
             [(work_id, role, _json(ln.onsets), _json(ln.durs), _json(ln.pitches), _json(ln.met))
-             for role, ln in (("melody", self.melody), ("bass", self.bass)) if ln is not None and len(ln)])
+             for role, ln in self.lines()])
         if commit:
             conn.commit()
 
@@ -211,8 +217,19 @@ def extract(slim: dict, features: dict | None = None, *, normalization: str | No
         "final_chord": keymod.final_chord_vote(slim),
     }
     est = keymod.ensemble(votes)
-    regs = keymod.regions(slim.get("key_runs") or [], est.key, resonance, end_beat, beats_per_bar=bpb,
-                          normalization=normalization)
+    # Register tests of the lane choice (a lead line above the bass register, the bass lane)
+    # use one shift for the whole song, the ensemble home's: a lane must not be chosen or
+    # dropped because the region cleanup below moved a stretch of the song by a fifth.
+    register_shift = keymod.shift_for(est.tonic, est.mode, normalization)
+
+    def register_at(_beat: float) -> int:
+        return register_shift
+
+    # Regions are cleaned with the notes' pitch evidence, which may also re-decide the home key.
+    home, regs = keymod.resolve(slim.get("key_runs") or [], est.key, resonance, end_beat, beats_per_bar=bpb,
+                                normalization=normalization, hist=keymod.note_histogram(notes),
+                                proposals=votes.values())
+    est = keymod.rehome(est, home)
     smap = ShiftMap(regs)
     shift_at = smap.shift_at
     minor_frame_tonic = 9 if normalization == "relative" else 0
@@ -223,9 +240,12 @@ def extract(slim: dict, features: dict | None = None, *, normalization: str | No
     loops = loopmod.from_slim(slim, shift_at, minor_frame_tonic=minor_frame_tonic)
 
     # Lines.
-    mel = melmod.select_melody(notes, features, shift_at, meter)
+    mel = melmod.select_melody(notes, features, shift_at, meter, register_at=register_at)
     exclude = (mel.track, mel.channel) if mel is not None and mel.track is not None else None
-    bass = melmod.select_bass(notes, features, shift_at, meter, exclude=exclude)
+    bass = melmod.select_bass(notes, features, shift_at, meter, exclude=exclude, register_at=register_at)
+    pitched = [n for n in notes if n[4] != melmod.DRUMS]
+    used = melmod.source_lanes(mel, pitched, features) | melmod.source_lanes(bass, pitched, features)
+    lane_lines = melmod.select_lanes(pitched, shift_at, meter, exclude=used, kept=(mel, bass))
 
     first_note = min((n[0] for n in notes), default=0.0)
     return SongIdentity(
@@ -241,4 +261,4 @@ def extract(slim: dict, features: dict | None = None, *, normalization: str | No
         end_beat=end_beat, style=slim.get("style") or "", form_grammar=slim.get("form_grammar") or "",
         resonance_commit=slim.get("resonance_commit") or "",
         main_loop=loopmod.main_loop(loops, est.mode == keymod.MINOR),
-        summary=summary(slim, est, regs, seqs[("chg", "L1")], loops, minor_frame_tonic))
+        summary=summary(slim, est, regs, seqs[("chg", "L1")], loops, minor_frame_tonic), lanes=lane_lines)
