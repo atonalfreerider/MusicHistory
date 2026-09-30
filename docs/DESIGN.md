@@ -150,7 +150,10 @@ artist is in `search_artists`. At most 12 candidates per work per source (best m
    sequencer_specific, and **all key signatures** (they mislead the analysis).
 5. Split type-0 files into one track per channel; rename every track `T<nn> <role>`
    (role from the name keyword or GM program family); move a drum track found on another
-   channel to channel 10 when its name says drums.
+   channel to channel 10 when its name says drums **and** its notes look like drums (at most
+   12 distinct keys, all within GM drum keys 27–87). GM pitched instrument names that contain
+   a drum or melody word (Percussive Organ, Steel Drums, Chromatic Percussion, Melodic Tom)
+   never count as drums or melody.
 6. Close hanging notes, drop a note-on at the final tick, pad `end_of_track` one beat past
    the last note-off.
 7. Save as SMF type 1, same PPQ: `data/candidates/<work_id>/<source>__<md5>.mid`.
@@ -378,6 +381,8 @@ CREATE TABLE song_node(
   normalized_midi_path TEXT,
   midi_source TEXT,
   excerpt_start_beat REAL NOT NULL, excerpt_end_beat REAL NOT NULL,
+  entry_tonic_pc INTEGER, entry_mode TEXT,          -- key region at excerpt_start_beat (NULL = home key)
+  exit_tonic_pc INTEGER, exit_mode TEXT,            -- key region just before excerpt_end_beat (NULL = home key)
   tree_parent_node INTEGER, tree_root_node INTEGER NOT NULL, tree_depth INTEGER NOT NULL,
   ref_count INTEGER NOT NULL, ref_norm REAL, katz REAL, descendants INTEGER NOT NULL,
   in_degree INTEGER NOT NULL, out_degree INTEGER NOT NULL,
@@ -411,6 +416,11 @@ Invariants: every non-root node has exactly one `kind='tree'` incoming edge, fro
 `tree_parent_node`; `time_value[source] < time_value[target]`; node ids ordered by time, so
 `source_node < target_node`.
 
+`graph_meta.normalization` / `target_bpm` come from the analyze stage (pipeline meta
+`analyze_normalization` / `analyze_target_bpm`, written only when every analyzed song used the
+same settings), never from the environment of the exporting process. Within-year ordering by
+`first_chart_week` applies only when both weeks fall in the songs' shared year.
+
 ## 10a. As built: refinements to §4–§10
 
 These came out of real runs and calibration; each stage's README has the detail.
@@ -424,8 +434,12 @@ These came out of real runs and calibration; each stage's README has the detail.
   stored with `src_work_id = dst_work_id`. Wikimedia throttles a User-Agent without contact
   details to 10 requests a minute (200 with one): set `MUSICHISTORY_CONTACT` to speed up a
   cold run.
-* **fetch** features add `n_bars`, `tracks[].role_src`, `first_beat`, `last_beat`. No raw
-  download is kept (it may contain lyrics); `--resanitize` re-extracts Lakh files only.
+* **fetch** features add `n_bars`, `tracks[].role_src`, `first_beat`, `last_beat`, and the
+  warning `drum_name_pitched_kept`. No raw download is kept (it may contain lyrics):
+  `--resanitize` re-extracts Lakh files and `--redownload-web` fetches web candidates again by
+  their stored URL (same politeness); both update rows in place, so `candidate_id` is stable.
+  Squashed filename matching uses `textnorm.squash_loose` ("-ing" read as "-in" anywhere, so
+  `BeegeesStayingAlive` matches "Stayin' Alive").
 * **select** analyzes only candidates whose sanitized bytes differ (identical files would
   inflate consensus) and caches slims in `data/analysis-work/<work_id>/c<candidate_id>/`.
   It also adds songs of known influence pairs that the ranked set left out as
@@ -462,10 +476,17 @@ These came out of real runs and calibration; each stage's README has the detail.
 * **Key/BPM morph** (`SongPlayer`): each song **starts in the key and BPM of the song
   played before it** and morphs to its native key and BPM over the first `morphBars`
   (default 4) bars of its excerpt (smoothstep), then plays natively and hands off to the
-  next song at a bar line. Transposition offset `o₀ = wrap(prevTonic − tonic)` in [−6, 5]
-  glides continuously to 0 (drums untransposed); tempo ratio starts at `P/N` — the previous
-  song's literal BPM — and glides to 1. Only when P and N are more than 0.8 octave apart is
-  P halved or doubled toward N (70 → 140 is half/double time, not a ramp).
+  next song at a bar line. "The song played before" is the song **heard** just before
+  (also after Previous or a restart), not the tour's previous step. Transposition offset
+  `o₀ = wrap(previous exit key − this entry key)` in [−6, 5] (§10 entry/exit keys, else the
+  home keys) glides continuously to 0 (drums untransposed). The tempo starts at the BPM the
+  listener actually heard over the previous excerpt's last bar — the ratio is taken against
+  this file's own tempo over its first excerpt bar, so the first beat plays at that BPM — and
+  glides to the file's own tempo. Only when the two are more than 0.8 octave apart is the
+  heard BPM halved or doubled (70 → 140 is half/double time, not a ramp). The director stops
+  the player only when switching players, so a natural advance keeps the bar-line handoff;
+  a progress-based watchdog advances a stalled step; pause fades out and cuts every voice;
+  drums are not re-struck at an excerpt start.
   Event times come from the integral of the tempo curve, so beats never drift. The first
   song of a tour plays natively. Optional "apples to apples" mode plays the normalized MIDI
   (C major / A minor, 120 BPM) with no morph.
