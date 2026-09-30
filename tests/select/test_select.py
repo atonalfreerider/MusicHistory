@@ -270,3 +270,187 @@ def test_slim_cache_is_keyed_by_engine_version(env):
     e3.cache_key = "resonance=bbb"  # Resonance-2 moved on: analyze again
     sel.select_work(e3, conn, "Q1", "Song", n_analyze=4, workers=1, reanalyze=False)
     assert (len(e1.analyzed), len(e2.analyzed), len(e3.analyzed)) == (1, 0, 1)
+
+
+# ------------------------------------------------------------------ regressions (review "select")
+def _stub_patternprep(monkeypatch, commit: str = "abc123") -> list[str]:
+    """Run the real AnalyzeStageEngine with PatternPrep itself stubbed out."""
+    import hashlib
+
+    from musichistory.analysis import patternprep as pp
+
+    calls: list[str] = []
+    monkeypatch.setattr(pp, "ensure_built", lambda force=False: Path("PatternPrep.exe"))
+    monkeypatch.setattr(pp, "resonance_commit", lambda: commit)
+
+    def analyze(midi_path, workdir, *, lead_track=None, timeout=180.0):
+        calls.append(Path(midi_path).name)
+        sha = hashlib.sha256(Path(midi_path).read_bytes()).hexdigest()
+        return {"slim_version": pp.SLIM_VERSION, "resonance_commit": pp.resonance_commit(), "midi_sha256": sha,
+                "sections": [{"first_bar": 0, "bar_count": 4}], "notes": [[0.0, 1.0, 60, 1, 0, 90.0]]}
+
+    monkeypatch.setattr(pp, "analyze", analyze)
+    return calls
+
+
+def _real_engine() -> sel.AnalyzeStageEngine:
+    from types import SimpleNamespace
+
+    eng = sel.AnalyzeStageEngine(timeout=5.0)
+    eng.ex = SimpleNamespace(extract=lambda slim, features: "ident")  # identity extraction is not under test
+    return eng
+
+
+def _select(eng, conn, wid="Q1", title="Song", n_analyze=4):
+    return sel.select_work(eng, conn, wid, title, n_analyze=n_analyze, workers=1, reanalyze=False)
+
+
+def test_slim_cache_is_stale_after_a_slim_version_bump(env, monkeypatch):
+    """Review 'select' #1: the key and the reuse check include SLIM_VERSION, like the analyze stage."""
+    from musichistory.analysis import patternprep as pp
+    from musichistory.identity import stage
+
+    conn = env
+    w = _work(conn)
+    _add(conn, w, "lakh", "a", midigen.song(bars=40))
+    calls = _stub_patternprep(monkeypatch)
+    e1 = _real_engine()
+    assert e1.cache_key == f"resonance=abc123|slim={pp.SLIM_VERSION}"
+    assert _select(e1, conn).chosen is not None and len(calls) == 1
+    assert _select(_real_engine(), conn).chosen is not None and len(calls) == 1  # same version: reused
+    cid, sha = conn.execute("SELECT candidate_id, sha256 FROM candidate").fetchone()
+    slim_file = config.ANALYSIS_WORK / "Q1" / f"c{cid}" / "slim.json"
+    assert stage._reusable([str(slim_file)], "abc123", sha) is not None
+    monkeypatch.setattr(pp, "SLIM_VERSION", pp.SLIM_VERSION + 1)  # the slim conversion changed
+    assert stage._reusable([str(slim_file)], "abc123", sha) is None  # the analyze stage rejects the old slim ...
+    e3 = _real_engine()
+    assert _select(e3, conn).chosen is not None and len(calls) == 2  # ... and so does select
+    assert json.loads(slim_file.read_text(encoding="utf-8"))["slim_version"] == pp.SLIM_VERSION
+    assert stage._reusable([str(slim_file)], "abc123", sha) is not None
+
+
+@pytest.mark.parametrize("field,value", [("slim_version", -1), ("resonance_commit", "other"),
+                                         ("midi_sha256", "0" * 64), ("sections", [])])
+def test_slim_cache_checks_the_slim_like_the_analyze_stage(env, monkeypatch, field, value):
+    """Review 'select' #1: a slim.json whose key file matches is still checked on its content
+    (slim version, Resonance commit, MIDI SHA-256, non-empty), exactly as identity.stage._reusable does."""
+    from musichistory.identity import stage
+
+    conn = env
+    w = _work(conn)
+    _add(conn, w, "lakh", "a", midigen.song(bars=40))
+    calls = _stub_patternprep(monkeypatch)
+    _select(_real_engine(), conn)
+    cid, sha = conn.execute("SELECT candidate_id, sha256 FROM candidate").fetchone()
+    slim_file = config.ANALYSIS_WORK / "Q1" / f"c{cid}" / "slim.json"
+    slim = json.loads(slim_file.read_text(encoding="utf-8"))
+    slim[field] = value
+    slim_file.write_text(json.dumps(slim), encoding="utf-8")  # slim.key is untouched
+    assert stage._reusable([str(slim_file)], "abc123", sha) is None
+    assert _select(_real_engine(), conn).chosen is not None
+    assert len(calls) == 2
+
+
+def test_work_that_lost_every_candidate_leaves_the_set(env):
+    """Review 'select' #2: `fetch --resanitize` made the only candidate invalid (and its id was reused)."""
+    from musichistory.midi import Processed
+
+    conn = env
+    w = _work(conn)
+    data = midigen.song(bars=40)
+    _add(conn, w, "lakh", "a", data)
+    assert _select(FakeEngine(), conn).chosen is not None
+    assert sel.apply_final_set(conn, 10, 0, 1950, 1949) == ["Q1"]
+    old_id = conn.execute("SELECT candidate_id FROM selection").fetchone()[0]
+    hit = Hit("lakh", "a", "Band/Song.mid", 100, 100, "accept")
+    stricter = Processed(False, "stricter", None, None)  # the new sanitizer rejects the file
+    assert base.ingest(conn, w, hit, data, replace=True, processed=stricter) == "invalid"
+    conn.commit()
+    row = conn.execute("SELECT candidate_id, valid FROM candidate").fetchone()
+    assert tuple(row) == (old_id, 0)  # the replacement row got the same id back
+    res = _select(FakeEngine(), conn)
+    assert res.chosen is None and res.reason == "no valid candidates"
+    assert conn.execute("SELECT COUNT(*) FROM selection").fetchone()[0] == 0
+    assert sel.apply_final_set(conn, 10, 0, 1950, 1949) == []
+
+
+def test_invalidated_candidate_loses_its_old_scores(env):
+    """Review 'select' #2/#3: the whole-work reset also runs when no valid candidate is left."""
+    conn = env
+    w = _work(conn)
+    _add(conn, w, "lakh", "a", midigen.song(bars=40))
+    _add(conn, w, "midicollection", "b", midigen.song(bars=41))
+    assert _select(FakeEngine(), conn).chosen is not None
+    conn.execute("UPDATE candidate SET valid=0, sanitized_path=NULL")  # stricter sanitizer, rows kept
+    conn.commit()
+    assert _select(FakeEngine(), conn).reason == "no valid candidates"
+    rows = conn.execute("SELECT analyzed, chosen, consensus_score, hooktheory_score, total_score"
+                        " FROM candidate").fetchall()
+    assert [tuple(r) for r in rows] == [(0, 0, None, None, None)] * 2
+    assert conn.execute("SELECT COUNT(*) FROM selection").fetchone()[0] == 0
+    assert sel.source_report(conn)["sources"]["lakh"]["analyzed"] == 0
+
+
+def test_final_set_ignores_dangling_selection_rows(env):
+    """Review 'select' #2 (defensive layer): a selection row must name a valid candidate of its own work."""
+    conn = env
+    w1, w2 = _work(conn, "Q1", rank=1), _work(conn, "Q2", "Other", rank=2)
+    _work(conn, "Q3", "Third", rank=3)
+    _add(conn, w1, "lakh", "a", midigen.song(bars=40))
+    _add(conn, w2, "lakh", "b", midigen.song(bars=41))
+    assert _select(FakeEngine(), conn, "Q1").chosen is not None
+    q2_cand = conn.execute("SELECT candidate_id FROM candidate WHERE work_id='Q2'").fetchone()[0]
+    conn.execute("UPDATE candidate SET valid=0 WHERE work_id='Q2'")
+    conn.execute("INSERT INTO selection(work_id, candidate_id) VALUES ('Q2', ?)", (q2_cand,))   # invalid candidate
+    conn.execute("INSERT INTO selection(work_id, candidate_id) VALUES ('Q3', 999)")             # deleted candidate
+    conn.commit()
+    assert sel.apply_final_set(conn, 10, 0, 1950, 1949) == ["Q1"]
+    conn.execute("UPDATE selection SET candidate_id=(SELECT candidate_id FROM candidate WHERE work_id='Q1')"
+                 " WHERE work_id='Q3'")  # another work's file
+    conn.commit()
+    assert sel.apply_final_set(conn, 10, 0, 1950, 1949) == ["Q1"]
+
+
+def test_rerun_clears_scores_of_candidates_no_longer_analyzed(env):
+    """Review 'select' #3: a later fetch adds better candidates; the displaced ones keep no old scores."""
+    conn = env
+    w = _work(conn)
+    for k in range(4):
+        _add(conn, w, "midicollection", f"m{k}", midigen.song(bars=40 + k))
+    _select(FakeEngine(), conn)
+    rep = sel.source_report(conn)["sources"]["midicollection"]
+    assert rep["analyzed"] == 4 and rep["mean_consensus"] is not None
+    for k in range(4):
+        _add(conn, w, "lakh", f"l{k}", midigen.song(bars=44 + k), lmd_match_score=0.9)
+    eng = FakeEngine()
+    _select(eng, conn)
+    assert len(eng.analyzed) == 4  # only the four (better) lakh files
+    assert conn.execute("SELECT COUNT(*) FROM candidate WHERE analyzed=1").fetchone()[0] == 4
+    stale = conn.execute("SELECT analyzed, consensus_score, hooktheory_score, total_score FROM candidate"
+                         " WHERE source='midicollection'").fetchall()
+    assert [tuple(r) for r in stale] == [(0, None, None, None)] * 4
+    rep = sel.source_report(conn)["sources"]
+    assert rep["midicollection"]["analyzed"] == 0 and rep["midicollection"]["mean_consensus"] is None
+    assert rep["lakh"]["analyzed"] == 4
+
+
+def test_control_extras_need_a_partner_in_the_graph(env):
+    """Review 'select' #4: a work is added only when some pair partner also has a chosen MIDI."""
+    conn = env
+    for i, wid in enumerate(["QA", "QB", "QC", "QD", "QE", "QF"]):
+        w = _work(conn, wid, f"Song {wid}", "Band", rank=i + 1)
+        if wid != "QC":  # QC has no MIDI at all
+            _add(conn, w, "lakh", wid, midigen.song(bars=40 + i))
+            assert _select(FakeEngine(), conn, wid, f"Song {wid}").chosen is not None
+    assert sel.apply_final_set(conn, 1, 0, 1950, 1949) == ["QA"]
+    conn.executemany("INSERT INTO known_influence(src_work_id, dst_work_id, kind) VALUES (?,?,?)", [
+        ("QC", "QB", "control_positive"),   # partner has no MIDI: QB alone cannot be checked
+        ("QB", "QB", "control_positive"),   # merged versions: not a pair
+        ("QA", "QB", "cover_of"),           # not a validation kind
+        ("QA", "QE", "wikidata_P144"),      # partner already selected: QE added
+        ("QF", "QD", "control_negative"),   # both outside the set, both with MIDI: both added
+    ])
+    conn.commit()
+    assert sel.apply_control_extras(conn) == ["QD", "QE", "QF"]
+    got = {r[0]: r[1] for r in conn.execute("SELECT work_id, selected FROM work")}
+    assert got == {"QA": 1, "QB": 0, "QC": 0, "QD": 2, "QE": 2, "QF": 2}

@@ -20,7 +20,10 @@ DESIGN.md §6:
 6. **Source comparison report**: ``data/reports/source_comparison.json`` and ``.md``.
 
 Slim analyses are cached per candidate in ``data/analysis-work/<work_id>/c<id>/slim.json``
-(and in the private ``select_analysis`` table), so a re-run only analyzes new candidates.
+(and in the private ``select_analysis`` table), so a re-run only analyzes new candidates. A
+cached slim is reused under the analyze stage's own rule (``identity.stage._reusable``: same
+``SLIM_VERSION``, Resonance commit and sanitized bytes). Each run first resets the work's
+earlier results (choice, scores), so only this run's analyses count.
 """
 
 from __future__ import annotations
@@ -144,11 +147,17 @@ class AnalyzeStageEngine:
 
     def __init__(self, timeout: float = 180.0) -> None:
         from .analysis import patternprep
-        from .identity import compare, extract
+        from .identity import compare, extract, stage
 
-        self.pp, self.ex, self.cmp, self.timeout = patternprep, extract, compare, timeout
+        self.pp, self.ex, self.cmp, self.stage, self.timeout = patternprep, extract, compare, stage, timeout
         self.pp.ensure_built()
-        self.cache_key = f"resonance={self.pp.resonance_commit()}"
+        self.commit = self.pp.resonance_commit()
+        self.cache_key = f"resonance={self.commit}|slim={self.pp.SLIM_VERSION}"
+
+    def reusable(self, slim_file: Path, sha256: str | None) -> dict | None:
+        """The cached slim when the analyze stage would reuse it too (same slim version,
+        Resonance build and MIDI bytes, non-empty), else None: one rule for both stages."""
+        return self.stage._reusable([str(slim_file)], self.commit, sha256)
 
     def analyze(self, midi_path: Path, workdir: Path, lead_track: int | None) -> dict:
         return self.pp.analyze(midi_path, workdir, lead_track=lead_track, timeout=self.timeout)
@@ -199,11 +208,18 @@ def _analyze_one(engine: Engine, c: Cand, reanalyze: bool) -> tuple[Cand, dict |
     workdir = config.ANALYSIS_WORK / c.work_id / f"c{c.candidate_id}"
     slim_file, key_file = workdir / "slim.json", workdir / "slim.key"
     # The cache is valid only for the same engine version (Resonance commit, slim version)
-    # and the same sanitized file.
+    # and the same sanitized file. An engine that can check a slim itself (the analyze
+    # stage's rule, AnalyzeStageEngine.reusable) decides alone, so select never reuses a slim
+    # that the analyze stage would reject, and vice versa; others go by the key file.
     key = f"{getattr(engine, 'cache_key', '')}|{c.sha256}"
     t0 = time.monotonic()
     slim = None
-    if slim_file.exists() and not reanalyze and key_file.exists() and key_file.read_text(encoding="utf-8") == key:
+    check = getattr(engine, "reusable", None)
+    if reanalyze or not slim_file.exists():
+        pass
+    elif check is not None:
+        slim = check(slim_file, c.sha256)
+    elif key_file.exists() and key_file.read_text(encoding="utf-8") == key:
         try:
             slim = json.loads(slim_file.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
@@ -410,14 +426,28 @@ def _load_cands(conn: sqlite3.Connection, work_id: str, title: str) -> list[Cand
     return out
 
 
+def _reset_work(conn: sqlite3.Connection, work_id: str) -> None:
+    """Forget the work's earlier selection results: its choice and every candidate's scores.
+
+    Only this run's analyses count, so a candidate that is no longer analyzed (a later fetch
+    added better ones) or no longer valid (``fetch --resanitize``) keeps no stale score, and a
+    work that lost every valid candidate keeps no selection row.
+    """
+    conn.execute("UPDATE candidate SET quality_score=NULL, analyzed=0, consensus_score=NULL, hooktheory_score=NULL,"
+                 " total_score=NULL, chosen=0 WHERE work_id=?", (work_id,))
+    conn.execute("DELETE FROM selection WHERE work_id=?", (work_id,))
+
+
 def select_work(engine: Engine, conn: sqlite3.Connection, work_id: str, title: str, *, n_analyze: int,
                 workers: int, reanalyze: bool, analyze: Callable = _analyze_one) -> WorkResult:
     cands = _load_cands(conn, work_id, title)
     res = WorkResult(work_id, None, n_candidates=len(cands), n_sources=len({c.source for c in cands}))
+    _reset_work(conn, work_id)  # before the early return: a work with no candidate left loses its choice
     for c in cands:
         conn.execute("UPDATE candidate SET quality_score=? WHERE candidate_id=?", (c.quality, c.candidate_id))
     if not cands:
         res.reason = "no valid candidates"
+        conn.commit()
         return res
     ranked = sorted(cands, key=lambda c: (-c.quality, c.candidate_id))
     distinct: list[Cand] = []
@@ -451,8 +481,6 @@ def select_work(engine: Engine, conn: sqlite3.Connection, work_id: str, title: s
         conn.execute("UPDATE candidate SET analyzed=1, consensus_score=?, hooktheory_score=?, total_score=?"
                      " WHERE candidate_id=?", (c.consensus, c.hook, c.total, c.candidate_id))
     res.chosen = choose(res.analyzed)
-    conn.execute("UPDATE candidate SET chosen=0 WHERE work_id=?", (work_id,))
-    conn.execute("DELETE FROM selection WHERE work_id=?", (work_id,))
     n_ok = sum(c.ok for c in res.analyzed)
     if res.chosen is not None:
         res.reason = reason_for(res.chosen, n_ok, res.n_sources)
@@ -467,9 +495,15 @@ def select_work(engine: Engine, conn: sqlite3.Connection, work_id: str, title: s
     return res
 
 
+# Selection rows that still name a valid candidate of their own work: a row left behind by an
+# older run (or pointing at a candidate id SQLite reused after a delete) never counts.
+_VALID_SELECTION = ("selection s JOIN candidate c ON c.candidate_id = s.candidate_id AND c.work_id = s.work_id"
+                    " AND c.valid = 1")
+
+
 def apply_final_set(conn: sqlite3.Connection, target: int, floor: int, first: int, last: int) -> list[str]:
-    rows = conn.execute("SELECT s.work_id, w.canon_rank, w.work_year FROM selection s JOIN work w USING(work_id)"
-                        " WHERE w.in_pool = 1").fetchall()
+    rows = conn.execute(f"SELECT s.work_id, w.canon_rank, w.work_year FROM {_VALID_SELECTION}"
+                        " JOIN work w ON w.work_id = s.work_id WHERE w.in_pool = 1").fetchall()
     ids = final_set([(r[0], r[1], r[2]) for r in rows], target, floor, first, last)
     conn.execute("UPDATE work SET selected = 0")
     conn.executemany("UPDATE work SET selected = 1 WHERE work_id = ?", [(i,) for i in ids])
@@ -486,14 +520,22 @@ def apply_control_extras(conn: sqlite3.Connection) -> list[str]:
     Most famous influence cases involve a song outside the all-time top 1000 (He's So Fine,
     Under Pressure, ...). Keeping both sides lets the influence stage be checked against
     them; the graph lists these extras in ``graph_meta.validation_extras``.
+
+    A work is added only when a partner of one of its pairs has a chosen MIDI too (a
+    selection row): every ``selected = 1`` work has one, and an unselected partner with one
+    is added by the same rule, so both sides end up in the graph. A lone side could not be
+    checked and would only shift the influence statistics.
     """
+    kinds = ",".join("?" * len(CONTROL_KINDS))
     ids = [r[0] for r in conn.execute(
-        f"""SELECT DISTINCT w.work_id FROM work w JOIN selection s USING(work_id)
-            WHERE w.selected = 0 AND w.work_id IN (
-              SELECT src_work_id FROM known_influence WHERE kind IN ({','.join('?' * len(CONTROL_KINDS))})
-                AND src_work_id <> dst_work_id
-              UNION SELECT dst_work_id FROM known_influence WHERE kind IN ({','.join('?' * len(CONTROL_KINDS))})
-                AND src_work_id <> dst_work_id)
+        f"""WITH chosen(work_id) AS (SELECT s.work_id FROM {_VALID_SELECTION}),
+                 pair(a, b) AS (
+                   SELECT src_work_id, dst_work_id FROM known_influence WHERE kind IN ({kinds})
+                   UNION SELECT dst_work_id, src_work_id FROM known_influence WHERE kind IN ({kinds}))
+            SELECT DISTINCT w.work_id FROM work w
+            JOIN pair p ON p.a = w.work_id AND p.b <> w.work_id
+            WHERE w.selected = 0 AND w.work_id IN (SELECT work_id FROM chosen)
+              AND p.b IN (SELECT work_id FROM chosen)
             ORDER BY w.work_id""", CONTROL_KINDS * 2)]
     conn.executemany("UPDATE work SET selected = 2 WHERE work_id = ?", [(i,) for i in ids])
     conn.commit()
