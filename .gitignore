@@ -31,3 +31,6 @@ obj/
 Thumbs.db
 .DS_Store
 *.log
+
+# The Unity viewer lives in its own repository: ../MusicHistory-Viewer
+/unity/
