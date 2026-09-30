@@ -34,6 +34,8 @@ layout\MusicHistory.Layout\bin\Release\net10.0-windows\MusicHistory.Layout.exe d
 | `validate <graph.db> [--lenient]` | check the §10 invariants only |
 | `check <graph.db> [--json]` | measure a laid-out file (time-axis error, NaN, clustering, spacing, positions hash) |
 | `devices` | list DirectX 12 devices |
+| `themes <themes_graph.db> [options] [--out <copy.db>] [--dry-run] [--json]` | lay the lyric themes graph out (DESIGN.md §12, see "Lyric themes" below) |
+| `themes-demo --out <db> [--songs 1012] [--seed 42] [--from <music_graph.db>] [--no-layout]` | write a synthetic §12 themes graph, then lay it out |
 
 Exit codes: 0 ok, 1 unexpected error, 2 bad command line, 3 the graph breaks a §10 invariant,
 4 no usable GPU / GPU failure, 5 non-finite positions (nothing written), 6 `check` found a
@@ -153,19 +155,158 @@ Process wall time 0.9 s (1000) / 1.3 s (5000) including device start-up and SQLi
 1.04 ms/iteration at 1000 nodes, never settled (mean move 3.1–3.4 per iteration), and differed
 by 9.3 units per node between two identical runs.
 
+## Lyric themes (DESIGN.md §12)
+
+`themes <themes_graph.db>` lays out the second graph of the project: where each song sits among
+the ten lyrical themes. It reads `theme_anchor`, `theme_song` and `theme_score` (written by the
+themes stage, `musichistory/themes/`), pins the ten anchors on a ring and writes the song
+positions back. Through the pipeline: `.venv\Scripts\python -m musichistory layout -- themes
+[options]` (lays out `data/graph/themes_graph.db`).
+
+```powershell
+layout\MusicHistory.Layout\bin\Release\net10.0-windows\MusicHistory.Layout.exe themes data\graph\themes_graph.db
+MusicHistory.Layout themes data\graph\themes_graph.db --out copy.db --sharpen 3   # try settings on a copy
+MusicHistory.Layout themes-demo --out data\graph\themes_demo.db --songs 1012 --from data\graph\music_graph.db
+```
+
+### The model
+
+Anchor k (k = 1..10, DESIGN.md §12 order) is pinned at angle `36°·(k−1)` on a ring of radius R in
+the x–z plane, `A_k = (R cos θ, 0, R sin θ)` (the themes stage's convention; `theme_anchor.angle` in
+degrees). Per song i, per iteration (one GPU thread each, `Shaders/ThemesForceShader.cs`):
+
+```
+weights     w_ik = s_ik^γ / Σ_k s_ik^γ                          γ = --sharpen (2); Σ_k w_ik = 1
+springs     F += spring · Σ_k w_ik (A_k − p_i)                  zero rest length, to all ten anchors
+          = spring · (b_i − p_i),  b_i = Σ_k w_ik A_k            the weighted barycentre
+repulsion   F += repulsion · Σ_j d / (|d|² + softening)^{3/2}   d = p_i − p_j, every other song
+            (with --cutoff D: minus its value at |d| = D, and 0 beyond D)
+plane       y = 0 exactly (default); --slab H: F_y −= spring·flatten·y and |y| ≤ H/2
+step        v = damping·v + F / (spring + 2·repulsion·Σ_j (|d|²+softening)^{-3/2}),  |v| ≤ T(it)
+cooling     T(it) = startTemperature · (1 − it/iterations)² + minTemperature
+```
+
+Without repulsion the equilibrium is exactly the barycentre b_i, so a song whose scores are all
+"I love you" sits on that anchor, a 50/50 song halfway along the chord, a flat song at the centre.
+The repulsion spreads songs that share (or nearly share) a barycentre into a cloud. Its default is
+chosen so the mean displacement from the barycentre stays a few percent of R (measured below).
+The step is Jacobi-preconditioned by each song's own stiffness (spring plus a bound of its
+repulsion Jacobian): dense clouds stay stable, and no equilibrium moves. Deterministic like the
+temporal kernel: ping-pong buffers, fixed summation order, damping, quadratic cooling, and a
+seeded start (`b_i` plus an offset of at most `--jitter` in a random direction, from `--seed`) so
+identical score vectors do not start on one point, where their repulsion would be 0. Two runs on
+one device give bit-identical positions; batching does not change the bits.
+
+| Option | Default | Meaning |
+|---|---|---|
+| `--iterations` | 1500 | force iterations |
+| `--radius` | `themes_meta.ring_radius`, else 40 | ring radius R |
+| `--sharpen` | 2 | γ: spring stiffness `score^γ`, normalized per song (higher pulls songs toward their top theme) |
+| `--spring` | 1.0 | total spring stiffness per song |
+| `--repulsion` | 0.35 | song–song repulsion; 0 puts every song exactly on its barycentre |
+| `--softening` | 0.25 | added to d² in the repulsion |
+| `--cutoff` | 0 (unlimited) | repulsion range (force shifted to 0 at the cutoff) |
+| `--damping` | 0.7 | velocity damping |
+| `--startTemperature` / `--minTemperature` | 2 / 0.002 | step limit, cooled quadratically |
+| `--jitter` / `--seed` | 0.05 / 42 | seeded start offset around each barycentre |
+| `--slab` / `--flatten` | 0 / 2 | 0: songs in the plane y = 0; H > 0: a slab, \|y\| ≤ H/2, vertical spring `spring·flatten` |
+| `--batch`, `--device` | 100, default | as for the temporal layout |
+
+Run options: `--out <copy.db>` (copy, then write the copy), `--dry-run`, `--trace N`, `--json`
+(one JSON object: params and stats), `--quiet`.
+
+### Input checks (exit code 3, every problem listed)
+
+`theme_anchor` holds exactly the anchor ids 1..10; `theme_song.node_id` is 1..N contiguous;
+`theme_score` has exactly one row per (song, anchor) and none for unknown songs or anchors; every
+score is a finite number ≥ 0 and every song has a positive sum. Scores that do not sum to 1 are
+normalized with a warning. The other exit codes are those of the temporal layout (2 command line,
+4 GPU, 5 non-finite positions, nothing written).
+
+### What it writes (one transaction, parameterized SQL, SQLite 3.15, journal_mode=DELETE)
+
+* `theme_anchor.angle` and `position_x/y/z` of the ten anchors (at the radius used);
+* `theme_song.position_x/y/z` of every song (y = 0 exactly in the plane mode);
+* `themes_meta.ring_radius` = the radius used, so the meta always matches the anchors;
+* one `themes_layout_run(run_id, created_at, device, iterations, sharpen, repulsion,
+  final_mean_move, params_json)` row per run (created if missing; a table with other columns is
+  replaced; readers take the largest run_id). `params_json` holds every parameter plus `stats`:
+  ms/iteration, final mean/max move, residual mean/max, and the measurements below.
+
+Measurements (`stats` in params_json; also printed as `check:`): displacement from the barycentre
+(mean, `mean_displacement_over_radius`, median, p95, max); `outside_ring` (\|p\| > R: a cloud
+centred on an anchor always straddles the ring) and `max_radius`; `crossed_sector` (songs whose
+barycentre lies in an anchor's sector, \|b\| ≥ R/2, but whose position ends nearer another anchor);
+nearest-neighbour spacing (mean, p5, min); songs with one score ≥ 0.9 (`peaked_songs`) and their
+mean/max distance to that anchor; `max_abs_y`; non-finite positions; `positions_sha256`.
+
+### Demo themes graph
+
+`themes-demo --out <db> --songs N` writes a synthetic graph in the exact §12 schema (deterministic
+in N, `--seed` and `--from`; with `--generated-at` the file is byte-identical) and lays it out:
+songs "Song 0001".. by "Artist 001".., years 1940–2025, node ids by (year, work_id), and score
+vectors of four kinds: *peaked* (one theme holds 0.85–0.99, most often "I love you" and "I miss
+you"), *other* (peaked on anchor 10), *mixed* (two or three themes share 0.6–0.9) and *flat*.
+About one song in ten is title-only (`text_source = 'title'`, scores pulled halfway to uniform;
+instrumentals are always title-only); singers are male 60 %, female 27 %, mixed 7 %,
+instrumental 3 %, unknown 2 %, nonbinary 1 %. `themes_meta` has `synthetic = 1` and
+`backend = synthetic`, and no validation keys (nothing was measured). Playback columns are
+placeholders (`../songs/<work_id>/score.mid`, which do not exist) unless `--from
+<music_graph.db>` is given: then song k borrows year, `midi_path` (rebased to the output folder),
+excerpt, key, tempo and meter of the music graph's node k, so click-to-play works with real MIDI,
+while titles, artists, work ids, scores and genders stay synthetic (random themes are never shown
+under a real song's name). No lyric text of any kind is involved.
+
+`data/graph/themes_demo.db` is this demo for the viewer: 1012 songs, `--from
+data/graph/music_graph.db` (all 1012 MIDI paths resolve), laid out with the defaults.
+
+### Measured (RTX 2080 Ti, default options, 1500 iterations, R = 40)
+
+| Input | ms / iteration | final mean / max move | residual mean / max | displacement from barycentre: mean (% of R) / median / p95 / max | crossed sector | spacing mean / p5 / min | peaked songs: mean / max distance to anchor |
+|---|---|---|---|---|---|---|---|
+| `themes_demo.db` (1012 songs) | 0.27–0.47 | 8.9e-5 / 1.5e-3 | 2.7e-5 / 4.7e-4 | 1.30 (3.3 %) / 1.23 / 3.18 / 3.88 | 1 of 752 | 1.11 / 0.57 / 0.52 | 331 songs: 1.94 / 3.87 |
+| copy of the exported `themes_graph.db` (1012 songs, NLI backend) | 0.20–0.29 | 5.3e-5 / 7.5e-4 | 1.6e-5 / 2.2e-4 | 1.43 (3.6 %) / 0.73 / 4.68 / 5.43 | 2 of 709 | 1.10 / 0.50 / 0.46 | 252 songs: 3.21 / 5.43 |
+
+No NaN, y = 0 for every song, process wall time 1.8–2.3 s including device start-up and SQLite I/O.
+In the real graph about 250 songs are near-identical "Other" songs; they form the largest cloud
+(radius ≈ 5.4, a fifth of the 24.7 between neighbouring anchors). On that copy: `--repulsion 0`
+puts every song within 6e-6 of its barycentre (and songs with identical score vectors on one
+point: spacing min 0); `--repulsion 0.7` gives mean displacement 2.02 (5.0 % of R), 5 crossed,
+spacing p5 0.65; `--slab 4` gives mean displacement 1.34, spacing p5 0.76, \|y\| ≤ 1.59;
+`--sharpen 3` moves more songs toward their top anchor (776 instead of 709 barycentres in a
+sector) at mean displacement 1.49. In the tests, a song that is all "I love you", among 150 mixed
+songs and a cloud of 60 identical "Other" songs, ends 0.039 from its anchor (the far-field push of
+the others), and without repulsion every song of a 400-song demo converges to within 6e-6 of its
+barycentre for γ = 1, 2 and 3.5.
+
 ## Tests
 
 ```powershell
 dotnet test layout\MusicHistory.Layout.slnx -c Release
 ```
 
-36 xunit tests: the schema against the SQL block of docs/DESIGN.md, key names and shifts, demo
+57 xunit tests. Temporal (36): the schema against the SQL block of docs/DESIGN.md, key names and shifts, demo
 determinism and plausibility (entry/exit keys; seed-42 tree shape unchanged), every input refusal (and its exit code), option parsing, and on
 the GPU: two runs bit-identical, settled, exact time axis, NaN-free, lineages clustered; batching
 invariance; axis/direction relabelling; output contract (columns, metadata values, journal mode,
 file header); edge cases (no edges, one song, edge clearance on, unpinned); WARP; and reading
 the result with SQLite 3.15.0 (Unity-FDG's `Assets/Plugins/x86_64/sqlite3.dll`, or
 `MUSICHISTORY_SQLITE315`; the test logs SKIPPED when neither exists).
+
+Lyric themes (21, `ThemesTests.cs`): the §12 schema against the SQL block of docs/DESIGN.md; anchors
+equally spaced (angle 36°·(k−1), radius R, y = 0, equal chords, zero sum); sharpened weights and
+barycentres; demo determinism (byte-identical file) and contract (ids by (year, work_id), scores
+≥ 0 summing to 1, top anchor/score, genders, title-only share, peaked/other/mixed songs present);
+`--from` playback borrowing and path rebasing; every input refusal (exit 3) and the renormalizing
+warning; command-line errors (exit 2); and on the GPU: convergence to the exact barycentre without
+repulsion (γ = 1, 2, 3.5; < 1e-4), bit-identical runs (a different `--seed` differs), batching
+invariance, default layout quality on 1012 demo songs (mean displacement < 5 % of R, max < 20 %,
+≤ 1 % crossed, spacing > 0.3, peaked songs near their anchors, settled, no NaN, y = 0), an
+all-one-theme song on its anchor, the output contract (columns, run row, radius written to anchors
+and meta, journal mode, file header, `--dry-run`/`--json`), the slab mode, edge cases (one song,
+120 identical vectors, a flat vector, `--cutoff`, `--sharpen 12`), WARP, the `themes-demo`
+command, and reading the result with SQLite 3.15.0. Fixtures use placeholder titles and numbers
+only.
 
 ## Files
 
@@ -181,6 +322,14 @@ the result with SQLite 3.15.0 (Unity-FDG's `Assets/Plugins/x86_64/sqlite3.dll`, 
 | `MusicHistory.Layout/DemoGraph.cs` | synthetic §10 graphs |
 | `MusicHistory.Layout/GraphSchema.cs` | §10 DDL (tested against DESIGN.md) |
 | `MusicHistory.Layout/Gpu.cs` | device selection |
+| `MusicHistory.Layout/ThemesCommand.cs` | `themes` / `themes-demo` command line |
+| `MusicHistory.Layout/ThemesParams.cs` | themes parameters, defaults, option parsing |
+| `MusicHistory.Layout/ThemesInput.cs` | reads and validates a §12 themes graph |
+| `MusicHistory.Layout/ThemesLayout.cs` | weights, barycentres, seeded start, GPU loop, measurements |
+| `MusicHistory.Layout/Shaders/ThemesForceShader.cs` | the themes kernel |
+| `MusicHistory.Layout/ThemesOutput.cs` | anchors, song positions, ring_radius, themes_layout_run |
+| `MusicHistory.Layout/ThemesDemo.cs` | synthetic §12 themes graphs |
+| `MusicHistory.Layout/ThemesSchema.cs` | §12 DDL and the ten themes (tested against DESIGN.md) |
 
 ## Credits
 

@@ -25,6 +25,8 @@ internal static class Program
         MusicHistory.Layout validate <graph.db> [--lenient]  check the section 10 invariants only
         MusicHistory.Layout check <graph.db> [--json]        measure a laid-out graph (time axis, NaN, clustering)
         MusicHistory.Layout devices                          list DirectX 12 devices
+        MusicHistory.Layout themes <themes_graph.db> [options]   lay the lyric themes graph out (section 12; 'themes --help')
+        MusicHistory.Layout themes-demo --out <db> [--songs 1012] [--from <music_graph.db>]   synthetic section 12 themes graph
 
         Layout options (DESIGN.md section 9):
         {LayoutParams.OptionHelp()}
@@ -53,6 +55,7 @@ internal static class Program
                 return 2;
             }
             var cmd = args[0].ToLowerInvariant();
+            if (cmd is "themes" or "themes-demo") return ThemesCommand.Run(cmd, args[1..], stdout, log);
             string[] rest = cmd is "run" or "demo" or "validate" or "check" or "devices" or "help" or "-h" or "--help" ? args[1..] : args;
             if (cmd is "help" or "-h" or "--help")
             {

@@ -207,7 +207,7 @@ public class LayoutTests(ITestOutputHelper output)
     }
 
     /// <summary>Minimal P/Invoke over a specific sqlite3.dll (read-only queries, text results).</summary>
-    private sealed unsafe class NativeSqlite : IDisposable
+    internal sealed unsafe class NativeSqlite : IDisposable
     {
         private readonly IntPtr _lib;
         private readonly delegate* unmanaged[Cdecl]<byte*, IntPtr*, int, byte*, int> _open;
