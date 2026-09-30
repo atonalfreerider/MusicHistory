@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS song(
   shift_parallel INTEGER,            -- same, for parallel normalization (tonic -> C)
   native_bpm REAL,                   -- beat-weighted median quarter-note BPM
   beats_per_bar REAL,                -- quarter-note beats per bar of the dominant meter
-  first_downbeat REAL,               -- beat of the first bar line with music
+  first_downbeat REAL,               -- first bar line of the dominant-meter grid at or before the music
   melody_track INTEGER, melody_channel INTEGER,  -- sanitized-file track index (0-based), MIDI channel 1..16
   melody_method TEXT,                -- 'name' | 'lyric_timing' | 'classifier' | 'skyline'
   melody_confidence REAL,            -- 0..1
@@ -136,7 +136,9 @@ CREATE TABLE IF NOT EXISTS song(
   n_melody_notes INTEGER,
   bass_track INTEGER, bass_channel INTEGER,
   main_loop TEXT,                    -- roman-numeral summary of the most-covering loop (C/Am frame)
-  summary_json TEXT                  -- small display facts (sections, grammar, chord summary)
+  summary_json TEXT,                 -- small display facts (sections, grammar, chord summary)
+  normalization TEXT,                -- 'relative' | 'parallel' used for this song's identities and normalized MIDI
+  target_bpm REAL                    -- tempo of this song's normalized MIDI
 );
 CREATE TABLE IF NOT EXISTS key_region(
   work_id TEXT NOT NULL, start_beat REAL NOT NULL, end_beat REAL NOT NULL,
@@ -176,7 +178,7 @@ CREATE TABLE IF NOT EXISTS loop(
 -- Normalized note lines. role 'melody' = lead line; 'bass' = lowest line (riff channel).
 CREATE TABLE IF NOT EXISTS melody_line(
   work_id TEXT NOT NULL, role TEXT NOT NULL,
-  onsets TEXT NOT NULL,              -- JSON float array (beats, quantized to 1/12)
+  onsets TEXT NOT NULL,              -- JSON float array (beats, quantized to 1/12 of their bar's grid)
   durs TEXT NOT NULL,                -- JSON float array (beats): time to the next onset
                                      -- (rests absorbed); the last note keeps its own length
   pitches TEXT NOT NULL,             -- JSON int array: MIDI pitch + region shift (normalized)
@@ -234,6 +236,8 @@ CREATE TABLE song_node(
   normalized_midi_path TEXT,
   midi_source TEXT,
   excerpt_start_beat REAL NOT NULL, excerpt_end_beat REAL NOT NULL,
+  entry_tonic_pc INTEGER, entry_mode TEXT,
+  exit_tonic_pc INTEGER, exit_mode TEXT,
   tree_parent_node INTEGER, tree_root_node INTEGER NOT NULL, tree_depth INTEGER NOT NULL,
   ref_count INTEGER NOT NULL, ref_norm REAL, katz REAL, descendants INTEGER NOT NULL,
   in_degree INTEGER NOT NULL, out_degree INTEGER NOT NULL,

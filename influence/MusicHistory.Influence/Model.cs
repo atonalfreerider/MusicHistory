@@ -47,6 +47,50 @@ internal sealed class LoopRow
     public double VisitBeats => Visits > 0 && Coverage > 0 ? Coverage / Visits : Math.Max(LoopBeats, 1);
 }
 
+/// <summary>One <c>key_region</c> row (analyze stage): a stretch of the song in one native key, C = 0.</summary>
+internal readonly record struct KeyRegion(double Start, double End, int TonicPc, string Mode);
+
+/// <summary>Key-region lookups for the walkthrough's key handoff (DESIGN.md §10 entry/exit keys).</summary>
+internal static class KeyRegions
+{
+    /// <summary>How far before <c>excerpt_end_beat</c> the exit key is read ("just before the end").</summary>
+    public const double ExitEpsilon = 1e-3;
+
+    /// <summary>
+    /// The region containing <paramref name="beat"/>, as <c>musichistory.identity.key.ShiftMap.region_at</c>
+    /// (the rule the normalized MIDI was shifted by): the last region starting at or before the beat
+    /// (1e-6 tolerance), else the first. Null when the song has no regions. <paramref name="regions"/>
+    /// must be sorted by start.
+    /// </summary>
+    public static KeyRegion? At(KeyRegion[]? regions, double beat)
+    {
+        if (regions == null || regions.Length == 0) return null;
+        int i = 0;
+        for (int k = 1; k < regions.Length && regions[k].Start <= beat + 1e-6; k++) i = k;
+        return regions[i];
+    }
+
+    /// <summary>
+    /// The keys heard where an excerpt starts (region at <paramref name="start"/>) and ends (region at
+    /// <paramref name="end"/> - <see cref="ExitEpsilon"/>). Each is null when that region is the song's
+    /// home key (tonic_pc, mode) or the song has no key regions, so a viewer falls back to tonic_pc/mode.
+    /// </summary>
+    public static (int? EntryTonic, string? EntryMode, int? ExitTonic, string? ExitMode) Local(Song s, KeyRegion[]? regions, double start, double end)
+    {
+        var (et, em) = NonHome(s, At(regions, start));
+        var (xt, xm) = NonHome(s, At(regions, Math.Max(start, end - ExitEpsilon)));
+        return (et, em, xt, xm);
+    }
+
+    private static (int?, string?) NonHome(Song s, KeyRegion? r)
+    {
+        if (r is not { } k) return (null, null);
+        int tonic = ((k.TonicPc % 12) + 12) % 12;
+        string mode = k.Mode == "minor" ? "minor" : "major";
+        return tonic == ((s.TonicPc % 12) + 12) % 12 && mode == s.Mode ? (null, null) : (tonic, mode);
+    }
+}
+
 /// <summary>A selected, analyzed song with its work facts and identities.</summary>
 internal sealed class Song
 {
@@ -91,7 +135,9 @@ internal sealed class Song
 /// year: day precision <c>year + (doy - 0.5)/365.25</c>, month <c>year + (month - 0.5)/12</c>,
 /// year <c>year + 0.5</c>. A year-precision song whose first Hot 100 week falls in the same year
 /// takes that week as its day (an upper bound of the release), so that the chart-week rule can
-/// order it without contradicting the time axis.
+/// order it without contradicting the time axis. A chart week from any other year is ignored
+/// entirely (DESIGN.md §10: within-year ordering by first_chart_week needs both weeks in the
+/// songs' shared year).
 /// </summary>
 internal readonly struct DateOrder
 {
@@ -135,17 +181,21 @@ internal readonly struct DateOrder
                 }
             }
         }
+        // A chart week only says something about the order within the song's own year. canon stores
+        // the earliest week of *any* recording, which for a pre-Hot 100 or uncharted original is a
+        // later reissue or cover (Please Please Me, 1963: 1964-02-01), so a week from another year is
+        // dropped here: it neither orders the song (HasChart false) nor moves its time value.
         int chart = int.MinValue;
         DateOnly chartDate = default;
         if (!string.IsNullOrWhiteSpace(chartWeek) && DateOnly.TryParseExact(chartWeek.Trim()[..Math.Min(10, chartWeek.Trim().Length)], "yyyy-MM-dd",
-                CultureInfo.InvariantCulture, DateTimeStyles.None, out chartDate))
+                CultureInfo.InvariantCulture, DateTimeStyles.None, out chartDate) && chartDate.Year == year)
             chart = chartDate.DayNumber;
 
         double tv = prec switch
         {
             11 => year + (new DateOnly(year, month, day).DayOfYear - 0.5) / 365.25,
             10 => year + (month - 0.5) / 12.0,
-            _ => chart != int.MinValue && chartDate.Year == year ? year + (chartDate.DayOfYear - 0.5) / 365.25 : year + 0.5,
+            _ => chart != int.MinValue ? year + (chartDate.DayOfYear - 0.5) / 365.25 : year + 0.5,
         };
         tv = Math.Min(tv, year + 0.99999);
         return new DateOrder(year, prec, month, day, chart, tv);
@@ -153,7 +203,8 @@ internal readonly struct DateOrder
 
     /// <summary>
     /// A is earlier than B if the years differ, or both dates have month-or-better precision and
-    /// differ, or both have a first chart week and they differ by more than 4 weeks. The result
+    /// differ, or both have a first chart week in their (shared) year and the weeks differ by more
+    /// than 4 weeks (<see cref="Make"/> drops a week from another year). The result
     /// must also agree with the time axis (strictly smaller time value); otherwise the pair is
     /// contemporaneous and gets no edge.
     /// </summary>

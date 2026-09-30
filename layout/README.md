@@ -132,7 +132,8 @@ own sqlite3.dll 3.15.0 and run `PRAGMA integrity_check` and the loader's joins.
 and `--seed`; the same arguments give a byte-identical file) and lays it out: songs
 "Song 0001".."Song N" by "Artist 001".., original dates 1940–2025 (year, month or day
 precision; `time_value` as in §8.1), keys with the relative `norm_shift`, BPM 60–190, 3/4/6-beat
-bars, bar-aligned 8–24-bar excerpts, placeholder MIDI paths `../songs/<work_id>/score.mid` (the
+bars, bar-aligned 8–24-bar excerpts (about one in eight with `entry_*`/`exit_*` keys set: a final
+lift, a relative-key opening or a dominant bridge; own RNG, so the tree is unchanged), placeholder MIDI paths `../songs/<work_id>/score.mid` (the
 files do not exist), and an influence forest grown by recency-weighted preferential attachment
 among clearly earlier songs (≈4 % roots) with 0–3 secondary edges per song and plausible edge
 channels, bits, z, q, similarity, weight, beat spans and evidence strings. `graph_meta.synthetic`
@@ -158,8 +159,8 @@ by 9.3 units per node between two identical runs.
 dotnet test layout\MusicHistory.Layout.slnx -c Release
 ```
 
-34 xunit tests: the schema against the SQL block of docs/DESIGN.md, key names and shifts, demo
-determinism and plausibility, every input refusal (and its exit code), option parsing, and on
+36 xunit tests: the schema against the SQL block of docs/DESIGN.md, key names and shifts, demo
+determinism and plausibility (entry/exit keys; seed-42 tree shape unchanged), every input refusal (and its exit code), option parsing, and on
 the GPU: two runs bit-identical, settled, exact time axis, NaN-free, lineages clustered; batching
 invariance; axis/direction relabelling; output contract (columns, metadata values, journal mode,
 file header); edge cases (no edges, one song, edge clearance on, unpinned); WARP; and reading

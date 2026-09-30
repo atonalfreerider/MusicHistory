@@ -394,7 +394,12 @@ def run(args: argparse.Namespace) -> int:
             work_date=yr.work_date, work_date_precision=yr.work_date_precision, work_year=yr.work_year,
             effective_year=yr.effective_year, year_confidence=yr.year_confidence, traditional=int(yr.traditional),
             wikidata_qid=w.qid, mb_work_id=(ent.get("P435") or [None])[0],
-            first_chart_week=base[w.work_id][1] if yr.chart_week_ok else None,
+            # Persist the chart week only as an ordering hint within the work's own year: a
+            # reissue or cover that charted years later says nothing about the original's
+            # place in its year (it stays an upper bound inside years.decide()).
+            first_chart_week=(base[w.work_id][1] if yr.chart_week_ok and base[w.work_id][1]
+                              and yr.work_year is not None
+                              and int(str(base[w.work_id][1])[:4]) == yr.work_year else None),
             rrf_score=round(w.score, 8), canon_rank=w.canon_rank, in_pool=int(w.work_id in in_pool))
 
     log("known_influence: Wikidata P144/P2550 and validation controls")

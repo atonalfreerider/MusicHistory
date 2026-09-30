@@ -233,6 +233,45 @@ internal static class PipelineDb
         return Math.Round(h, 4);
     }
 
+    /// <summary>
+    /// <c>key_region</c> rows per work, sorted by start (analyze stage; empty for works without rows or
+    /// a database without the table). Only works in <paramref name="only"/> when it is given.
+    /// </summary>
+    public static Dictionary<string, KeyRegion[]> LoadKeyRegions(SqliteConnection c, IReadOnlySet<string>? only = null)
+    {
+        var d = new Dictionary<string, List<KeyRegion>>(StringComparer.Ordinal);
+        try
+        {
+            using var cmd = c.CreateCommand();
+            cmd.CommandText = "SELECT work_id, start_beat, end_beat, tonic_pc, mode FROM key_region ORDER BY work_id, start_beat";
+            using var r = cmd.ExecuteReader();
+            while (r.Read())
+            {
+                string w = r.GetString(0);
+                if (only != null && !only.Contains(w)) continue;
+                if (r.IsDBNull(1) || r.IsDBNull(3)) continue;
+                if (!d.TryGetValue(w, out var list)) d[w] = list = [];
+                list.Add(new KeyRegion(r.GetDouble(1), Dbl(r, 2) ?? double.PositiveInfinity, r.GetInt32(3), Str(r, 4) == "minor" ? "minor" : "major"));
+            }
+        }
+        catch (SqliteException)
+        {
+            // A database from before key regions: every song plays in its home key.
+        }
+        return d.ToDictionary(kv => kv.Key, kv => kv.Value.OrderBy(x => x.Start).ToArray(), StringComparer.Ordinal);
+    }
+
+    /// <summary>Whether <paramref name="table"/> has <paramref name="column"/> (older pipeline DBs lack migrated columns).</summary>
+    public static bool HasColumn(SqliteConnection c, string table, string column)
+    {
+        using var cmd = c.CreateCommand();
+        cmd.CommandText = $"PRAGMA table_info({table})";
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+            if (string.Equals(r.GetString(1), column, StringComparison.OrdinalIgnoreCase)) return true;
+        return false;
+    }
+
     public static List<KnownInfluence> LoadKnown(SqliteConnection c)
     {
         var list = new List<KnownInfluence>();

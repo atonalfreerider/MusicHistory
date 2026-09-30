@@ -91,6 +91,18 @@ internal static class Report
                     ["ref_count"] = tree.RefCount[i], ["ref_norm"] = J(tree.RefNorm[i]), ["katz"] = J(tree.Katz[i]), ["descendants"] = tree.Descendants[i],
                 }).ToArray()),
         };
+        if (g != null)
+        {
+            // Where graph_meta's normalization / target_bpm came from; warnings when not from the pipeline DB.
+            rep["graph"]!["excerpts_outside_home_key"] = g.ExcerptsOutsideHomeKey;
+            rep["graph_meta_settings"] = new JsonObject
+            {
+                ["normalization"] = g.Settings.Normalization, ["normalization_source"] = g.Settings.NormalizationSource,
+                ["target_key"] = g.Settings.TargetKey,
+                ["target_bpm"] = J(g.Settings.TargetBpm), ["target_bpm_source"] = g.Settings.TargetBpmSource,
+            };
+        }
+        rep["warnings"] = new JsonArray((g?.Settings.Warnings ?? []).Select(w => (JsonNode?)JsonValue.Create("graph_meta: " + w)).ToArray());
         var primary = new Dictionary<string, int>();
         var treePrimary = new Dictionary<string, int>();
         if (g != null)

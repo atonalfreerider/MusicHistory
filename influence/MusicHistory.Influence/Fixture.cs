@@ -19,7 +19,9 @@ namespace MusicHistory.Influence;
 /// <item>melody_same_year: a melody plant within one year at year precision (expected: no edge);</item>
 /// <item>negatives: pairs sharing only ubiquitous loops (axis, doo-wop, blues, ...) and scale runs.</item>
 /// </list>
-/// Everything is already in the normalized C major / A minor frame, as the analyze stage writes it.
+/// Everything is already in the normalized C major / A minor frame, as the analyze stage writes it
+/// (meta <c>analyze_normalization</c> = relative, <c>analyze_target_bpm</c> = 120, the same per song).
+/// <c>key_region</c> rows cover every song; about a third modulate (see <see cref="Regions"/>).
 /// </summary>
 internal static class Fixture
 {
@@ -679,6 +681,55 @@ internal static class Fixture
     private static string Arr(IEnumerable<double> v) => "[" + string.Join(",", v.Select(x => Math.Round(x, 6).ToString("R", CultureInfo.InvariantCulture))) + "]";
     private static string Arr(IEnumerable<int> v) => "[" + string.Join(",", v.Select(x => x.ToString(CultureInfo.InvariantCulture))) + "]";
 
+    private static int RelativeShift(int tonic, bool minor) => (((minor ? 9 : 0) - tonic + 5) % 12 + 12) % 12 - 5;
+
+    /// <summary>
+    /// <c>key_region</c> rows as the analyze stage writes them: contiguous, the first from beat 0, the
+    /// last to the song's end, each at least 8 bars. About a third of the songs modulate so the graph
+    /// export's entry/exit keys are exercised: a final lift (the last chorus onwards up a semitone or a
+    /// whole step), a bridge in the dominant or relative key, or an intro and first verse in the
+    /// relative key. A separate RNG per (seed, work) leaves the generated music and plants unchanged.
+    /// </summary>
+    private static List<(double Start, double End, int Tonic, bool Minor)> Regions(G g, int seed)
+    {
+        var rng = new Rng(Rng.Seed("fixture-key-regions", seed.ToString(CultureInfo.InvariantCulture), g.WorkId));
+        double end = g.EndBeat, minBeats = 8 * g.Bpb;
+        var home = (Tonic: g.Tonic, Minor: g.Minor);
+        var cuts = new List<(double Start, int Tonic, bool Minor)> { (0.0, home.Tonic, home.Minor) };
+        double u = rng.NextDouble();
+        if (u < 0.15)
+        {
+            // Final lift from the last chorus.
+            var last = g.Secs.LastOrDefault(s => s.Kind == "C");
+            if (last != null && end - last.Start >= minBeats && last.Start >= minBeats)
+                cuts.Add((last.Start, (home.Tonic + 1 + rng.Below(2)) % 12, home.Minor));
+        }
+        else if (u < 0.27)
+        {
+            // Bridge in the dominant or the relative key, then home.
+            var br = g.Secs.FirstOrDefault(s => s.Kind == "Br");
+            if (br != null && br.Bars * g.Bpb >= minBeats && br.Start >= minBeats && end - (br.Start + br.Bars * g.Bpb) >= minBeats)
+            {
+                var k = rng.NextDouble() < 0.5 ? ((home.Tonic + 7) % 12, home.Minor)
+                    : home.Minor ? ((home.Tonic + 3) % 12, false) : ((home.Tonic + 9) % 12, true);
+                cuts.Add((br.Start, k.Item1, k.Item2));
+                cuts.Add((br.Start + br.Bars * g.Bpb, home.Tonic, home.Minor));
+            }
+        }
+        else if (u < 0.35)
+        {
+            // Intro and first verse in the relative key.
+            var v = g.Secs.FirstOrDefault(s => s.Kind == "V");
+            double back = v == null ? 0 : v.Start + v.Bars * g.Bpb;
+            if (back >= minBeats && end - back >= minBeats)
+            {
+                cuts[0] = (0.0, home.Minor ? (home.Tonic + 3) % 12 : (home.Tonic + 9) % 12, !home.Minor);
+                cuts.Add((back, home.Tonic, home.Minor));
+            }
+        }
+        return cuts.Select((c, i) => (c.Start, i + 1 < cuts.Count ? cuts[i + 1].Start : end, c.Tonic, c.Minor)).ToList();
+    }
+
     private static void Write(string outPath, List<G> gs, List<Known> known, int seed)
     {
         string full = Path.GetFullPath(outPath);
@@ -697,7 +748,9 @@ internal static class Fixture
             cmd.ExecuteNonQuery();
         }
         Ins("INSERT INTO meta(key, value) VALUES ($1, $2)", "schema_version", Schema.PipelineSchemaVersion.ToString(CultureInfo.InvariantCulture));
-        Ins("INSERT INTO meta(key, value) VALUES ($1, $2)", "normalization", "relative");
+        // As the analyze stage records them (every song built with the same settings).
+        Ins("INSERT INTO meta(key, value) VALUES ($1, $2)", ExportSettings.MetaNormalization, "relative");
+        Ins("INSERT INTO meta(key, value) VALUES ($1, $2)", ExportSettings.MetaTargetBpm, "120");
         Ins("INSERT INTO meta(key, value) VALUES ($1, $2)", "fixture_seed", seed.ToString(CultureInfo.InvariantCulture));
         var ranks = Enumerable.Range(1, gs.Count).ToArray();
         var r = new Rng(0xC0FFEEUL + (ulong)seed);
@@ -718,11 +771,12 @@ internal static class Fixture
             var top = chg.Tokens.Zip(chg.Durs).GroupBy(x => x.First).Select(x => (Tok: x.Key, Beats: x.Sum(y => y.Second)))
                 .OrderByDescending(x => x.Beats).ThenBy(x => x.Tok).Take(6).ToList();
             string form = string.Join(" ", g.Secs.Select(s => s.Kind));
+            var regions = Regions(g, seed);
             string summary = JsonSerializer.Serialize(new Dictionary<string, object>
             {
                 ["key"] = key, ["form"] = form, ["chord_changes"] = chg.Tokens.Length, ["loops"] = loops.Count,
                 ["top_chords"] = top.Select(x => new object[] { Roman(x.Tok, g.Minor ? 9 : 0, g.Minor), Math.Round(x.Beats, 2) }).ToArray(),
-                ["modulations"] = Array.Empty<object>(),
+                ["modulations"] = regions.Skip(1).Select(x => new object[] { x.Start, Keys.Name(x.Tonic, x.Minor ? "minor" : "major") }).ToArray(),
             });
             Ins("""
                 INSERT INTO work(work_id, title, canonical_artist, original_artist, search_artists, work_date, work_date_precision,
@@ -741,14 +795,17 @@ internal static class Fixture
                   analyzed_at, n_bars, n_notes, duration_s, end_beat, style, form_grammar, tonic_pc, mode, key_confidence,
                   key_ambiguous_fifth, key_review, norm_shift, shift_parallel, native_bpm, beats_per_bar, first_downbeat,
                   melody_track, melody_channel, melody_method, melody_confidence, interval_entropy, n_melody_notes,
-                  bass_track, bass_channel, main_loop, summary_json)
+                  bass_track, bass_channel, main_loop, summary_json, normalization, target_bpm)
                 VALUES ($1, $2, $3, $4, $5, 1, 'fixture', '2026-01-01T00:00:00Z', $6, $7, $8, $9, 'pop', $10, $11, $12, $13, $14, 0,
-                  $15, $16, $17, $18, $19, 1, 2, 'name', $20, $21, $22, 2, 3, $23, $24)
+                  $15, $16, $17, $18, $19, 1, 2, 'name', $20, $21, $22, 2, 3, $23, $24, 'relative', 120.0)
                 """, g.WorkId, g.I + 1, $"data/songs/{g.WorkId}/score.mid", $"data/normalized/{g.WorkId}.mid",
                 $"data/songs/{g.WorkId}/analysis.json", (int)Math.Round((g.EndBeat - g.Fd) / g.Bpb), g.Mel.Count + g.Bass.Count + chg.Tokens.Length * 3,
                 durS, g.EndBeat, form, g.Tonic, g.Minor ? "minor" : "major", g.KeyConf, g.Fifth ? 1 : 0, shift,
                 ((0 - g.Tonic + 5) % 12 + 12) % 12 - 5, g.Bpm, g.Bpb, g.Fd, g.MelConf, PipelineDb.IntervalEntropy(melPitches), g.Mel.Count,
                 mainLoop == null ? null : g.Minor ? $"{mainLoop.Roman} ({mainLoop.RomanMinor})" : mainLoop.Roman, summary);
+            foreach (var x in regions)
+                Ins("INSERT INTO key_region(work_id, start_beat, end_beat, tonic_pc, mode, shift) VALUES ($1, $2, $3, $4, $5, $6)",
+                    g.WorkId, x.Start, x.End, x.Tonic, x.Minor ? "minor" : "major", RelativeShift(x.Tonic, x.Minor));
             var cd = chg.Tokens.Select((t, i) => t * 8 + Features.DurClass(chg.Durs[i])).ToArray();
             var kf = Enumerable.Range(0, Math.Max(0, chg.Tokens.Length - 1)).Select(i =>
                 ((chg.Tokens[i + 1] / 3 - chg.Tokens[i] / 3) % 12 + 12) % 12 * 9 + chg.Tokens[i] % 3 * 3 + chg.Tokens[i + 1] % 3).ToArray();

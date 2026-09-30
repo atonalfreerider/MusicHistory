@@ -83,6 +83,30 @@ public class UnitTests
     }
 
     [Fact]
+    public void ChartWeekFromAnotherYearNeverOrdersSameYearSongs()
+    {
+        // Review finding canon #0, live DB rows: So Much in Love (Q7549445: 1963, '1963', year precision, first chart
+        // week 1963-06-01) and Please Please Me (Q736799: 1963, '1963', year precision, first chart week 1964-02-01 --
+        // the 1964 US reissue). Please Please Me came out in January 1963, so the 245-day chart gap must not make
+        // So Much in Love the earlier song: a week from another year says nothing about order within 1963.
+        var smil = DateOrder.Make(1963, "1963", 9, "1963-06-01");
+        var ppm = DateOrder.Make(1963, "1963", 9, "1964-02-01");
+        Assert.False(DateOrder.Earlier(smil, ppm));
+        Assert.False(DateOrder.Earlier(ppm, smil));
+        Assert.False(ppm.HasChart);
+        Assert.Equal(1963.5, ppm.TimeValue, 9);
+        Assert.True(smil.HasChart);
+        // I Saw Her Standing There (1963, charted 1964-02-08) is likewise contemporaneous with So Much in Love.
+        Assert.False(DateOrder.Earlier(smil, DateOrder.Make(1963, "1963", 9, "1964-02-08")));
+        // Day and month precision songs do not pick up an out-of-year week either.
+        Assert.False(DateOrder.Make(1963, "1963-03-22", 11, "1964-02-01").HasChart);
+        Assert.False(DateOrder.Make(1963, "1963-03", 10, "1964-02-01").HasChart);
+        // A week in the song's own year still orders, as before.
+        Assert.True(DateOrder.Earlier(smil, DateOrder.Make(1963, "1963", 9, "1963-10-05")));
+        Assert.True(DateOrder.Make(1963, "1963-03", 10, "1963-04-06").HasChart);
+    }
+
+    [Fact]
     public void NormalTailAndErfc()
     {
         Assert.Equal(0.157299207050285, Stats.Erfc(1.0), 12);

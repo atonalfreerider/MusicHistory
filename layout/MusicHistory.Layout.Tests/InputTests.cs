@@ -122,6 +122,45 @@ public class InputTests
         }
     }
 
+    [Fact]
+    public void DemoSetsEntryAndExitKeysForSomeSongs()
+    {
+        // DESIGN.md §10 entry_* / exit_*: the key heard at the excerpt's start / end, NULL for the home key.
+        using var dir = new TempDir();
+        string db = TestSupport.Demo(dir, "keys.db", 500);
+        var rows = TestSupport.Rows(db, """
+            SELECT node_id, tonic_pc, mode, entry_tonic_pc, entry_mode, exit_tonic_pc, exit_mode FROM song_node ORDER BY node_id
+            """);
+        int entries = 0, exits = 0;
+        foreach (var r in rows)
+        {
+            for (int k = 3; k <= 5; k += 2)
+            {
+                Assert.Equal(r[k] == null, r[k + 1] == null);   // tonic and mode are NULL together
+                if (r[k] == null) continue;
+                if (k == 3) entries++;
+                else exits++;
+                Assert.InRange((long)r[k]!, 0, 11);
+                Assert.Contains((string)r[k + 1]!, new[] { "major", "minor" });
+                Assert.False((long)r[k]! == (long)r[1]! && (string)r[k + 1]! == (string)r[2]!, $"node {r[0]}: a home key must be NULL");
+            }
+        }
+        Assert.InRange(entries, 1, rows.Count / 4);
+        Assert.InRange(exits, 1, rows.Count / 4);
+        Assert.Contains(rows, r => r[3] == null && r[5] != null);   // leaves in another key only
+        Assert.Contains(rows, r => r[3] != null && r[5] == null);   // enters in another key only
+    }
+
+    [Fact]
+    public void DemoTreeIsUnchangedByTheKeyColumns()
+    {
+        // The entry/exit keys use their own RNG: seed 42 keeps the documented shape (1000 songs: 41 roots,
+        // largest subtree 481, depth 10), so existing demo graphs and layouts stay comparable.
+        using var dir = new TempDir();
+        var s = DemoGraph.Write(dir.File("shape.db"), 1000, 42, TestSupport.FixedTime);
+        Assert.Equal((41, 481, 10, 2114), (s.Roots, s.MaxDescendants, s.MaxDepth, s.Edges));
+    }
+
     // ------------------------------------------------------------------ refusals
 
     private static string Mutated(TempDir dir, params string[] sql)

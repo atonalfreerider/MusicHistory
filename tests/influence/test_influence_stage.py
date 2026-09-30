@@ -7,6 +7,9 @@ planted influence (``make-fixture``), runs ``run`` twice and ``export``, and che
 * invariants: node ids 1..N in (time_value, work_id) order, one tree edge into every non-root
   from its parent, sources earlier, CHECK(source < target), <= 8 secondary edges per target;
 * MIDI paths relative to the graph DB folder with '/' separators;
+* entry/exit keys (song_node.entry_*/exit_*) equal the fixture's key_region at the excerpt start
+  and just before its end (NULL = home key), and graph_meta normalization/target_bpm come from the
+  pipeline's analyze meta, not the exporting shell's environment;
 * determinism (identical bytes with a fixed generated_at; export reproduces run);
 * the file opens and answers queries in SQLite **3.15.0**, the version Unity ships
   (Unity-FDG's own sqlite3.dll, copied to a temp dir and loaded with ctypes);
@@ -15,6 +18,7 @@ planted influence (``make-fixture``), runs ``run`` twice and ``export``, and che
 
 from __future__ import annotations
 
+import bisect
 import ctypes
 import hashlib
 import json
@@ -129,6 +133,56 @@ def test_midi_paths_are_relative(fixture_run):
         assert re.fullmatch(r"[A-G][b#]? (major|minor)", key)
 
 
+def _region_at(regions: list[tuple], beat: float) -> tuple:
+    """musichistory.identity.key.ShiftMap.region_at: last region starting at or before the beat, else the first."""
+    starts = [r[0] for r in regions]
+    return regions[max(0, bisect.bisect_right(starts, beat + 1e-6) - 1)]
+
+
+def test_entry_exit_keys_follow_key_regions(fixture_run):
+    """DESIGN.md §10 entry_*/exit_*: the key region at the excerpt start and just before its end, NULL = home key."""
+    c = sqlite3.connect(fixture_run["db"])
+    regions: dict[str, list[tuple]] = {}
+    for wid, start, tonic, mode in c.execute("SELECT work_id, start_beat, tonic_pc, mode FROM key_region ORDER BY work_id, start_beat"):
+        regions.setdefault(wid, []).append((start, tonic, mode))
+    assert any(len(r) > 1 for r in regions.values()), "the fixture should contain modulating songs"
+    g = sqlite3.connect(fixture_run["graph"])
+    outside = 0
+    for wid, tonic, mode, start, end, et, em, xt, xm in g.execute(
+            "SELECT work_id, tonic_pc, mode, excerpt_start_beat, excerpt_end_beat, entry_tonic_pc, entry_mode, "
+            "exit_tonic_pc, exit_mode FROM song_node"):
+        def expect(beat: float) -> tuple:
+            _, t, m = _region_at(regions[wid], beat)
+            return (None, None) if (t, m) == (tonic, mode) else (t, m)
+        assert (et, em) == expect(start), wid
+        assert (xt, xm) == expect(end - 1e-3), wid
+        outside += et is not None or xt is not None
+    assert outside > 0
+
+
+def test_graph_meta_comes_from_analyze_meta_not_environment(fixture_run, tmp_path):
+    """Review finding influence #0: analyze records its settings in meta analyze_normalization /
+    analyze_target_bpm; export must label the graph with them whatever the exporting shell's environment."""
+    db = tmp_path / "data" / "musichistory.sqlite"
+    db.parent.mkdir(parents=True)
+    shutil.copyfile(fixture_run["db"], db)
+    c = sqlite3.connect(db)
+    c.execute("DELETE FROM meta WHERE key IN ('normalization', 'analyze_normalization', 'analyze_target_bpm')")
+    c.executemany("INSERT INTO meta(key, value) VALUES (?, ?)", [("analyze_normalization", "parallel"), ("analyze_target_bpm", "100")])
+    if {"normalization", "target_bpm"} <= {r[1] for r in c.execute("PRAGMA table_info(song)")}:
+        c.execute("UPDATE song SET normalization = 'parallel', target_bpm = 100")   # what analyze records per song
+    c.commit()
+    c.close()
+    graph = tmp_path / "data" / "graph" / "music_graph.db"
+    env = dict(os.environ, MUSICHISTORY_NORMALIZATION="relative", MUSICHISTORY_TARGET_BPM="120")
+    r = subprocess.run([str(fixture_run["exe"]), "export", "--db", str(db), "--graph", str(graph), "--root", str(tmp_path),
+                        "--generated-at", STAMP], capture_output=True, text=True, env=env)
+    assert r.returncode == 0, r.stderr
+    assert "WARNING" not in r.stderr
+    meta = dict(sqlite3.connect(graph).execute("SELECT key, value FROM graph_meta"))
+    assert (meta["normalization"], meta["target_key"], meta["target_bpm"]) == ("parallel", "C major / C minor", "100")
+
+
 def test_summary_and_evidence_are_short_facts(fixture_run):
     g = sqlite3.connect(fixture_run["graph"])
     for (summary,) in g.execute("SELECT summary FROM song_node WHERE summary IS NOT NULL"):
@@ -210,7 +264,8 @@ def test_opens_in_sqlite_3_15(fixture_run, tmp_path):
         assert query("PRAGMA integrity_check") == [("ok",)]
         assert query("SELECT COUNT(*) FROM song_node") == [(str(N_SONGS),)]
         # The loader's shape of query: nodes + songs + edges.
-        rows = query("SELECT n.id, s.title, s.year, s.key_name, s.midi_path, s.excerpt_start_beat, s.tree_parent_node "
+        rows = query("SELECT n.id, s.title, s.year, s.key_name, s.midi_path, s.excerpt_start_beat, s.tree_parent_node, "
+                     "s.entry_tonic_pc, s.entry_mode, s.exit_tonic_pc, s.exit_mode "
                      "FROM nodes n JOIN song_node s ON s.node_id = n.id ORDER BY n.id")
         assert len(rows) == N_SONGS
         e315 = query("SELECT source_node, target_node, kind, primary_channel FROM influence_edges ORDER BY id")

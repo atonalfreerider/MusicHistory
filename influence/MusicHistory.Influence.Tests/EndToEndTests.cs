@@ -98,6 +98,52 @@ public class EndToEndTests
         }
         Assert.Equal("1", g.CreateCommand() is var c1 && (c1.CommandText = "SELECT value FROM graph_meta WHERE key='schema_version'") != null ? c1.ExecuteScalar() as string : null);
 
+        // Entry/exit keys (DESIGN.md §10) follow the fixture's key_region rows: the region at the excerpt
+        // start and just before its end, NULL when that region is the home key. Some fixture songs modulate.
+        using (var pk = new SqliteConnection($"Data Source={db};Mode=ReadOnly;Pooling=False"))
+        {
+            pk.Open();
+            var regions = new Dictionary<string, List<(double Start, int Tonic, string Mode)>>();
+            using (var cmd = pk.CreateCommand())
+            {
+                cmd.CommandText = "SELECT work_id, start_beat, tonic_pc, mode FROM key_region ORDER BY work_id, start_beat";
+                using var r = cmd.ExecuteReader();
+                while (r.Read())
+                {
+                    if (!regions.TryGetValue(r.GetString(0), out var l)) regions[r.GetString(0)] = l = [];
+                    l.Add((r.GetDouble(1), r.GetInt32(2), r.GetString(3)));
+                }
+            }
+            Assert.Contains(regions.Values, l => l.Count > 1);
+            int nonHome = 0;
+            using var cmd2 = g.CreateCommand();
+            cmd2.CommandText = """
+                SELECT work_id, tonic_pc, mode, excerpt_start_beat, excerpt_end_beat, entry_tonic_pc, entry_mode, exit_tonic_pc, exit_mode
+                FROM song_node
+                """;
+            using var rr = cmd2.ExecuteReader();
+            while (rr.Read())
+            {
+                var regs = regions[rr.GetString(0)];
+                (int?, string?) Expect(double beat)
+                {
+                    var k = regs.Last(x => x.Start <= beat + 1e-6 || x == regs[0]);
+                    return k.Tonic == rr.GetInt32(1) && k.Mode == rr.GetString(2) ? (null, null) : (k.Tonic, k.Mode);
+                }
+                (int?, string?) Got(int i) => (rr.IsDBNull(i) ? null : rr.GetInt32(i), rr.IsDBNull(i + 1) ? null : rr.GetString(i + 1));
+                Assert.Equal(Expect(rr.GetDouble(3)), Got(5));
+                Assert.Equal(Expect(rr.GetDouble(4) - 1e-3), Got(7));
+                if (!rr.IsDBNull(5) || !rr.IsDBNull(7)) nonHome++;
+            }
+            Assert.True(nonHome > 0, "no excerpt enters or leaves outside its home key; the fixture should exercise that");
+        }
+        // graph_meta settings come from the fixture's analyze meta, not from the environment.
+        using (var cmd = g.CreateCommand())
+        {
+            cmd.CommandText = "SELECT value FROM graph_meta WHERE key = 'normalization'";
+            Assert.Equal("relative", cmd.ExecuteScalar() as string);
+        }
+
         // Pipeline tables replaced, one tree_node per song.
         using var pc = new SqliteConnection($"Data Source={db};Mode=ReadOnly;Pooling=False");
         pc.Open();
@@ -114,6 +160,10 @@ public class EndToEndTests
         int withEdge = neg.TryGetProperty("with_edge", out var we) ? we.GetInt32() : 0;
         Assert.True(withEdge <= 0.02 * neg.GetProperty("present").GetInt32(), $"{withEdge} commonplace pairs with an edge");
         Assert.Equal(n, rep.RootElement.GetProperty("graph").GetProperty("nodes").GetInt32());
+        Assert.Equal(0, rep.RootElement.GetProperty("warnings").GetArrayLength());
+        Assert.Contains("analyze_normalization", rep.RootElement.GetProperty("graph_meta_settings").GetProperty("normalization_source").GetString());
+        Assert.Contains("analyze_target_bpm", rep.RootElement.GetProperty("graph_meta_settings").GetProperty("target_bpm_source").GetString());
+        Assert.True(rep.RootElement.GetProperty("graph").GetProperty("excerpts_outside_home_key").GetInt32() > 0);
         g.Close();
         pc.Close();
         SqliteConnection.ClearAllPools();

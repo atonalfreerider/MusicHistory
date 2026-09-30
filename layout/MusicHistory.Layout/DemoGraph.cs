@@ -10,7 +10,8 @@ namespace MusicHistory.Layout;
 /// layout can be built and tested before the real pipeline has produced a graph. Everything is a
 /// deterministic function of (N, seed): songs "Song 0001".."Song N" by "Artist 001".., original
 /// dates 1940–2025 (year, month or day precision, time_value as in §8.1), keys and the relative
-/// normalization shift, BPM, meter, bar-aligned excerpts, placeholder MIDI paths
+/// normalization shift, BPM, meter, bar-aligned excerpts (about one in eight entering or leaving
+/// outside the home key: entry_* / exit_* set), placeholder MIDI paths
 /// (<c>../songs/&lt;work_id&gt;/score.mid</c>, which do not exist), and an influence forest grown by
 /// recency-weighted preferential attachment among clearly earlier songs, with 0–3 secondary
 /// edges per song (seed 42, 1000 songs: 41 roots, largest subtree 481, depth 10). graph_meta
@@ -34,6 +35,8 @@ internal static class DemoGraph
         public double Bpm, BeatsPerBar, FirstDownbeat;
         public int Bars;
         public double ExcerptStart, ExcerptEnd;
+        public int? EntryTonic, ExitTonic;       // key heard at the excerpt's start / end when not the home key
+        public string? EntryMode, ExitMode;
         public int Parent = -1;
         public int CanonRank;
         public double KeyConfidence, MelodyConfidence;
@@ -191,6 +194,35 @@ internal static class DemoGraph
             later[i] = n - 1 - lastEqual;
         }
 
+        // Excerpts that start or end outside the home key (DESIGN.md §10 entry_* / exit_*; NULL = home key),
+        // so the viewer's key handoff can be tried: about one song in eight. A separate RNG keeps the rest
+        // of the graph exactly as before for the same (N, seed).
+        var keyRng = new Random(unchecked(seed * 7919 + 104729));
+        foreach (var s in songs)
+        {
+            double u = keyRng.NextDouble();
+            if (u >= 0.12) continue;
+            string mode = s.Minor ? "minor" : "major";
+            if (u < 0.06)
+            {
+                // A final lift: the excerpt ends a semitone or a whole step up.
+                s.ExitTonic = (s.Tonic + 1 + keyRng.Next(2)) % 12;
+                s.ExitMode = mode;
+            }
+            else if (u < 0.09)
+            {
+                // The excerpt opens in the relative key and ends at home.
+                s.EntryTonic = (s.Tonic + (s.Minor ? 3 : 9)) % 12;
+                s.EntryMode = s.Minor ? "major" : "minor";
+            }
+            else
+            {
+                // The whole excerpt sits in a bridge in the dominant.
+                s.EntryTonic = s.ExitTonic = (s.Tonic + 7) % 12;
+                s.EntryMode = s.ExitMode = mode;
+            }
+        }
+
         int roots = songs.Count(s => s.Parent < 0);
         double minTime = songs[0].Time, maxTime = songs[^1].Time;
         string full = Path.GetFullPath(path);
@@ -221,10 +253,11 @@ internal static class DemoGraph
             Insert(c, tx, """
                 INSERT INTO song_node(node_id, work_id, title, artist, year, release_date, date_precision, time_value, canon_rank,
                   tonic_pc, mode, key_name, norm_shift, native_bpm, beats_per_bar, first_downbeat, midi_path, normalized_midi_path,
-                  midi_source, excerpt_start_beat, excerpt_end_beat, tree_parent_node, tree_root_node, tree_depth, ref_count,
+                  midi_source, excerpt_start_beat, excerpt_end_beat, entry_tonic_pc, entry_mode, exit_tonic_pc, exit_mode,
+                  tree_parent_node, tree_root_node, tree_depth, ref_count,
                   ref_norm, katz, descendants, in_degree, out_degree, key_confidence, melody_confidence, main_loop, summary)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22,
-                  $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34)
+                  $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38)
                 """,
                 Enumerable.Range(0, n).Select(i =>
                 {
@@ -236,7 +269,7 @@ internal static class DemoGraph
                         string.Create(CultureInfo.InvariantCulture, $"Artist {s.Artist + 1:D3}"), s.Year, s.ReleaseDate, s.Precision, s.Time,
                         s.CanonRank, s.Tonic, mode, KeyName(s.Tonic, mode), NormShift(s.Tonic, s.Minor), s.Bpm, s.BeatsPerBar,
                         s.FirstDownbeat, $"../songs/{s.WorkId}/score.mid", $"../normalized/{s.WorkId}.mid", "demo", s.ExcerptStart,
-                        s.ExcerptEnd, s.Parent >= 0 ? s.Parent + 1 : null, root[i] + 1, depth[i], outDeg[i],
+                        s.ExcerptEnd, s.EntryTonic, s.EntryMode, s.ExitTonic, s.ExitMode, s.Parent >= 0 ? s.Parent + 1 : null, root[i] + 1, depth[i], outDeg[i],
                         later[i] > 0 ? Math.Round(outDeg[i] / (double)later[i], 6) : null, Math.Round(katz[i], 6), desc[i], inDeg[i],
                         outDeg[i], s.KeyConfidence, s.MelodyConfidence, s.MainLoop, s.Summary,
                     };

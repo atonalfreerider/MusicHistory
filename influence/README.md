@@ -24,7 +24,7 @@ python -m musichistory influence [-- --threads 4 --param name=value ...]
 | `score-pairs --db <db> --pairs <json or file> [--debug]` | force-scores `[[a_id, b_id], ...]` and prints per-channel E, mu, sigma, z, Z, S, PMI, segments as JSON; `--debug` lists the counted n-grams and the null's composition |
 | `export --db <db> --graph <graph.db> [--root <repo>] [--generated-at <iso>]` | rewrites the graph DB from the pipeline tables only |
 | `retree --db <db> --graph <graph.db> [--param name=value]...` | redoes credit, tree and export from the stored `pair_score` rows (no rescoring), for trying tree rules |
-| `make-fixture --out <db> --songs N [--seed S]` | synthetic pipeline DB (db.py schema, realistic sizes) with planted influence in `known_influence` |
+| `make-fixture --out <db> --songs N [--seed S]` | synthetic pipeline DB (db.py schema, realistic sizes) with planted influence in `known_influence`, analyze-style settings meta and `key_region` rows (about a third of the songs modulate) |
 | `bench --db <db> [--pairs N]` | single-thread kernel throughput, AVX2-vs-scalar equality check, cost per pair |
 
 `--generated-at` fixes `graph_meta.generated_at`, which makes two runs byte-identical.
@@ -38,6 +38,9 @@ folder with `/` separators (e.g. `../songs/<work_id>/score.mid`).
 1. **Order**: `time_value` per §8.1. A year-precision song whose first Hot 100 week falls in its
    year uses that week as its day, so the chart-week rule can order it without contradicting the
    time axis; any "earlier" verdict must also agree with `time_value` (else contemporaneous).
+   A first chart week from **another year** than `work_year` (canon stores the earliest week of any
+   recording: a reissue or cover of a pre-1958 or uncharted original) is ignored entirely, so it
+   never orders two same-year songs (DESIGN §10).
 2. **n-grams**: FNV-1a 64 over `kind|n|tokens` (little-endian int32 tokens). Melody `int` 5/7,
    `deg` 6, `mtype` 4 and bass `int` 5 / `deg` 6 on the pitch-change sequence (repeats
    collapsed); chords `chg` 3-6, `cd` 3-4 (evidence) and `keyfree` 3-4 (candidates only); loop
@@ -129,6 +132,21 @@ and a CHECK constraint: readable by SQLite 3.15.0 (verified with Unity-FDG's own
 `similarity = 1 - 2^(-S/16)`; `weight` = `0.5 + 0.5 similarity` for tree edges, `similarity` for
 secondary ones (layout multiplies by its tree/secondary spring factors). `evidence` and
 `summary` are channel facts and Resonance form labels only, never text from a MIDI file.
+
+`song_node.entry_tonic_pc/entry_mode` and `exit_tonic_pc/exit_mode` are the `key_region` (analyze)
+containing `excerpt_start_beat` and `excerpt_end_beat - 0.001`, looked up as analyze's
+`ShiftMap.region_at` does (last region starting at or before the beat); NULL when that region is
+the song's home key or the song has no regions. The viewer hands off in these keys, so an excerpt
+that sits in a modulation keeps the key continuous (the report counts
+`graph.excerpts_outside_home_key`).
+
+`graph_meta.normalization` / `target_key` / `target_bpm` describe how analyze made the normalized
+MIDI, read from the pipeline DB, never from the exporting shell: meta `analyze_normalization` /
+`analyze_target_bpm`; else the exported songs' `song.normalization` / `song.target_bpm` (majority,
+warned when mixed); else the legacy meta key `normalization` (old fixtures); only then
+`MUSICHISTORY_NORMALIZATION` / `MUSICHISTORY_TARGET_BPM`, else relative / 120 -- each fallback
+logged as `WARNING: graph_meta: ...` and listed in the report's `warnings` (sources in
+`graph_meta_settings`).
 
 ## Tests
 

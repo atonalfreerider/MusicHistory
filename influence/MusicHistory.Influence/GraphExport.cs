@@ -16,7 +16,152 @@ internal sealed class GraphSummary
     public List<GraphEdge> EdgeRows = [];
     public int[] InDegree = [], OutDegree = [];
     public (double Start, double End)[] Excerpts = [];
+    public int ExcerptsOutsideHomeKey;
     public string ContentSha256 = "";
+    public ExportSettings Settings = null!;
+}
+
+/// <summary>
+/// How the normalized MIDI files were made (graph_meta normalization / target_key / target_bpm) and
+/// where that was read from. <see cref="Warnings"/> is non-empty when the pipeline DB could not say
+/// and a weaker source (environment, default) was used, or when the songs disagree with the label.
+/// </summary>
+internal sealed record ExportSettings(string Normalization, string NormalizationSource, double TargetBpm, string TargetBpmSource,
+    IReadOnlyList<string> Warnings)
+{
+    public string TargetKey => Normalization == "parallel" ? "C major / C minor" : "C major / A minor";
+
+    public const string MetaNormalization = "analyze_normalization";
+    public const string MetaTargetBpm = "analyze_target_bpm";
+    public const string LegacyMetaNormalization = "normalization";   // written only by old make-fixture DBs
+    public const string EnvNormalization = "MUSICHISTORY_NORMALIZATION";
+    public const string EnvTargetBpm = "MUSICHISTORY_TARGET_BPM";
+
+    /// <summary>
+    /// The analyze stage is the source of truth (DESIGN.md §10), never the exporting process. In order:
+    /// pipeline meta <c>analyze_normalization</c> / <c>analyze_target_bpm</c> (analyze writes them only
+    /// when every analyzed song used the same settings); else the exported songs' own
+    /// <c>song.normalization</c> / <c>song.target_bpm</c> (the majority, with a warning if they are
+    /// mixed or partly unknown); else the legacy meta key <c>normalization</c> (old fixtures); only
+    /// then the environment, and finally relative / 120 -- both with a warning.
+    /// </summary>
+    public static ExportSettings Resolve(SqliteConnection pipeline, IReadOnlyCollection<string> workIds, Func<string, string?> env)
+    {
+        var warnings = new List<string>();
+        var only = workIds as IReadOnlySet<string> ?? new HashSet<string>(workIds, StringComparer.Ordinal);
+        var songNorm = new Dictionary<string, int>(StringComparer.Ordinal);
+        var songBpm = new Dictionary<double, int>();
+        int normUnknown = 0, bpmUnknown = 0;
+        bool hasNorm = PipelineDb.HasColumn(pipeline, "song", "normalization"), hasBpm = PipelineDb.HasColumn(pipeline, "song", "target_bpm");
+        if (hasNorm || hasBpm)
+        {
+            using var cmd = pipeline.CreateCommand();
+            cmd.CommandText = $"SELECT work_id, {(hasNorm ? "normalization" : "NULL")}, {(hasBpm ? "target_bpm" : "NULL")} FROM song";
+            using var r = cmd.ExecuteReader();
+            while (r.Read())
+            {
+                if (!only.Contains(r.GetString(0))) continue;
+                if (r.IsDBNull(1) || ValidNormalization(r.GetValue(1) as string) is not { } n) normUnknown++;
+                else songNorm[n] = songNorm.GetValueOrDefault(n) + 1;
+                if (r.IsDBNull(2) || ParseBpm(Convert.ToString(r.GetValue(2), CultureInfo.InvariantCulture)) is not { } b) bpmUnknown++;
+                else songBpm[b] = songBpm.GetValueOrDefault(b) + 1;
+            }
+        }
+        else
+        {
+            normUnknown = bpmUnknown = only.Count;
+        }
+
+        // Normalization.
+        string? metaNorm = PipelineDb.Meta(pipeline, MetaNormalization);
+        string? norm = ValidNormalization(metaNorm), normSrc = null;
+        if (metaNorm != null && norm == null) warnings.Add($"pipeline meta {MetaNormalization} = '{metaNorm}' is not 'relative' or 'parallel'; ignored");
+        if (norm != null)
+        {
+            normSrc = $"pipeline meta {MetaNormalization}";
+            int other = songNorm.Where(kv => kv.Key != norm).Sum(kv => kv.Value);
+            if (other > 0)
+                warnings.Add($"pipeline meta {MetaNormalization} = '{norm}', but {other} exported song(s) have another song.normalization ({Mix(songNorm, normUnknown)})");
+        }
+        else if (songNorm.Count > 0)
+        {
+            norm = songNorm.OrderByDescending(kv => kv.Value).ThenBy(kv => kv.Key, StringComparer.Ordinal).First().Key;
+            normSrc = "song.normalization of the exported songs";
+            if (songNorm.Count > 1 || normUnknown > 0)
+                warnings.Add($"no pipeline meta {MetaNormalization} and the exported songs' song.normalization is mixed or partly unknown " +
+                             $"({Mix(songNorm, normUnknown)}); labelled '{norm}' (majority). Re-run analyze so every song uses one setting");
+        }
+        else if (ValidNormalization(PipelineDb.Meta(pipeline, LegacyMetaNormalization)) is { } legacy)
+        {
+            norm = legacy;
+            normSrc = $"pipeline meta {LegacyMetaNormalization} (legacy)";
+        }
+        else if (ValidNormalization(env(EnvNormalization)) is { } envNorm)
+        {
+            norm = envNorm;
+            normSrc = $"environment {EnvNormalization}";
+            warnings.Add($"the pipeline DB does not record the normalization (no meta {MetaNormalization}, no song.normalization); " +
+                         $"using {EnvNormalization}='{envNorm}' of the exporting process, which may differ from how analyze made the normalized MIDI");
+        }
+        else
+        {
+            norm = "relative";
+            normSrc = "default";
+            warnings.Add($"the pipeline DB does not record the normalization (no meta {MetaNormalization}, no song.normalization) and " +
+                         $"{EnvNormalization} is not set; assuming 'relative'");
+        }
+
+        // Target BPM.
+        string? metaBpmText = PipelineDb.Meta(pipeline, MetaTargetBpm);
+        double? bpm = ParseBpm(metaBpmText);
+        string? bpmSrc = null;
+        if (metaBpmText != null && bpm == null) warnings.Add($"pipeline meta {MetaTargetBpm} = '{metaBpmText}' is not a positive number; ignored");
+        if (bpm is double mb)
+        {
+            bpmSrc = $"pipeline meta {MetaTargetBpm}";
+            int other = songBpm.Where(kv => kv.Key != mb).Sum(kv => kv.Value);
+            if (other > 0)
+                warnings.Add($"pipeline meta {MetaTargetBpm} = {Fmt(mb)}, but {other} exported song(s) have another song.target_bpm ({Mix(songBpm, bpmUnknown)})");
+        }
+        else if (songBpm.Count > 0)
+        {
+            bpm = songBpm.OrderByDescending(kv => kv.Value).ThenBy(kv => kv.Key).First().Key;
+            bpmSrc = "song.target_bpm of the exported songs";
+            if (songBpm.Count > 1 || bpmUnknown > 0)
+                warnings.Add($"no pipeline meta {MetaTargetBpm} and the exported songs' song.target_bpm is mixed or partly unknown " +
+                             $"({Mix(songBpm, bpmUnknown)}); labelled {Fmt(bpm.Value)} (majority). Re-run analyze so every song uses one setting");
+        }
+        else if (ParseBpm(env(EnvTargetBpm)) is double eb)
+        {
+            bpm = eb;
+            bpmSrc = $"environment {EnvTargetBpm}";
+            warnings.Add($"the pipeline DB does not record the target BPM (no meta {MetaTargetBpm}, no song.target_bpm); " +
+                         $"using {EnvTargetBpm}={Fmt(eb)} of the exporting process, which may differ from how analyze made the normalized MIDI");
+        }
+        else
+        {
+            bpm = 120;
+            bpmSrc = "default";
+            warnings.Add($"the pipeline DB does not record the target BPM (no meta {MetaTargetBpm}, no song.target_bpm) and " +
+                         $"{EnvTargetBpm} is not set; assuming 120");
+        }
+        return new ExportSettings(norm, normSrc!, bpm.Value, bpmSrc!, warnings);
+    }
+
+    private static string? ValidNormalization(string? v) => v?.Trim().ToLowerInvariant() is "relative" or "parallel" ? v.Trim().ToLowerInvariant() : null;
+
+    private static double? ParseBpm(string? v) =>
+        double.TryParse(v?.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out double d) && double.IsFinite(d) && d > 0 ? Math.Round(d, 6) : null;
+
+    public static string Fmt(double bpm) => bpm.ToString("R", CultureInfo.InvariantCulture);
+
+    private static string Mix<T>(Dictionary<T, int> counts, int unknown) where T : notnull
+    {
+        var parts = counts.OrderByDescending(kv => kv.Value).ThenBy(kv => Convert.ToString(kv.Key, CultureInfo.InvariantCulture), StringComparer.Ordinal)
+            .Select(kv => $"{Convert.ToString(kv.Key, CultureInfo.InvariantCulture)}: {kv.Value}").ToList();
+        if (unknown > 0) parts.Add($"unknown: {unknown}");
+        return string.Join(", ", parts);
+    }
 }
 
 /// <summary>
@@ -26,7 +171,9 @@ internal sealed class GraphSummary
 /// </summary>
 internal static class GraphExport
 {
-    public static GraphSummary Export(SqliteConnection pipeline, string graphPath, string repoRoot, Params p, string generatedAt, TextWriter log)
+    /// <param name="env">Environment lookup (tests pass their own); only a last resort for the normalization settings.</param>
+    public static GraphSummary Export(SqliteConnection pipeline, string graphPath, string repoRoot, Params p, string generatedAt, TextWriter log,
+        Func<string, string?>? env = null)
     {
         var stats = new LoadStats();
         var songs = PipelineDb.LoadSongs(pipeline, stats);
@@ -77,6 +224,12 @@ internal static class GraphExport
         var excerpts = Excerpts.Compute(songs, tree, p);
         var summary = new GraphSummary { Nodes = n, Excerpts = excerpts, InDegree = new int[n], OutDegree = new int[n] };
 
+        // Keys heard where each excerpt starts and ends (DESIGN.md §10 entry_* / exit_*; NULL = home key),
+        // so the walkthrough hands off in the key actually heard when an excerpt sits in a modulation.
+        var regions = PipelineDb.LoadKeyRegions(pipeline, byId.Keys.ToHashSet(StringComparer.Ordinal));
+        var local = songs.Select(s => KeyRegions.Local(s, regions.GetValueOrDefault(s.WorkId), excerpts[s.Index].Start, excerpts[s.Index].End)).ToArray();
+        summary.ExcerptsOutsideHomeKey = local.Count(k => k.EntryTonic != null || k.ExitTonic != null);
+
         // Edge rows: by target, the tree edge first, then secondary edges by S.
         var ordered = tree.Edges.OrderBy(e => e.Pair.B).ThenBy(e => e.Kind == "tree" ? 0 : 1)
             .ThenByDescending(e => e.Pair.S).ThenBy(e => e.Pair.A).ToList();
@@ -101,17 +254,19 @@ internal static class GraphExport
         summary.MinTime = songs.Min(s => s.TimeValue);
         summary.MaxTime = songs.Max(s => s.TimeValue);
 
-        string normalization = PipelineDb.Meta(pipeline, "normalization") ?? Environment.GetEnvironmentVariable("MUSICHISTORY_NORMALIZATION") ?? "relative";
-        string targetBpm = Environment.GetEnvironmentVariable("MUSICHISTORY_TARGET_BPM") ?? "120";
+        // How the normalized MIDI was made comes from the analyze stage's records, not from this process.
+        var settings = ExportSettings.Resolve(pipeline, byId.Keys, env ?? Environment.GetEnvironmentVariable);
+        summary.Settings = settings;
+        foreach (string w in settings.Warnings) log.WriteLine($"WARNING: graph_meta: {w}");
         string? resonance = songs.Where(s => !string.IsNullOrEmpty(s.ResonanceCommit)).GroupBy(s => s.ResonanceCommit!)
             .OrderByDescending(g => g.Count()).ThenBy(g => g.Key, StringComparer.Ordinal).Select(g => g.Key).FirstOrDefault();
         var meta = new List<(string, string?)>
         {
             ("schema_version", Schema.GraphSchemaVersion.ToString(CultureInfo.InvariantCulture)),
             ("generated_at", generatedAt),
-            ("normalization", normalization),
-            ("target_key", normalization == "parallel" ? "C major / C minor" : "C major / A minor"),
-            ("target_bpm", double.Parse(targetBpm, CultureInfo.InvariantCulture).ToString("R", CultureInfo.InvariantCulture)),
+            ("normalization", settings.Normalization),
+            ("target_key", settings.TargetKey),
+            ("target_bpm", ExportSettings.Fmt(settings.TargetBpm)),
             ("min_time", summary.MinTime.ToString("R", CultureInfo.InvariantCulture)),
             ("max_time", summary.MaxTime.ToString("R", CultureInfo.InvariantCulture)),
             ("song_count", n.ToString(CultureInfo.InvariantCulture)),
@@ -153,10 +308,11 @@ internal static class GraphExport
             Insert(g, tx, """
                 INSERT INTO song_node(node_id, work_id, title, artist, year, release_date, date_precision, time_value, canon_rank,
                   tonic_pc, mode, key_name, norm_shift, native_bpm, beats_per_bar, first_downbeat, midi_path, normalized_midi_path,
-                  midi_source, excerpt_start_beat, excerpt_end_beat, tree_parent_node, tree_root_node, tree_depth, ref_count,
+                  midi_source, excerpt_start_beat, excerpt_end_beat, entry_tonic_pc, entry_mode, exit_tonic_pc, exit_mode,
+                  tree_parent_node, tree_root_node, tree_depth, ref_count,
                   ref_norm, katz, descendants, in_degree, out_degree, key_confidence, melody_confidence, main_loop, summary)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22,
-                  $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34)
+                  $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38)
                 """,
                 songs.Select(s => new object?[]
                 {
@@ -165,6 +321,7 @@ internal static class GraphExport
                     s.FirstDownbeat, RepoRoot.Relative(s.MidiPath, repoRoot, graphDir),
                     s.NormalizedMidiPath is { Length: > 0 } nm ? RepoRoot.Relative(nm, repoRoot, graphDir) : null,
                     s.MidiSource, excerpts[s.Index].Start, excerpts[s.Index].End,
+                    local[s.Index].EntryTonic, local[s.Index].EntryMode, local[s.Index].ExitTonic, local[s.Index].ExitMode,
                     tree.Parent[s.Index] >= 0 ? tree.Parent[s.Index] + 1 : null, tree.Root[s.Index] + 1, tree.Depth[s.Index],
                     tree.RefCount[s.Index], tree.RefNorm[s.Index], tree.Katz[s.Index], tree.Descendants[s.Index],
                     summary.InDegree[s.Index], summary.OutDegree[s.Index], s.KeyConfidence, s.MelodyConfidence, s.MainLoop,
@@ -186,7 +343,9 @@ internal static class GraphExport
         SqliteConnection.ClearAllPools();
         File.Move(tmp, graphPath, overwrite: true);
         log.WriteLine($"graph: {n} nodes, {summary.Edges} edges ({summary.TreeEdges} tree, {summary.SecondaryEdges} secondary), " +
-                      $"{summary.Roots} roots -> {graphPath}");
+                      $"{summary.Roots} roots, {summary.ExcerptsOutsideHomeKey} excerpts entering or leaving outside the home key; " +
+                      $"normalization {settings.Normalization} ({settings.NormalizationSource}), target BPM {ExportSettings.Fmt(settings.TargetBpm)} " +
+                      $"({settings.TargetBpmSource}) -> {graphPath}");
         return summary;
     }
 

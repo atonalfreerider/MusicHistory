@@ -31,6 +31,8 @@ internal static class GraphSchema
           normalized_midi_path TEXT,
           midi_source TEXT,
           excerpt_start_beat REAL NOT NULL, excerpt_end_beat REAL NOT NULL,
+          entry_tonic_pc INTEGER, entry_mode TEXT,
+          exit_tonic_pc INTEGER, exit_mode TEXT,
           tree_parent_node INTEGER, tree_root_node INTEGER NOT NULL, tree_depth INTEGER NOT NULL,
           ref_count INTEGER NOT NULL, ref_norm REAL, katz REAL, descendants INTEGER NOT NULL,
           in_degree INTEGER NOT NULL, out_degree INTEGER NOT NULL,
