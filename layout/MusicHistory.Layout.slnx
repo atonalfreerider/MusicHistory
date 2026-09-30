@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="MusicHistory.Layout/MusicHistory.Layout.csproj" />
+  <Project Path="MusicHistory.Layout.Tests/MusicHistory.Layout.Tests.csproj" />
+</Solution>

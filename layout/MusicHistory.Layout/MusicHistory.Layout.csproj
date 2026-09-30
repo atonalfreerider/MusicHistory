@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>MusicHistory.Layout</RootNamespace>
+    <AssemblyName>MusicHistory.Layout</AssemblyName>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Shaders are compiled to HLSL/DXIL at build time by ComputeSharp's source generator. -->
+    <PackageReference Include="ComputeSharp" Version="3.2.0" />
+    <!-- 10.0.12 pulls a SQLitePCLRaw without NU190x advisories (0 warnings). -->
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.12" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="MusicHistory.Layout.Tests" />
+  </ItemGroup>
+
+</Project>

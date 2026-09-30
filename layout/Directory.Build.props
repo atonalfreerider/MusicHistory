@@ -1,0 +1,17 @@
+<Project>
+  <!-- Shared by the layout console app and its tests. ComputeSharp's D3D12 backend is
+       Windows-only, so the target is net10.0-windows (plain net10.0 raises 37 x CA1416).
+       Invariant culture everywhere: positions are written as REAL through parameters, and
+       no number is ever formatted with the machine's locale. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <Deterministic>true</Deterministic>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize Condition="'$(Configuration)' == 'Release'">true</Optimize>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+</Project>
