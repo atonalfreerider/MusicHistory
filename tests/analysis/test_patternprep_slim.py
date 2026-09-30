@@ -132,3 +132,33 @@ def test_check_slim_rejects_empty_results():
         pp.check_slim({**s, "sections": []})
     with pytest.raises(pp.AnalysisError, match="no pitched notes"):
         pp.check_slim({**s, "notes": [[0.0, 1.0, 36, 1, 10, 1.0]]})
+
+
+def _bar(start, end, num=4, den=4):
+    return {"Start": start, "End": end, "Numerator": num, "Denominator": den}
+
+
+def test_measures_keep_a_short_bar_as_its_own_run():
+    """Review 'analyze' (bar grid): Resonance cuts a bar short when a meter arrives mid-bar;
+    the next bars have the same num/den on a shifted grid and must not join the short bar's run
+    (real case: the only 4/4 time signature at tick 100 of PPQ 384 -> bars from beat 0.2604)."""
+    from musichistory.identity.meter import Meter
+
+    b = bundle()
+    b["Measures"] = [_bar(0, 0.2604)] + [_bar(0.2604 + 4 * k, 4.2604 + 4 * k) for k in range(8)]
+    s = pp.slim_from_bundle(b, commit="abc")
+    assert s["measures"] == [[0.0, 4, 4, 1], [0.2604, 4, 4, 8]]
+    m = Meter.from_slim(s)
+    assert m.is_downbeat(4.2604) and not m.is_downbeat(4.0) and m.metric_class(8.2604) == 0
+    assert m.bar_start(0.2604) == 0.2604 and m.bar_start(5.0) == 4.2604
+
+    # A meter restated mid-bar: [0,4) [4,6) (cut at the new event) [6,10) [10,14).
+    b["Measures"] = [_bar(0, 4), _bar(4, 6), _bar(6, 10), _bar(10, 14)]
+    assert pp.slim_from_bundle(b, commit="abc")["measures"] == [[0.0, 4, 4, 2], [6.0, 4, 4, 2]]
+    # A bar off its run's grid opens a run even without an End; the normal case still merges.
+    b["Measures"] = [{"Start": 0, "Numerator": 4, "Denominator": 4}, {"Start": 3, "Numerator": 4, "Denominator": 4},
+                     {"Start": 7, "Numerator": 4, "Denominator": 4}]
+    assert pp.slim_from_bundle(b, commit="abc")["measures"] == [[0.0, 4, 4, 1], [3.0, 4, 4, 2]]
+    b["Measures"] = [_bar(3 * k, 3 * k + 3, 3, 4) for k in range(5)] + [_bar(15, 18, 6, 8), _bar(18, 21, 6, 8)]
+    assert pp.slim_from_bundle(b, commit="abc")["measures"] == [[0.0, 3, 4, 5], [15.0, 6, 8, 2]]
+    assert pp.SLIM_VERSION >= 2  # slims cached before this fix carry the merged runs

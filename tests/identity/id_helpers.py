@@ -6,6 +6,8 @@ from pathlib import Path
 
 import mido
 
+from musichistory.analysis.patternprep import SLIM_VERSION
+
 # I-vi-IV-V in C, one chord per bar; a stepwise tune on top.
 PROGRESSION = [(60, (0, 4, 7)), (57, (0, 3, 7)), (53, (0, 4, 7)), (55, (0, 4, 7))]
 TUNE = [72, 74, 76, 77, 79, 77, 76, 74]
@@ -64,7 +66,7 @@ def slim(chords: list, notes: list, *, end_beat: float = 64.0, key_runs: list | 
          sections: list | None = None) -> dict:
     """A minimal slim analysis dict (DESIGN.md §7 schema)."""
     return {
-        "version": 5, "slim_version": 1, "resonance_commit": "test", "midi_sha256": None, "style": "pop",
+        "version": 5, "slim_version": SLIM_VERSION, "resonance_commit": "test", "midi_sha256": None, "style": "pop",
         "song_bars": int(end_beat // 4), "end_beat": end_beat, "duration_s": end_beat / 2,
         "tempos": tempos or [[0.0, 500000]], "measures": measures or [[0.0, 4, 4, int(end_beat // 4)]],
         "chords": chords, "sections": sections or [{"first_bar": 0, "bar_count": int(end_beat // 4), "family": 0,

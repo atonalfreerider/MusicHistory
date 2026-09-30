@@ -86,12 +86,13 @@ class SongIdentity:
             "bass_track": self.bass.track if self.bass else None,
             "bass_channel": self.bass.channel if self.bass else None,
             "main_loop": self.main_loop, "summary_json": _json(self.summary),
+            "normalization": self.normalization,   # the frame of key_region shifts and all tokens
         }
 
     def to_db(self, conn: sqlite3.Connection, work_id: str, *, commit: bool = True, **song_columns) -> None:
         """Replace this work's rows in song / key_region / chord_seq / loop / melody_line.
         ``song_columns`` supplies the stage's columns (candidate_id, midi_path,
-        normalized_midi_path, patterns_path, ...) and may override any computed one."""
+        normalized_midi_path, patterns_path, target_bpm, ...) and may override any computed one."""
         row = {"work_id": work_id, "candidate_id": None, "midi_path": None, "normalized_midi_path": None,
                "patterns_path": None, "analysis_ok": 1, "error": None,
                "analyzed_at": dt.datetime.now(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ"), **self.song_row(), **song_columns}
@@ -235,7 +236,7 @@ def extract(slim: dict, features: dict | None = None, *, normalization: str | No
         key_votes={s: [v[0], v[1]] for s, v in est.votes.items()},
         regions=regs, chords=seqs, loops=loops, melody=mel, bass=bass,
         interval_entropy=melmod.interval_entropy(mel.pitches) if mel else 0.0,
-        native_bpm=native_bpm(slim), beats_per_bar=round(bpb, 4), first_downbeat=meter.bar_start(first_note),
+        native_bpm=native_bpm(slim), beats_per_bar=round(bpb, 4), first_downbeat=meter.first_downbeat(first_note),
         n_bars=int(slim.get("song_bars") or 0), n_notes=len(notes), duration_s=float(slim.get("duration_s") or 0.0),
         end_beat=end_beat, style=slim.get("style") or "", form_grammar=slim.get("form_grammar") or "",
         resonance_commit=slim.get("resonance_commit") or "",

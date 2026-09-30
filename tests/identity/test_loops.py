@@ -93,3 +93,48 @@ def test_loops_from_slim_normalize_by_the_reference_visit_region():
     assert lp.coverage_beats == 48.0 and lp.visit_starts == [0.0, 48.0]
     assert loops.main_loop(out, minor=False) == "I-V-vi-IV"
     assert loops.main_loop(out, minor=True) == "I-V-vi-IV (III-VII-i-VI)"
+
+
+def _section(family, start, end, transpose=0):
+    return {"first_bar": int(start // 4), "bar_count": int((end - start) // 4), "family": family, "role": "Chorus",
+            "letter": "A", "start": start, "end": end, "loops": 1, "cycle_beats": 16.0, "transpose": transpose,
+            "variation": "", "group": -1}
+
+
+def _modulating_song():
+    """C major, then D major from beat 64. The chorus's first visit (4 bars, beat 0) is in C;
+    two 8-bar visits in D (transpose +2) make the 8-bar length the reference. Resonance spells
+    the pattern loop in the first visit's key: C G Am F."""
+    chords = [[0, 4, 0, ""], [4, 8, 7, ""], [8, 12, 9, "m"], [12, 16, 5, ""]]
+    chords += [[16 + 4 * i, 20 + 4 * i, (2, 7)[i % 2], ("m", "")[i % 2]] for i in range(12)]
+    chords += [[64 + 4 * i, 68 + 4 * i, (2, 9, 11, 7)[i % 4], ("", "", "m", "")[i % 4]] for i in range(16)]
+    sections = [_section(0, 0.0, 16.0), _section(1, 16.0, 64.0), _section(0, 64.0, 96.0, 2),
+                _section(0, 96.0, 128.0, 2)]
+    patterns = [{"family": 0, "reference": 2, "loop_bars": 4, "loop_beats": 16.0, "visits": 3, "passes": 2,
+                 "role": "Chorus", "loop": [[0, 4, 0, ""], [4, 8, 7, ""], [8, 12, 9, "m"], [12, 16, 5, ""]]}]
+    return slim(chords, [], end_beat=128.0, key_runs=[[0.0, 64.0, 0, False], [64.0, 128.0, 2, False]],
+                patterns=patterns, sections=sections)
+
+
+def test_loop_is_normalized_in_the_key_resonance_spelled_it():
+    """Review 'analyze' (loop key frame): the reference visit is transposed (+2) and lies in
+    another key region (shift -2), but the loop is spelled in the first visit's key. The loop
+    must come out as the reference visit's own chg normalization (I-V-vi-IV), not bVII-IV-v-bIII."""
+    s = _modulating_song()
+    out = loops.from_slim(s, lambda b: 0 if b < 64 else -2)
+    assert len(out) == 1
+    assert out[0].cycle_tokens == [0, 21, 28, 15] and out[0].roman == "I-V-vi-IV"
+    # A missing reference falls back to the first visit (transpose 0 by construction).
+    s["patterns"][0]["reference"] = -1
+    assert loops.from_slim(s, lambda b: 0 if b < 64 else -2)[0].cycle_tokens == [0, 21, 28, 15]
+
+
+def test_loop_tokens_match_the_reference_visits_chord_tokens_end_to_end():
+    from musichistory.identity import extract
+
+    ident = extract.extract(_modulating_song(), None, normalization="relative")
+    assert [(r.start, r.tonic, r.shift) for r in ident.regions] == [(0.0, 0, 0), (64.0, 2, -2)]
+    chg = ident.chords[("chg", "L1")]
+    at_ref = [t for t, st in zip(chg.tokens, chg.starts) if 64 <= st < 80]
+    assert at_ref == [0, 21, 28, 15]
+    assert ident.loops[0].cycle_tokens == at_ref and ident.main_loop == "I-V-vi-IV"

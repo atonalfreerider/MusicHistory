@@ -66,6 +66,10 @@ def test_stage_end_to_end(data, capsys):
     assert r2["analysis_ok"] == 1 and r2["tonic_pc"] == 2 and r2["norm_shift"] == -2 and r2["native_bpm"] == 90.0
     assert r3["analysis_ok"] == 0 and "PatternPrep exit" in r3["error"]
     assert r1["midi_path"].endswith("songs/R1/score.mid") and r1["patterns_path"].endswith("songs/R1/analysis.json")
+    for r in (r1, r2):  # the frame and tempo each song was built with, and the corpus-wide meta
+        assert r["normalization"] == config.NORMALIZATION and r["target_bpm"] == config.TARGET_BPM
+    assert db.get_meta(conn, "analyze_normalization") == config.NORMALIZATION
+    assert float(db.get_meta(conn, "analyze_target_bpm")) == config.TARGET_BPM
     for wid in ("R1", "R2"):
         assert (config.SONGS / wid / "score.mid").exists() and (config.SONGS / wid / "analysis.json").exists()
         norm = mido.MidiFile(str(config.NORMALIZED / f"{wid}.mid"))

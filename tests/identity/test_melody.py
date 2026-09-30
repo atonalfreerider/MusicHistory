@@ -102,3 +102,24 @@ def test_polyphony_counts_chord_onsets_only():
     assert st.polyphony == 0.0 and st.occupation == pytest.approx(1.0)
     triads = doubled + [n(b, 1, 79, 1, 1) for b in range(64)]
     assert m.lane_stats((1, 1), triads, 64.0, lambda b: 0).polyphony == 1.0
+
+
+def test_lines_keep_their_downbeats_when_bar_lines_are_off_the_absolute_grid():
+    """Review 'analyze' (bar grid): a first 4/4 at tick 100 of PPQ 384 puts every bar line at
+    x.2604. Quantizing onsets to an absolute 1/12 grid (x.25) moved every note off its bar line
+    and made every metric class 3; onsets are quantized on their own bar's grid instead."""
+    off = 100 / 384
+    meter = Meter([(0.0, 4, 4, 1), (round(off, 4), 4, 4, 40)])
+    notes = []
+    for b in range(40):
+        t = off + 4 * b
+        notes += [n(t + k, 1, 72 + (k * 2 + b) % 7, 3, 3, 1.0) for k in range(4)]
+        notes += [n(t + 0.5, 0.5, 74, 3, 3, 1.0)]
+        notes += [n(t, 2, 36, 2, 2, 0.9), n(t + 2, 2, 43, 2, 2, 0.9)]
+    mel = m.select_melody(notes, None, lambda b: 0, meter)
+    assert mel.met[:5] == [0, 2, 1, 1, 1] and mel.met.count(0) == 40
+    assert mel.onsets[0] == pytest.approx(off, abs=1e-3) and mel.durs[:2] == [0.5, 0.5]
+    bass = m.select_bass(notes, None, lambda b: 0, meter, exclude=(3, 3))
+    assert bass.met[:2] == [0, 1] and bass.met.count(0) == 40
+    # Without a meter (or on the absolute grid) quantization is unchanged.
+    assert m.quantize(off) == 0.25 and m.quantize(4.51, M44) == 4.5

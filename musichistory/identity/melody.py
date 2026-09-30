@@ -18,7 +18,8 @@ depend on the key the file was written in: a transposed copy picks the same lane
 
 The chosen notes become one line: skyline (highest note per onset, cut at the next onset),
 grace notes removed (< 1/8 beat before a note within 2 semitones), onsets quantized to
-1/12 beat (16ths and triplets), rests absorbed (each note lasts until the next onset).
+1/12 beat (16ths and triplets) of their bar's grid, rests absorbed (each note lasts until
+the next onset).
 The bass line is the lowest-note skyline of the bass lane, cleaned the same way.
 """
 
@@ -89,8 +90,19 @@ def skyline(notes: list[Note], highest: bool = True) -> list[tuple[float, float,
     return out
 
 
-def cleanup(line: list[tuple[float, float, int]], *, highest: bool = True) -> list[tuple[float, float, int]]:
-    """Grace notes out, onsets on the 1/12 grid, rests absorbed into the previous note."""
+def quantize(t: float, meter: Meter | None = None) -> float:
+    """Onset on the 1/12-beat grid of its own bar (unrounded). Bar lines need not sit on
+    multiples of 1/12 (a first time signature at tick 100 of PPQ 384 puts every bar line at
+    x.2604); snapping to an absolute grid would move every note off its bar line and lose
+    the downbeats. Without a meter (or with bars on the absolute grid) this is round(t * 12) / 12."""
+    origin = meter.bar_start(t) if meter is not None else 0.0
+    return origin + math.floor((t - origin) * GRID + 0.5) / GRID
+
+
+def cleanup(line: list[tuple[float, float, int]], *, highest: bool = True,
+            meter: Meter | None = None) -> list[tuple[float, float, int]]:
+    """Grace notes out, onsets on the 1/12 grid (of their bar, given a meter), rests absorbed
+    into the previous note."""
     kept = []
     for i, (t, d, p) in enumerate(line):
         if i + 1 < len(line):
@@ -98,21 +110,22 @@ def cleanup(line: list[tuple[float, float, int]], *, highest: bool = True) -> li
             if d < GRACE_BEATS and t2 - t < GRACE_BEATS and abs(p2 - p) <= 2:
                 continue
         kept.append((t, d, p))
-    grid: dict[int, tuple[int, float]] = {}
+    grid: dict[float, tuple[int, float, float]] = {}   # rounded slot -> (pitch, length, slot)
     for t, d, p in kept:
-        q = math.floor(t * GRID + 0.5)
-        cur = grid.get(q)
+        q = quantize(t, meter)
+        key = round(q, 6)
+        cur = grid.get(key)
         if cur is None or (p > cur[0] if highest else p < cur[0]):
-            grid[q] = (p, d)
+            grid[key] = (p, d, q)
     slots = sorted(grid)
     out = []
-    for i, q in enumerate(slots):
-        p, d = grid[q]
+    for i, key in enumerate(slots):
+        p, d, q = grid[key]
         if i + 1 < len(slots):
-            dur = (slots[i + 1] - q) / GRID
+            dur = grid[slots[i + 1]][2] - q
         else:
             dur = max(1, math.floor(d * GRID + 0.5)) / GRID
-        out.append((round(q / GRID, 6), round(dur, 6), p))
+        out.append((key, round(dur, 6), p))
     return out
 
 
@@ -120,7 +133,7 @@ def build_line(notes: list[Note], shift_at: Callable[[float], int], meter: Meter
                channel: int | None, method: str, confidence: float) -> Line:
     raw = skyline(notes, highest)
     shifted = [(t, d, p + shift_at(t)) for t, d, p in raw]
-    clean = cleanup(shifted, highest=highest)
+    clean = cleanup(shifted, highest=highest, meter=meter)
     return Line([c[0] for c in clean], [c[1] for c in clean], [int(c[2]) for c in clean],
                 [meter.metric_class(c[0]) for c in clean], track, channel, method, round(confidence, 3))
 

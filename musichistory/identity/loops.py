@@ -3,7 +3,8 @@
 A section family's consensus loop is cyclic, and where the segmentation starts it is an
 accident (a 6/8 fixture came out as Am-F-G-C instead of C-Am-F-G). So a loop is reduced to:
 
-1. L1 tokens in the normalized frame (the key region of the family's reference visit),
+1. L1 tokens in the normalized frame of the family's reference visit (its key region's
+   shift plus its ``transpose``, since Resonance spells the loop in the first visit's key),
    rests dropped, passing chords (< 0.75 beat) absorbed, repeats collapsed, and the last
    chord merged into the first when they are equal (the loop wraps around);
 2. its primitive period (C F C F -> C F), kept when it has 2..8 changes;
@@ -127,6 +128,20 @@ def identity(tokens: list[int], durs: list[float]) -> tuple[str, int, str]:
     return ".".join(map(str, cyc)), (n - k) % n, ".".join(map(str, rhy))
 
 
+def loop_shift(sections: list[dict], visits: list[dict], ref: int, shift_at: Callable[[float], int]) -> int:
+    """Normalization shift for a family's pattern loop.
+
+    Resonance spells the loop in the key of the family's *first* visit (FormPatterns writes
+    ``Transpose(state, -T)`` with T relative to the first visit), while the reference is the
+    earliest visit of the most common length, which may be a transposed later visit. The
+    reference visit sounds at loop + T, so normalizing it with its own region's shift means
+    loop + T + shift_ref: the same tokens as that visit's ``chg`` normalization."""
+    if 0 <= ref < len(sections):
+        s = sections[ref]
+        return shift_at(float(s["start"])) + int(s.get("transpose", 0) or 0)
+    return shift_at(float(visits[0]["start"])) if visits else shift_at(0.0)  # the first visit: T = 0
+
+
 def from_slim(slim: dict, shift_at: Callable[[float], int], *, minor_frame_tonic: int = 9) -> list[Loop]:
     sections = slim.get("sections") or []
     by_family: dict[int, list[dict]] = {}
@@ -137,9 +152,7 @@ def from_slim(slim: dict, shift_at: Callable[[float], int], *, minor_frame_tonic
         if max(p.get("passes", 0), p.get("visits", 0)) < 2:
             continue
         visits = by_family.get(p["family"], [])
-        ref = p.get("reference", -1)
-        anchor = sections[ref]["start"] if 0 <= ref < len(sections) else (visits[0]["start"] if visits else 0.0)
-        shift = shift_at(float(anchor))
+        shift = loop_shift(sections, visits, p.get("reference", -1), shift_at)
         steps = [(float(c[0]), float(c[1]), -1 if c[2] < 0 else l1((int(c[2]) + shift) % 12, c[3])) for c in p["loop"]]
         reduced = reduce_loop(steps)
         if reduced is None:

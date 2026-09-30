@@ -40,7 +40,9 @@ from pathlib import Path
 
 from .. import config
 
-SLIM_VERSION = 1  # bump when the slim conversion changes (stage reuse checks it)
+# Bump when the slim conversion changes (the analyze stage's and select's reuse checks use it).
+# 2: a short bar (a meter arriving mid-bar) closes its ``measures`` run.
+SLIM_VERSION = 2
 
 SECTION_ROLES = {"Intro", "Verse", "Pre-Chorus", "Chorus", "Post-Chorus", "Bridge", "Interlude",
                  "Outro", "Refrain", "Coda", "Theme"}
@@ -399,14 +401,30 @@ def _tempos(bundle: dict) -> tuple[list[list], _TempoMap]:
     return merged, tmap
 
 
+MEASURE_TOL = 1e-3  # beats
+
+
 def _measures(bundle: dict) -> list[list]:
+    """Runs ``[start_beat, num, den, bars]`` whose bar lines are exactly ``start + k * num * 4 / den``.
+
+    Resonance ends a bar at the next time-signature event (MidiCycleAnalysis), so a meter
+    that arrives mid-bar (a first time signature after tick 0, a restated meter) leaves a
+    short bar followed by bars of the same num/den on a shifted grid. A short bar therefore
+    closes its run, and a bar that does not start on its run's grid opens a new one; merging
+    on num/den alone would put every later bar line out of phase with the real bars."""
     runs: list[list] = []
+    cut = False  # the previous bar was shorter than its meter's bar
     for m in bundle.get("Measures") or ():
         num, den = int(m.get("Numerator", 4)), int(m.get("Denominator", 4))
-        if runs and runs[-1][1] == num and runs[-1][2] == den:
+        start = float(m["Start"])
+        length = num * 4.0 / den if num > 0 and den > 0 else 0.0
+        if (runs and not cut and length > 0 and runs[-1][1] == num and runs[-1][2] == den
+                and abs(runs[-1][0] + runs[-1][3] * length - start) < MEASURE_TOL):
             runs[-1][3] += 1
         else:
-            runs.append([_r(m["Start"]), num, den, 1])
+            runs.append([_r(start), num, den, 1])
+        end = m.get("End")
+        cut = end is not None and float(end) - start < length - MEASURE_TOL
     return runs
 
 
