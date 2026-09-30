@@ -42,6 +42,9 @@ def run(args: argparse.Namespace) -> int:
     extra = [a for a in (args.extra or []) if a != "--"]
     if name == "influence":
         cmd = [exe, "run", "--db", str(config.PIPELINE_DB), "--graph", str(config.GRAPH_DB), *extra]
+    elif extra[:1] == ["themes"]:
+        # python -m musichistory layout -- themes [options]: the lyric-themes layout (DESIGN §12)
+        cmd = [exe, "themes", str(config.GRAPH / "themes_graph.db"), *extra[1:]]
     else:
         cmd = [exe, str(config.GRAPH_DB), *extra]
     print(" ".join(cmd), flush=True)

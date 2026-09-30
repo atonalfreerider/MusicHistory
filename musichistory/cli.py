@@ -19,6 +19,7 @@ STAGES: dict[str, tuple[str, str]] = {
     "analyze": ("musichistory.identity.stage", "Resonance analysis + normalized chord/melody identities"),
     "influence": ("musichistory.dotnet", "Score influence and build the tree (C#)"),
     "layout": ("musichistory.dotnet", "GPU force-directed layout with time pinned (C#)"),
+    "themes": ("musichistory.themes.stage", "Classify lyric themes, resolve singers, export the themes graph"),
     "status": ("musichistory.status", "Show progress of every stage"),
 }
 
