@@ -403,6 +403,21 @@ roman TEXT, size INTEGER NOT NULL)` and `song_family(node_id INTEGER NOT NULL, f
 NOT NULL, strength REAL NOT NULL, first_beat REAL, PRIMARY KEY(node_id, family_id))`;
 `graph_meta.edge_semantics = 'identity_lineage'` (or `'strict_evidence'`).
 
+**As built** (influence/README.md, "Identity lineages"): credit and strong influencers use the
+design score multiplied by a squared *closeness* (matching chord qualities, rhythm, loop length
+and strength), so a big family forms a tree of close versions instead of one star
+(`FineAgreement=0` restores the plain formula; the largest hub fell from 88 to 25 children);
+loop families use only rows that repeat and whose chords are confirmed on the chord sequence;
+quality tolerance (E vs Em) applies only to cycles of 4+ chords; cadences are detected on
+consecutive changes resolving on a bar line; 16-bar blues folds into the 12-bar family; labels
+are ASCII (`bVII`). A strict-evidence graph carries no `edge_semantics` key (read a missing key
+as `strict_evidence`); an edge's family is the one family both songs share whose label equals
+the edge's `evidence` (unique by construction). Real data: 603 families (54 named schemas,
+469 loops, 13 progression schemas, 67 strong matches), 828 songs in at least one family, 659
+tree edges, 353 roots, chains up to 13 songs; an audit of 140 edges found the named identity
+sounding in both songs' excerpts in 140/140. Viewer: edges are clickable (edge card), walkthrough
+mode **family** (key 4, or M to cycle).
+
 **Viewer.** For identity lineages the HUD says "Shares: <identity>" (plus "strong match, z …"
 when flagged) instead of bits/z, and a walkthrough mode **family** plays every song of the
 selected edge's identity in time order.
