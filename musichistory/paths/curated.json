@@ -1,0 +1,119 @@
+{
+ "about": "Featured paths for the walkthrough (python -m musichistory paths). Each path is a work_id sequence whose consecutive songs are joined by an identity-lineage edge (earlier -> later) and all have a preview; the stage checks the rules and skips a path that breaks them. Titles and descriptions are hand-written and describe the music only. Edit freely, then rerun the stage.",
+ "paths": [
+  {
+   "id": "four-chords-worldwide",
+   "title": "Four chords, three styles",
+   "description": "Reggae, British pop and Latin pop built on the same I–V–vi–IV loop, the 'axis' progression; the chord check hears it in all three previews.",
+   "works": [
+    "Q497506",
+    "Q418833",
+    "Q1991449"
+   ]
+  },
+  {
+   "id": "axis-u2-to-capaldi",
+   "title": "The axis loop, 1987–2018",
+   "description": "Thirty years of the I–V–vi–IV loop handed from song to song: U2's slow build, Madonna's gospel-pop, the Cranberries, the Black Eyed Peas and a Lewis Capaldi piano ballad.",
+   "works": [
+    "Q1131812",
+    "Q139917982",
+    "Q169298",
+    "Q1460758",
+    "Q60768202"
+   ]
+  },
+  {
+   "id": "doo-wop-changes",
+   "title": "Doo-wop changes",
+   "description": "The I–vi–IV–V progression of 1950s doo-wop, carried from Paul Anka's teen pop to Coldplay's string-driven 2008 hit; the chord check hears it in every preview.",
+   "works": [
+    "Q1208770",
+    "Q1135259",
+    "Q626490"
+   ]
+  },
+  {
+   "id": "rock-and-roll-twelve-bars",
+   "title": "Rock 'n' roll twelve bars",
+   "description": "The 12-bar blues form under four early rock 'n' roll records, from Carl Perkins's rockabilly and Buddy Holly to Ray Charles and Dion.",
+   "works": [
+    "Q885912",
+    "Q1454909",
+    "Q1113979",
+    "Q2261813"
+   ]
+  },
+  {
+   "id": "aeolian-rock",
+   "title": "Minor-key rock: i–bVI–bVII",
+   "description": "The Aeolian i–bVI–bVII move of Layla's riff, passed on to Fleetwood Mac's Go Your Own Way and Prince's Little Red Corvette.",
+   "works": [
+    "Q923966",
+    "Q2387143",
+    "Q2342791"
+   ]
+  },
+  {
+   "id": "minor-shuttle",
+   "title": "The minor shuttle",
+   "description": "A minor chord stepping down two whole tones and back up (i–bVII–bVI–bVII) links Hendrix's All Along the Watchtower, the Stones' Gimme Shelter and Adele's Rolling in the Deep.",
+   "works": [
+    "Q653794",
+    "Q253783",
+    "Q170165"
+   ]
+  },
+  {
+   "id": "chromatic-bass-god-only-knows",
+   "title": "Falling bass: Beach Boys to Ghostbusters",
+   "description": "A bass line sinking by semitones under the chords (degrees b6–5–#4–4) connects God Only Knows, Hello, Goodbye and Ghostbusters.",
+   "works": [
+    "Q632342",
+    "Q281911",
+    "Q1392942"
+   ]
+  },
+  {
+   "id": "chromatic-bass-life-on-mars",
+   "title": "Falling bass: Sinatra to Bowie",
+   "description": "A bass line stepping down chromatically from the sixth degree (6–b6–5–#4) runs from a 1946 Sinatra hit through the baroque pop of Walk Away Renée to Life on Mars?.",
+   "works": [
+    "Q741353",
+    "Q2264484",
+    "Q2077201"
+   ]
+  },
+  {
+   "id": "orbison-to-flowers",
+   "title": "Orbison to Flowers",
+   "description": "Only the Lonely shares an exact bass riff with Duke of Earl; from there the I–vi–ii–V turnaround runs through Oh, Pretty Woman to Miley Cyrus's Flowers.",
+   "works": [
+    "Q3375430",
+    "Q5313004",
+    "Q1472773",
+    "Q115945493"
+   ]
+  },
+  {
+   "id": "andalusian-cadence",
+   "title": "The Andalusian cadence",
+   "description": "The falling minor-key cadence i–bVII–bVI–V, from Ray Charles's Hit the Road Jack to Santa Esmeralda's disco Don't Let Me Be Misunderstood and the Turtles' Happy Together.",
+   "works": [
+    "Q1460009",
+    "Q1242318",
+    "Q2733482"
+   ]
+  },
+  {
+   "id": "summer-place-to-barbie-girl",
+   "title": "A Summer Place to Barbie Girl",
+   "description": "The I–vi–ii–V turnaround, from Percy Faith's 1959 string theme through Redbone's Come and Get Your Love to Aqua's Barbie Girl.",
+   "works": [
+    "Q3990206",
+    "Q2921155",
+    "Q790315"
+   ]
+  }
+ ]
+}

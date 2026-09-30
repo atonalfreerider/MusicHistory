@@ -1,0 +1,4 @@
+# Extra dependencies of the paths stage (python -m musichistory paths): preview tempo/key/chord measurement.
+# Installed 2026-09-30 next to numpy 2.5: librosa 1.0.0 (pulls numba 0.68, scipy 1.18, scikit-learn 1.9, soxr).
+# ffmpeg with the rubberband filter is also required ($FFMPEG, PATH, or C:\ffmpeg-8.1.1-essentials_build\bin).
+librosa>=1.0

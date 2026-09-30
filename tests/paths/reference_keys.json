@@ -1,0 +1,385 @@
+{
+ "about": "Keys of the released recordings as commonly documented (sheet music / reference listings), used to tune and regression-test the preview key estimate (musichistory/paths/audio.py). Songs whose preview may sit in a section in another key are left out.",
+ "songs": [
+  {
+   "work_id": "Q158553",
+   "song": "(I Can't Get No) Satisfaction - The Rolling Stones",
+   "key": "E major"
+  },
+  {
+   "work_id": "Q155016",
+   "song": "...Baby One More Time - Britney Spears",
+   "key": "C minor"
+  },
+  {
+   "work_id": "Q1786521",
+   "song": "A Hard Day's Night - The Beatles",
+   "key": "G major"
+  },
+  {
+   "work_id": "Q653794",
+   "song": "All Along the Watchtower - Jimi Hendrix",
+   "key": "C# minor"
+  },
+  {
+   "work_id": "Q15427702",
+   "song": "All of Me - John Legend",
+   "key": "Ab major"
+  },
+  {
+   "work_id": "Q153064",
+   "song": "Bad Romance - Lady Gaga",
+   "key": "A minor"
+  },
+  {
+   "work_id": "Q139809138",
+   "song": "Beat It - Michael Jackson",
+   "key": "Eb minor"
+  },
+  {
+   "work_id": "Q193319",
+   "song": "Billie Jean - Michael Jackson",
+   "key": "F# minor"
+  },
+  {
+   "work_id": "Q2734366",
+   "song": "Born to Run - Bruce Springsteen",
+   "key": "E major"
+  },
+  {
+   "work_id": "Q1068050",
+   "song": "Chasing Cars - Snow Patrol",
+   "key": "A major"
+  },
+  {
+   "work_id": "Q210482",
+   "song": "Come Together - The Beatles",
+   "key": "D minor"
+  },
+  {
+   "work_id": "Q2083222",
+   "song": "Crazy - Gnarls Barkley",
+   "key": "C minor"
+  },
+  {
+   "work_id": "Q863433",
+   "song": "Creep - Radiohead",
+   "key": "G major"
+  },
+  {
+   "work_id": "Q870786",
+   "song": "Dancing Queen - ABBA",
+   "key": "A major"
+  },
+  {
+   "work_id": "Q2307832",
+   "song": "Don't Stop Believin' - Journey",
+   "key": "E major"
+  },
+  {
+   "work_id": "Q686850",
+   "song": "Dream On - Aerosmith",
+   "key": "F minor"
+  },
+  {
+   "work_id": "Q200799",
+   "song": "Eleanor Rigby - The Beatles",
+   "key": "E minor"
+  },
+  {
+   "work_id": "Q1330171",
+   "song": "Every Breath You Take - The Police",
+   "key": "Ab major"
+  },
+  {
+   "work_id": "Q139917951",
+   "song": "Gangsta's Paradise - Coolio featuring L.V.",
+   "key": "C minor"
+  },
+  {
+   "work_id": "Q253783",
+   "song": "Gimme Shelter - Stones",
+   "key": "C# minor"
+  },
+  {
+   "work_id": "Q2387143",
+   "song": "Go Your Own Way - Fleetwood Mac",
+   "key": "F major"
+  },
+  {
+   "work_id": "Q969635",
+   "song": "Hallelujah - Leonard Cohen",
+   "key": "C major"
+  },
+  {
+   "work_id": "Q139831467",
+   "song": "Hello - Adele",
+   "key": "F minor"
+  },
+  {
+   "work_id": "Q839842",
+   "song": "Help! - The Beatles",
+   "key": "A major"
+  },
+  {
+   "work_id": "Q607742",
+   "song": "Hey Jude - The Beatles",
+   "key": "F major"
+  },
+  {
+   "work_id": "Q281085",
+   "song": "Hey Ya! - OutKast",
+   "key": "G major"
+  },
+  {
+   "work_id": "Q780394",
+   "song": "Hotel California - Eagles",
+   "key": "B minor"
+  },
+  {
+   "work_id": "Q865095",
+   "song": "Hound Dog - Elvis Presley",
+   "key": "C major"
+  },
+  {
+   "work_id": "Q609104",
+   "song": "I Want to Hold Your Hand - The Beatles",
+   "key": "G major"
+  },
+  {
+   "work_id": "Q1971",
+   "song": "Imagine - John Lennon",
+   "key": "C major"
+  },
+  {
+   "work_id": "Q139916760",
+   "song": "Johnny B. Goode - Chuck Berry",
+   "key": "Bb major"
+  },
+  {
+   "work_id": "Q1573997",
+   "song": "Jolene - Dolly Parton",
+   "key": "C# minor"
+  },
+  {
+   "work_id": "Q923966",
+   "song": "Layla - Derek and the Dominos",
+   "key": "D minor"
+  },
+  {
+   "work_id": "Q184259",
+   "song": "Let It Be - The Beatles",
+   "key": "C major"
+  },
+  {
+   "work_id": "Q214430",
+   "song": "Like a Rolling Stone - Bob Dylan",
+   "key": "C major"
+  },
+  {
+   "work_id": "Q1894466",
+   "song": "Livin' on a Prayer - Bon Jovi",
+   "key": "E minor"
+  },
+  {
+   "work_id": "Q957616",
+   "song": "Lose Yourself - Eminem",
+   "key": "D minor"
+  },
+  {
+   "work_id": "Q901333",
+   "song": "Losing My Religion - REM",
+   "key": "A minor"
+  },
+  {
+   "work_id": "Q1999714",
+   "song": "Mr. Brightside - The Killers",
+   "key": "Db major"
+  },
+  {
+   "work_id": "Q1541182",
+   "song": "My Girl - The Temptations",
+   "key": "C major"
+  },
+  {
+   "work_id": "Q155577",
+   "song": "My Heart Will Go On - Celine Dion",
+   "key": "E major"
+  },
+  {
+   "work_id": "Q497506",
+   "song": "No Woman, No Cry - Bob Marley and the Wailers",
+   "key": "C major"
+  },
+  {
+   "work_id": "Q842168",
+   "song": "Penny Lane - The Beatles",
+   "key": "B major"
+  },
+  {
+   "work_id": "Q29051557",
+   "song": "Perfect - Ed Sheeran",
+   "key": "Ab major"
+  },
+  {
+   "work_id": "Q153029",
+   "song": "Poker Face - Lady Gaga",
+   "key": "G# minor"
+  },
+  {
+   "work_id": "Q2000445",
+   "song": "Purple Rain - Prince",
+   "key": "Bb major"
+  },
+  {
+   "work_id": "Q2030651",
+   "song": "Respect - Aretha Franklin",
+   "key": "C major"
+  },
+  {
+   "work_id": "Q56070897",
+   "song": "Rocket Man - Elton John",
+   "key": "Bb major"
+  },
+  {
+   "work_id": "Q170165",
+   "song": "Rolling in the Deep - Adele",
+   "key": "C minor"
+  },
+  {
+   "work_id": "Q14370331",
+   "song": "Royals - Lorde",
+   "key": "D major"
+  },
+  {
+   "work_id": "Q1420378",
+   "song": "Seven Nation Army - White Stripes",
+   "key": "E minor"
+  },
+  {
+   "work_id": "Q28132505",
+   "song": "Shape of You - Ed Sheeran",
+   "key": "C# minor"
+  },
+  {
+   "work_id": "Q931491",
+   "song": "She Loves You - The Beatles",
+   "key": "G major"
+  },
+  {
+   "work_id": "Q485907",
+   "song": "Smells Like Teen Spirit - Nirvana",
+   "key": "F minor"
+  },
+  {
+   "work_id": "Q1036227",
+   "song": "Smooth - Rob Thomas & Santana",
+   "key": "A minor"
+  },
+  {
+   "work_id": "Q166904",
+   "song": "Someone Like You - Adele",
+   "key": "A major"
+  },
+  {
+   "work_id": "Q210485",
+   "song": "Something - The Beatles",
+   "key": "C major"
+  },
+  {
+   "work_id": "Q581952",
+   "song": "Space Oddity - David Bowie",
+   "key": "C major"
+  },
+  {
+   "work_id": "Q192023",
+   "song": "Stairway to Heaven - Led Zeppelin",
+   "key": "A minor"
+  },
+  {
+   "work_id": "Q1513654",
+   "song": "Stand by Me - Ben E. King",
+   "key": "A major"
+  },
+  {
+   "work_id": "Q1352181",
+   "song": "Stayin' Alive - Bee Gees",
+   "key": "F minor"
+  },
+  {
+   "work_id": "Q727067",
+   "song": "Superstition - Stevie Wonder",
+   "key": "Eb minor"
+  },
+  {
+   "work_id": "Q145677",
+   "song": "Take On Me - a-ha",
+   "key": "A major"
+  },
+  {
+   "work_id": "Q17332468",
+   "song": "Thinking Out Loud - Ed Sheeran",
+   "key": "D major"
+  },
+  {
+   "work_id": "Q2562766",
+   "song": "Tiny Dancer - Elton John",
+   "key": "C major"
+  },
+  {
+   "work_id": "Q786778",
+   "song": "Twist and Shout - The Isley Brothers",
+   "key": "D major"
+  },
+  {
+   "work_id": "Q18559542",
+   "song": "Uptown Funk - Mark Ronson featuring Bruno Mars",
+   "key": "D minor"
+  },
+  {
+   "work_id": "Q2452405",
+   "song": "Use Somebody - Kings of Leon",
+   "key": "C major"
+  },
+  {
+   "work_id": "Q626490",
+   "song": "Viva la Vida - Coldplay",
+   "key": "Ab major"
+  },
+  {
+   "work_id": "Q965422",
+   "song": "Walk This Way - Aerosmith",
+   "key": "C major"
+  },
+  {
+   "work_id": "Q2517476",
+   "song": "What's Going On - Marvin Gaye",
+   "key": "E major"
+  },
+  {
+   "work_id": "Q1045517",
+   "song": "Wonderwall - Oasis",
+   "key": "F# minor"
+  },
+  {
+   "work_id": "Q529026",
+   "song": "Yellow - Coldplay",
+   "key": "B major"
+  },
+  {
+   "work_id": "Q202698",
+   "song": "Yesterday - The Beatles",
+   "key": "F major"
+  },
+  {
+   "work_id": "Q838829",
+   "song": "Your Song - Elton John",
+   "key": "Eb major"
+  },
+  {
+   "work_id": "Q169298",
+   "song": "Zombie - The Cranberries",
+   "key": "E minor"
+  }
+ ]
+}
