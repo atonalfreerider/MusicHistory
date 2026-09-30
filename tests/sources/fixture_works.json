@@ -1,0 +1,480 @@
+[
+ {
+  "work_id": "Q609104",
+  "title": "I Want to Hold Your Hand",
+  "artist": "The Beatles",
+  "search_artists": [
+   "The Beatles"
+  ],
+  "work_year": 1963,
+  "canon_rank": 1,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q158553",
+  "title": "(I Can't Get No) Satisfaction",
+  "artist": "The Rolling Stones",
+  "search_artists": [
+   "The Rolling Stones"
+  ],
+  "work_year": 1965,
+  "canon_rank": 2,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q607742",
+  "title": "Hey Jude",
+  "artist": "The Beatles",
+  "search_artists": [
+   "The Beatles"
+  ],
+  "work_year": 1968,
+  "canon_rank": 3,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q1971",
+  "title": "Imagine",
+  "artist": "John Lennon",
+  "search_artists": [
+   "John Lennon"
+  ],
+  "work_year": 1971,
+  "canon_rank": 4,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q485907",
+  "title": "Smells Like Teen Spirit",
+  "artist": "Nirvana",
+  "search_artists": [
+   "Nirvana"
+  ],
+  "work_year": 1991,
+  "canon_rank": 5,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q187745",
+  "title": "Bohemian Rhapsody",
+  "artist": "Queen",
+  "search_artists": [
+   "Queen"
+  ],
+  "work_year": 1975,
+  "canon_rank": 6,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q193319",
+  "title": "Billie Jean",
+  "artist": "Michael Jackson",
+  "search_artists": [
+   "Michael Jackson"
+  ],
+  "work_year": 1982,
+  "canon_rank": 7,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q184259",
+  "title": "Let It Be",
+  "artist": "The Beatles",
+  "search_artists": [
+   "The Beatles"
+  ],
+  "work_year": 1970,
+  "canon_rank": 8,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q666856",
+  "title": "I Will Always Love You",
+  "artist": "Whitney Houston",
+  "search_artists": [
+   "Whitney Houston"
+  ],
+  "work_year": 1974,
+  "canon_rank": 9,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q2030651",
+  "title": "Respect",
+  "artist": "Aretha Franklin",
+  "search_artists": [
+   "Aretha Franklin",
+   "Otis Redding"
+  ],
+  "work_year": 1965,
+  "canon_rank": 10,
+  "original_artist": "Otis Redding"
+ },
+ {
+  "work_id": "Q1352181",
+  "title": "Stayin' Alive",
+  "artist": "Bee Gees",
+  "search_artists": [
+   "Bee Gees"
+  ],
+  "work_year": 1977,
+  "canon_rank": 11,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q281085",
+  "title": "Hey Ya!",
+  "artist": "OutKast",
+  "search_artists": [
+   "OutKast"
+  ],
+  "work_year": 2003,
+  "canon_rank": 12,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q214430",
+  "title": "Like a Rolling Stone",
+  "artist": "Bob Dylan",
+  "search_artists": [
+   "Bob Dylan"
+  ],
+  "work_year": 1965,
+  "canon_rank": 13,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q957616",
+  "title": "Lose Yourself",
+  "artist": "Eminem",
+  "search_artists": [
+   "Eminem"
+  ],
+  "work_year": 2002,
+  "canon_rank": 14,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q1330171",
+  "title": "Every Breath You Take",
+  "artist": "The Police",
+  "search_artists": [
+   "The Police"
+  ],
+  "work_year": 1983,
+  "canon_rank": 15,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q552098",
+  "title": "Rock Around the Clock",
+  "artist": "Bill Haley & His Comets",
+  "search_artists": [
+   "Bill Haley & His Comets"
+  ],
+  "work_year": 1954,
+  "canon_rank": 16,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q2299883",
+  "title": "When Doves Cry",
+  "artist": "Prince",
+  "search_artists": [
+   "Prince"
+  ],
+  "work_year": 1984,
+  "canon_rank": 17,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q678516",
+  "title": "Nothing Compares 2 U",
+  "artist": "Sinéad O'Connor",
+  "search_artists": [
+   "Sinéad O'Connor"
+  ],
+  "work_year": 1990,
+  "canon_rank": 21,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q2449307",
+  "title": "Candle in the Wind '97",
+  "artist": "Elton John",
+  "search_artists": [
+   "Elton John"
+  ],
+  "work_year": 1997,
+  "canon_rank": 22,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q158549",
+  "title": "(Everything I Do) I Do It for You",
+  "artist": "Bryan Adams",
+  "search_artists": [
+   "Bryan Adams"
+  ],
+  "work_year": 1991,
+  "canon_rank": 25,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q949416",
+  "title": "Unchained Melody",
+  "artist": "The Righteous Brothers",
+  "search_artists": [
+   "Les Baxter",
+   "Al Hibbler",
+   "The Righteous Brothers"
+  ],
+  "work_year": 1955,
+  "canon_rank": 28,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q2639231",
+  "title": "Believe",
+  "artist": "Cher",
+  "search_artists": [
+   "Cher"
+  ],
+  "work_year": 1998,
+  "canon_rank": 31,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q744297",
+  "title": "Yeah!",
+  "artist": "Usher featuring Lil Jon and Ludacris",
+  "search_artists": [
+   "Usher featuring Lil Jon and Ludacris"
+  ],
+  "work_year": 2004,
+  "canon_rank": 33,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q1420677",
+  "title": "Like a Prayer",
+  "artist": "Madonna",
+  "search_artists": [
+   "Madonna"
+  ],
+  "work_year": 1989,
+  "canon_rank": 34,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q148511",
+  "title": "Crazy in Love",
+  "artist": "Beyoncé featuring Jay-Z",
+  "search_artists": [
+   "Beyoncé featuring Jay-Z"
+  ],
+  "work_year": 2003,
+  "canon_rank": 43,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q155447",
+  "title": "Umbrella",
+  "artist": "Rihanna featuring Jay-Z",
+  "search_artists": [
+   "Rihanna featuring Jay-Z"
+  ],
+  "work_year": 2007,
+  "canon_rank": 47,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q931481",
+  "title": "Johnny B Goode",
+  "artist": "Chuck Berry",
+  "search_artists": [
+   "Chuck Berry"
+  ],
+  "work_year": 1958,
+  "canon_rank": 48,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q1353423",
+  "title": "Jailhouse Rock",
+  "artist": "Elvis Presley",
+  "search_artists": [
+   "Elvis Presley"
+  ],
+  "work_year": 1957,
+  "canon_rank": 62,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q865095",
+  "title": "Hound Dog",
+  "artist": "Elvis Presley",
+  "search_artists": [
+   "Elvis Presley",
+   "Big Mama Thornton"
+  ],
+  "work_year": 1952,
+  "canon_rank": 92,
+  "original_artist": "Big Mama Thornton"
+ },
+ {
+  "work_id": "Q170165",
+  "title": "Rolling in the Deep",
+  "artist": "Adele",
+  "search_artists": [
+   "Adele"
+  ],
+  "work_year": 2010,
+  "canon_rank": 96,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q14370331",
+  "title": "Royals",
+  "artist": "Lorde",
+  "search_artists": [
+   "Lorde"
+  ],
+  "work_year": 2011,
+  "canon_rank": 105,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q1131812",
+  "title": "With or Without You",
+  "artist": "U2",
+  "search_artists": [
+   "U2"
+  ],
+  "work_year": 1987,
+  "canon_rank": 143,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q725334",
+  "title": "We Found Love",
+  "artist": "Rihanna featuring Calvin Harris",
+  "search_artists": [
+   "Rihanna featuring Calvin Harris"
+  ],
+  "work_year": 2011,
+  "canon_rank": 151,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q672515",
+  "title": "Party Rock Anthem",
+  "artist": "LMFAO featuring Lauren Bennett and GoonRock",
+  "search_artists": [
+   "LMFAO featuring Lauren Bennett and GoonRock"
+  ],
+  "work_year": 2010,
+  "canon_rank": 213,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q2545027",
+  "title": "Hero",
+  "artist": "Enrique Iglesias",
+  "search_artists": [
+   "Enrique Iglesias"
+  ],
+  "work_year": 2001,
+  "canon_rank": 508,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q76566134",
+  "title": "Blinding Lights",
+  "artist": "The Weeknd",
+  "search_artists": [
+   "The Weeknd"
+  ],
+  "work_year": 2019,
+  "canon_rank": 517,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q122332978",
+  "title": "Lose Control",
+  "artist": "Teddy Swims",
+  "search_artists": [
+   "Teddy Swims"
+  ],
+  "work_year": 2023,
+  "canon_rank": 527,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q125755174",
+  "title": "A Bar Song (Tipsy)",
+  "artist": "Shaboozey",
+  "search_artists": [
+   "Shaboozey"
+  ],
+  "work_year": 2024,
+  "canon_rank": 528,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q124422481",
+  "title": "Beautiful Things",
+  "artist": "Benson Boone",
+  "search_artists": [
+   "Benson Boone"
+  ],
+  "work_year": 2024,
+  "canon_rank": 549,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q18559542",
+  "title": "Uptown Funk",
+  "artist": "Mark Ronson featuring Bruno Mars",
+  "search_artists": [
+   "Mark Ronson featuring Bruno Mars"
+  ],
+  "work_year": 2014,
+  "canon_rank": 699,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q383842",
+  "title": "Africa",
+  "artist": "Toto",
+  "search_artists": [
+   "Toto"
+  ],
+  "work_year": 1982,
+  "canon_rank": 846,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q30080545",
+  "title": "Despacito",
+  "artist": "Luis Fonsi featuring Daddy Yankee",
+  "search_artists": [
+   "Luis Fonsi featuring Daddy Yankee",
+   "Luis Fonsi and Daddy Yankee featuring Justin Bieber"
+  ],
+  "work_year": 2017,
+  "canon_rank": 1001,
+  "original_artist": null
+ },
+ {
+  "work_id": "Q15629548",
+  "title": "Happy",
+  "artist": "Pharrell Williams",
+  "search_artists": [
+   "Pharrell Williams"
+  ],
+  "work_year": 2013,
+  "canon_rank": 1002,
+  "original_artist": null
+ }
+]
