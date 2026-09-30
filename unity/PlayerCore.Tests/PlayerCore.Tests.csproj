@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Self-test for the engine-agnostic audio core (unity/Assets/MusicHistory/Audio/Core) and the
+    ISongPlayer contract, compiled outside Unity against the same MeltySynth / NAudio DLLs that
+    Unity uses. LangVersion 9 matches Unity 6's C# compiler, so anything that builds here builds
+    there. Run with: dotnet run -c Release (see README in Assets/MusicHistory/Audio).
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Optimize>true</Optimize>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <!-- Unity (Mono) compiles each method once, fully optimized: no tiering here either, so timings are steady. -->
+    <TieredCompilation>false</TieredCompilation>
+    <AudioDir Condition="'$(AudioDir)' == ''">$(MSBuildThisFileDirectory)..\Assets\MusicHistory\Audio</AudioDir>
+    <ContractsDir>$(MSBuildThisFileDirectory)..\Assets\MusicHistory\Contracts</ContractsDir>
+    <PluginsDir>$(MSBuildThisFileDirectory)..\Assets\Plugins</PluginsDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="UnityCompileCheck\**" />
+    <Compile Include="$(AudioDir)\Core\*.cs" Link="Core\%(Filename)%(Extension)" />
+    <Compile Include="$(ContractsDir)\ISongPlayer.cs" Link="Contracts\ISongPlayer.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="MeltySynth"><HintPath>$(PluginsDir)\MeltySynth\MeltySynth.dll</HintPath></Reference>
+    <Reference Include="NAudio.Midi"><HintPath>$(PluginsDir)\NAudio\NAudio.Midi.dll</HintPath></Reference>
+    <Reference Include="NAudio.Core"><HintPath>$(PluginsDir)\NAudio\NAudio.Core.dll</HintPath></Reference>
+  </ItemGroup>
+</Project>
