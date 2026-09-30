@@ -37,6 +37,9 @@ def run(args: argparse.Namespace) -> int:
         ("influence: scored pairs", "SELECT COUNT(*) FROM pair_score"),
         ("influence: significant", "SELECT COUNT(*) FROM pair_score WHERE significant = 1"),
         ("influence: tree edges", "SELECT COUNT(*) FROM influence_edge WHERE kind = 'tree'"),
+        ("themes: songs classified", "SELECT COUNT(*) FROM song_text"),
+        ("themes: classified from lyrics", "SELECT COUNT(*) FROM song_text WHERE text_source = 'lyrics'"),
+        ("themes: singers resolved", "SELECT COUNT(*) FROM singer WHERE gender <> 'unknown'"),
     ]
     for label, sql in rows:
         print(f"{label:45s} {_scalar(conn, sql):>8}")

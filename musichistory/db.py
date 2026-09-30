@@ -7,6 +7,7 @@ Stage ownership (a stage writes only its own tables; anyone may read):
     select     candidate (scores/choice columns), selection, work.selected
     analyze    song, key_region, chord_seq, loop, melody_line
     influence  pair_score, influence_edge, tree_node        (C#, influence/)
+    themes     song_text, song_theme, singer                (created by musichistory/themes/)
 
 Conventions used everywhere:
 

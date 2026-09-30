@@ -1,0 +1,10 @@
+# Extra dependencies for the lyric-themes stage (python -m musichistory themes).
+# The local zero-shot NLI classifier runs on the GPU through PyTorch (CUDA 12.6 wheels):
+#   .venv\Scripts\python -m pip install -r requirements-themes.txt
+--extra-index-url https://download.pytorch.org/whl/cu126
+torch>=2.6
+transformers>=4.45
+sentencepiece>=0.2
+protobuf>=5.0
+# Optional: the Claude backend (--backend claude, needs ANTHROPIC_API_KEY).
+anthropic>=1.0

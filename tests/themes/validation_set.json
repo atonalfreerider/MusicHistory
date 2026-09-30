@@ -1,0 +1,543 @@
+{
+ "version": 1,
+ "note": "Hand-labelled expected lyric themes from well-known subject matter. Titles, artists and theme ids only; no lyrics. primary = expected top theme; secondary = an acceptable second theme (null = none). split: 'holdout' is a stratified third (by SHA-1 of work_id within each primary theme) never used for tuning. 'The Man I Love' is not among the 1,012 songs, so it is not in the set.",
+ "absent_requested": [
+  "The Man I Love"
+ ],
+ "songs": [
+  {
+   "work_id": "Q158549",
+   "title": "(Everything I Do) I Do It for You",
+   "artist": "Bryan Adams",
+   "primary": 1,
+   "secondary": 3,
+   "split": "holdout"
+  },
+  {
+   "work_id": "Q1073719",
+   "title": "I'll Be There",
+   "artist": "The Jackson 5",
+   "primary": 1,
+   "secondary": 3,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q1813448",
+   "title": "You've Got a Friend",
+   "artist": "James Taylor",
+   "primary": 1,
+   "secondary": 8,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q913700",
+   "title": "Bridge Over Troubled Water",
+   "artist": "Simon & Garfunkel",
+   "primary": 1,
+   "secondary": 8,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q5979116",
+   "title": "I Swear",
+   "artist": "All-4-One",
+   "primary": 1,
+   "secondary": 3,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q4041691",
+   "title": "I'll Make Love to You",
+   "artist": "Boyz II Men",
+   "primary": 1,
+   "secondary": 3,
+   "split": "holdout"
+  },
+  {
+   "work_id": "Q2555191",
+   "title": "I Can't Make You Love Me",
+   "artist": "Bonnie Raitt",
+   "primary": 2,
+   "secondary": 4,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q225871",
+   "title": "Un-Break My Heart",
+   "artist": "Toni Braxton",
+   "primary": 2,
+   "secondary": 7,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q1487396",
+   "title": "You've Lost That Lovin' Feelin'",
+   "artist": "The Righteous Brothers",
+   "primary": 2,
+   "secondary": 4,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q2560935",
+   "title": "The Tracks of My Tears",
+   "artist": "The Miracles",
+   "primary": 2,
+   "secondary": 7,
+   "split": "holdout"
+  },
+  {
+   "work_id": "Q2043793",
+   "title": "Crying",
+   "artist": "Roy Orbison",
+   "primary": 2,
+   "secondary": 7,
+   "split": "holdout"
+  },
+  {
+   "work_id": "Q4038061",
+   "title": "End of the Road",
+   "artist": "Boyz II Men",
+   "primary": 2,
+   "secondary": 7,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q248185",
+   "title": "Can't Help Falling in Love",
+   "artist": "UB40",
+   "primary": 3,
+   "secondary": 1,
+   "split": "holdout"
+  },
+  {
+   "work_id": "Q838829",
+   "title": "Your Song",
+   "artist": "Elton John",
+   "primary": 3,
+   "secondary": 1,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q1541182",
+   "title": "My Girl",
+   "artist": "The Temptations",
+   "primary": 3,
+   "secondary": 1,
+   "split": "holdout"
+  },
+  {
+   "work_id": "Q1655199",
+   "title": "I Just Called to Say I Love You",
+   "artist": "Stevie Wonder",
+   "primary": 3,
+   "secondary": 1,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q2517449",
+   "title": "You Are the Sunshine of My Life",
+   "artist": "Stevie Wonder",
+   "primary": 3,
+   "secondary": 1,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q17332468",
+   "title": "Thinking Out Loud",
+   "artist": "Ed Sheeran",
+   "primary": 3,
+   "secondary": 1,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q767632",
+   "title": "You Belong with Me",
+   "artist": "Taylor Swift",
+   "primary": 4,
+   "secondary": 3,
+   "split": "holdout"
+  },
+  {
+   "work_id": "Q326835",
+   "title": "Call Me Maybe",
+   "artist": "Carly Rae Jepsen",
+   "primary": 4,
+   "secondary": 3,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q2291989",
+   "title": "Kiss Me",
+   "artist": "Sixpence None the Richer",
+   "primary": 4,
+   "secondary": 3,
+   "split": "holdout"
+  },
+  {
+   "work_id": "Q281624",
+   "title": "Earth Angel (Will You Be Mine)",
+   "artist": "The Penguins",
+   "primary": 4,
+   "secondary": 3,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q256098",
+   "title": "Dream Lover",
+   "artist": "Bobby Darin",
+   "primary": 4,
+   "secondary": 3,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q1607572",
+   "title": "I Want to Know What Love Is",
+   "artist": "Foreigner",
+   "primary": 4,
+   "secondary": 3,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q1067670",
+   "title": "I Will Survive",
+   "artist": "Gloria Gaynor",
+   "primary": 5,
+   "secondary": 2,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q1423509",
+   "title": "Since U Been Gone",
+   "artist": "Kelly Clarkson",
+   "primary": 5,
+   "secondary": 2,
+   "split": "holdout"
+  },
+  {
+   "work_id": "Q149053",
+   "title": "Irreplaceable",
+   "artist": "Beyoncé",
+   "primary": 5,
+   "secondary": 2,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q1460009",
+   "title": "Hit the Road Jack",
+   "artist": "Ray Charles",
+   "primary": 5,
+   "secondary": 10,
+   "split": "holdout"
+  },
+  {
+   "work_id": "Q115945493",
+   "title": "Flowers",
+   "artist": "Miley Cyrus",
+   "primary": 5,
+   "secondary": 3,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q1535296",
+   "title": "These Boots Are Made for Walkin'",
+   "artist": "Nancy Sinatra",
+   "primary": 5,
+   "secondary": 10,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q155006",
+   "title": "Love The Way You Lie",
+   "artist": "Eminem & Rihanna",
+   "primary": 6,
+   "secondary": 2,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q379751",
+   "title": "Toxic",
+   "artist": "Britney Spears",
+   "primary": 6,
+   "secondary": 3,
+   "split": "holdout"
+  },
+  {
+   "work_id": "Q1131812",
+   "title": "With or Without You",
+   "artist": "U2",
+   "primary": 6,
+   "secondary": 2,
+   "split": "holdout"
+  },
+  {
+   "work_id": "Q153064",
+   "title": "Bad Romance",
+   "artist": "Lady Gaga",
+   "primary": 6,
+   "secondary": 3,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q5183105",
+   "title": "Crazy",
+   "artist": "Patsy Cline",
+   "primary": 6,
+   "secondary": 2,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q276431",
+   "title": "Bleeding Love",
+   "artist": "Leona Lewis",
+   "primary": 6,
+   "secondary": 3,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q2312462",
+   "title": "Miss You",
+   "artist": "The Rolling Stones",
+   "primary": 7,
+   "secondary": 4,
+   "split": "holdout"
+  },
+  {
+   "work_id": "Q2706084",
+   "title": "I'll Be Missing You",
+   "artist": "P Diddy & Faith Evans",
+   "primary": 7,
+   "secondary": 10,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q406292",
+   "title": "Ain't No Sunshine",
+   "artist": "Bill Withers",
+   "primary": 7,
+   "secondary": 2,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q678516",
+   "title": "Nothing Compares 2 U",
+   "artist": "Sinéad O'Connor",
+   "primary": 7,
+   "secondary": 2,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q202698",
+   "title": "Yesterday",
+   "artist": "The Beatles",
+   "primary": 7,
+   "secondary": 2,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q978005",
+   "title": "Tears in Heaven",
+   "artist": "Eric Clapton",
+   "primary": 7,
+   "secondary": 10,
+   "split": "holdout"
+  },
+  {
+   "work_id": "Q176098",
+   "title": "All You Need Is Love",
+   "artist": "The Beatles",
+   "primary": 8,
+   "secondary": 3,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q308895",
+   "title": "We Are the World",
+   "artist": "USA for Africa",
+   "primary": 8,
+   "secondary": 9,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q1971",
+   "title": "Imagine",
+   "artist": "John Lennon",
+   "primary": 8,
+   "secondary": 9,
+   "split": "holdout"
+  },
+  {
+   "work_id": "Q249863",
+   "title": "Everyday People",
+   "artist": "Sly and the Family Stone",
+   "primary": 8,
+   "secondary": 9,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q1280027",
+   "title": "Ebony and Ivory",
+   "artist": "Paul McCartney and Stevie Wonder",
+   "primary": 8,
+   "secondary": 9,
+   "split": "holdout"
+  },
+  {
+   "work_id": "Q4018646",
+   "title": "We Are Family",
+   "artist": "Sister Sledge",
+   "primary": 8,
+   "secondary": 10,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q2517476",
+   "title": "What's Going On",
+   "artist": "Marvin Gaye",
+   "primary": 9,
+   "secondary": 8,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q640529",
+   "title": "Blowin' in the Wind",
+   "artist": "Bob Dylan",
+   "primary": 9,
+   "secondary": 8,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q2012932",
+   "title": "Fortunate Son",
+   "artist": "Creedence Clearwater Revival",
+   "primary": 9,
+   "secondary": 10,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q2548927",
+   "title": "War",
+   "artist": "Edwin Starr",
+   "primary": 9,
+   "secondary": 8,
+   "split": "holdout"
+  },
+  {
+   "work_id": "Q169298",
+   "title": "Zombie",
+   "artist": "The Cranberries",
+   "primary": 9,
+   "secondary": 10,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q568004",
+   "title": "Another Day in Paradise",
+   "artist": "Phil Collins",
+   "primary": 9,
+   "secondary": 8,
+   "split": "holdout"
+  },
+  {
+   "work_id": "Q1413725",
+   "title": "In the Mood",
+   "artist": "Glenn Miller & his Orchestra",
+   "primary": 10,
+   "secondary": null,
+   "split": "holdout",
+   "instrumental": true
+  },
+  {
+   "work_id": "Q1544632",
+   "title": "Green Onions",
+   "artist": "Booker T. & the MG's",
+   "primary": 10,
+   "secondary": null,
+   "split": "tune",
+   "instrumental": true
+  },
+  {
+   "work_id": "Q2891348",
+   "title": "Walk, Don't Run",
+   "artist": "The Ventures",
+   "primary": 10,
+   "secondary": null,
+   "split": "holdout",
+   "instrumental": true
+  },
+  {
+   "work_id": "Q7621561",
+   "title": "Stranger on the Shore",
+   "artist": "Acker Bilk",
+   "primary": 10,
+   "secondary": null,
+   "split": "tune",
+   "instrumental": true
+  },
+  {
+   "work_id": "Q924220",
+   "title": "Popcorn",
+   "artist": "Hot Butter",
+   "primary": 10,
+   "secondary": null,
+   "split": "holdout",
+   "instrumental": true
+  },
+  {
+   "work_id": "Q1586351",
+   "title": "Third Man Theme",
+   "artist": "Anton Karas",
+   "primary": 10,
+   "secondary": null,
+   "split": "tune",
+   "instrumental": true
+  },
+  {
+   "work_id": "Q139916760",
+   "title": "Johnny B. Goode",
+   "artist": "Chuck Berry",
+   "primary": 10,
+   "secondary": null,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q552098",
+   "title": "Rock Around the Clock",
+   "artist": "Bill Haley & His Comets",
+   "primary": 10,
+   "secondary": null,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q832799",
+   "title": "Yellow Submarine",
+   "artist": "The Beatles",
+   "primary": 10,
+   "secondary": 8,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q581952",
+   "title": "Space Oddity",
+   "artist": "David Bowie",
+   "primary": 10,
+   "secondary": null,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q636399",
+   "title": "Smoke on the Water",
+   "artist": "Deep Purple",
+   "primary": 10,
+   "secondary": null,
+   "split": "tune"
+  },
+  {
+   "work_id": "Q1349395",
+   "title": "Kung Fu Fighting",
+   "artist": "Carl Douglas",
+   "primary": 10,
+   "secondary": null,
+   "split": "holdout"
+  }
+ ]
+}
