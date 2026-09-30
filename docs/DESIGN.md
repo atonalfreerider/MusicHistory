@@ -503,3 +503,69 @@ These came out of real runs and calibration; each stage's README has the detail.
   velocity/key modulators (which MeltySynth ignores) into fixed generators, or MS Basic's
   pianos render ~30 dB too quiet.
 * **Validation extras** (`graph_meta.validation_extras`) are marked in the viewer.
+
+## 12. Lyric themes (stage `themes`, `musichistory/themes/`)
+
+A second graph over the same songs: where each song sits among ten lyrical themes.
+
+**Themes** (anchor ids 1..10, equally spaced on a ring, in this order):
+1 "I would be so good to you/him/her" · 2 "I'm sad you/she/he don't/doesn't love me" ·
+3 "I love you/him/her" · 4 "I wish you/he/she loved me" · 5 "I don't need/love you/him/her" ·
+6 "I hate that I love you/him/her" · 7 "I miss you/him/her" · 8 "Let's all love each other" ·
+9 "What is going on in the world?" · 10 "Other".
+
+**Text.** Lyrics come only from lyric/KAR events of the song's own MIDI candidates (Lakh
+files re-read from the cached tarballs; web files re-downloaded into memory). The text lives
+only in memory: it is classified and discarded, and **no lyric text is ever written to disk,
+a database, a log, a test fixture or the viewer**. Only its SHA-256 (cache key), the number
+of lines and the source candidate are recorded. Songs without lyrics are classified from their
+**title** (`text_source = 'title'`).
+
+**Classifier.** Relatability score per theme in [0, 1], normalized to sum to 1 per song.
+Default backend: a local zero-shot NLI model on the GPU (lyrics split into short chunks,
+each theme phrased as a hypothesis, chunk entailments aggregated, the title as an extra
+chunk). Optional backend: Claude via the Anthropic API when `ANTHROPIC_API_KEY` is set
+(`--backend claude`). A hand-labelled validation set (titles/artists/expected theme only)
+measures top-1/top-2 accuracy for both lyric and title-only inputs.
+
+**Singer.** `male` | `female` | `mixed` | `nonbinary` | `unknown` | `instrumental`, from
+Wikidata: the lead act's P21 for a person; for a group, the P21 of members who sing (P527 +
+P106 singer/vocalist); `mixed` when they differ. The viewer colours male blue, female pink
+and everything else neutral grey.
+
+**Pipeline tables** (created by the stage): `song_theme(work_id, anchor_id, score, PK(work_id,
+anchor_id))`, `song_text(work_id PK, text_source, candidate_id, text_sha256, n_lines, model,
+backend, classified_at)` (never the text), `singer(work_id PK, gender, source, artist_qid,
+artist_label)`.
+
+**Themes graph DB** `data/graph/themes_graph.db` (SQLite 3.15-compatible, journal DELETE):
+
+```sql
+CREATE TABLE themes_meta(key TEXT PRIMARY KEY, value TEXT);   -- backend, model, generated_at,
+  -- song_count, lyrics_count, title_count, ring_radius, validation_top1, validation_top2
+CREATE TABLE theme_anchor(anchor_id INTEGER PRIMARY KEY, label TEXT NOT NULL, short TEXT NOT NULL,
+  angle REAL NOT NULL, position_x REAL NOT NULL, position_y REAL NOT NULL, position_z REAL NOT NULL);
+CREATE TABLE theme_song(node_id INTEGER PRIMARY KEY,            -- 1..N contiguous, by (year, work_id)
+  work_id TEXT NOT NULL UNIQUE, title TEXT NOT NULL, artist TEXT NOT NULL, year INTEGER NOT NULL,
+  singer_gender TEXT NOT NULL, text_source TEXT NOT NULL,       -- 'lyrics' | 'title'
+  top_anchor INTEGER NOT NULL, top_score REAL NOT NULL,
+  position_x REAL, position_y REAL, position_z REAL,            -- written by layout `themes`
+  midi_path TEXT, excerpt_start_beat REAL, excerpt_end_beat REAL, tonic_pc INTEGER, mode TEXT,
+  native_bpm REAL, beats_per_bar REAL, first_downbeat REAL);    -- for click-to-play (relative paths)
+CREATE TABLE theme_score(node_id INTEGER NOT NULL, anchor_id INTEGER NOT NULL, score REAL NOT NULL,
+  PRIMARY KEY(node_id, anchor_id));                              -- rows sum to 1 per song
+CREATE TABLE themes_layout_run(run_id INTEGER PRIMARY KEY, created_at TEXT, device TEXT,
+  iterations INTEGER, sharpen REAL, repulsion REAL, final_mean_move REAL, params_json TEXT);
+```
+
+**Layout** (`MusicHistory.Layout.exe themes data/graph/themes_graph.db`): anchors pinned on a
+ring (radius R, angle 36°·(k−1), in the x–z plane, y = 0); each song has a spring to every
+anchor with stiffness `score^γ` (γ = sharpen, default 2) — without repulsion the equilibrium
+is exactly the weighted barycentre, so a song that is all "I love you" sits on that anchor —
+plus softened song–song repulsion so overlapping songs spread into a cloud; deterministic,
+GPU. Writes theme_song positions and `themes_layout_run`.
+
+**Viewer** (`unity/`, scene `LyricThemes`): the ten anchors as labelled discs on the ring,
+songs as bubbles (blue male, pink female, grey otherwise) at their positions; hover shows
+title, artist, year, singer, text source ("lyrics" / "title only") and the top three themes
+with scores — never lyrics; click plays the song's excerpt through SongPlayer.
