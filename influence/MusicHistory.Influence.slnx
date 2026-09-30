@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="MusicHistory.Influence.Tests/MusicHistory.Influence.Tests.csproj" />
+  <Project Path="MusicHistory.Influence/MusicHistory.Influence.csproj" />
+</Solution>
