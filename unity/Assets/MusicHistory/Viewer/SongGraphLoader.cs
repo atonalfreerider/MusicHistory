@@ -324,6 +324,10 @@ namespace MusicHistory.Viewer
             if (k.hKey.wasPressedThisFrame) Hud.ToggleHelp();
             if ((k.rKey.wasPressedThisFrame || k.homeKey.wasPressedThisFrame) && !Director.IsTouring && ViewCamera != null)
                 FrameOverview(ViewCamera);
+            // The lyric-themes cloud of the same songs (its G key comes back here).
+            if (k.tKey.wasPressedThisFrame && !Director.IsTouring
+                && UnityEngine.SceneManagement.SceneUtility.GetBuildIndexByScenePath("Assets/Scenes/LyricThemes.unity") >= 0)
+                UnityEngine.SceneManagement.SceneManager.LoadScene("LyricThemes");
         }
 
         public void ToggleSimulation()

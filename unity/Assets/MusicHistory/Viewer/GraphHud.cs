@@ -146,7 +146,7 @@ namespace MusicHistory.Viewer
         {
             string help = HelpVisible
                 ? $"\n<color={Muted}>Mouse</color>  hover shows influences · click selects · right-drag looks · wheel dollies" +
-                  $"\n<color={Muted}>Move</color>  W A S D, Q E (Shift = fast) · R reset view · L all labels · V secondary edges · F live layout (time locked)" +
+                  $"\n<color={Muted}>Move</color>  W A S D, Q E (Shift = fast) · R reset view · L all labels · V secondary edges · F live layout (time locked) · T lyric themes" +
                   $"\n<color={Muted}>Walkthrough</color>  1 lineage · 2 subtree · 3 chronological · Enter start · Space pause · N/→ next · B/← back · Esc exit · C compare in C / 120 BPM"
                 : $"\n<color={Muted}>H</color> controls";
             SetText(legend, legendBody + help);

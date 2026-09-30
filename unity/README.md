@@ -154,3 +154,59 @@ folder), then against the repository root.
 
 Both commands exit with code 0 only when every check passes. In the editor, the same checks
 run from **MusicHistory → Run Validation**.
+
+## Lyric themes
+
+`Assets/Scenes/LyricThemes.unity` shows the second graph from DESIGN §12: where each song sits
+among ten lyrical themes. Open the scene and press Play. It is in the build settings after
+`SongInfluenceGraph`.
+
+The viewer (`Assets/MusicHistory/Themes/ThemesViewer.cs`) looks for a themes database in this order:
+`-themesDb <path>` on the command line, then `DbPath` on the **Lyric Themes** object, then
+`<repo>/data/graph/themes_graph.db`, then `StreamingAssets/themes_graph.db`, then
+`<repo>/data/graph/themes_demo.db`. If the layout stage has not written positions yet
+(`position_x` is NULL), the viewer places the songs itself and says so in the legend. It puts each
+song at the barycentre of the anchors weighted by score², then pushes overlapping songs apart.
+The result is deterministic.
+
+| Element | Meaning |
+|---|---|
+| Gold pads on the ring | The ten themes, 36° apart. Each label shows the theme text, its filter key and how many songs have it as their top theme. |
+| Bubble position | The layout position: where the pulls of the song's theme scores balance. A song that is all one theme sits on that theme. |
+| Bubble colour | Blue for a male singer, pink for a female singer, grey for mixed, nonbinary, unknown or instrumental. |
+| Filled / hollow bubble | Classified from the lyrics / from the title only. |
+| Faint ring, spokes, half-radius circle | Guides on the ring plane. |
+
+| Input | Action |
+|---|---|
+| Hover | Shows a card with the title, artist, year, singer, "lyrics" or "title only", and the top three themes with bars and scores. Gold tethers link the song to those themes. |
+| Left click | Plays the song's excerpt in its own key and BPM, with no morph. Click it again, or press Space, to stop. |
+| Left or middle drag · right drag · wheel | Pan · orbit · zoom toward the pointer. |
+| W A S D / arrows · Q E · Z X | Pan · rotate · zoom. Hold Shift to go faster. |
+| 1–9, 0 | Show only the songs whose top theme is that theme. Press the key again, or Esc, to show all. |
+| L | Label every song (labels that would overlap are hidden). |
+| R / Home · H | Reset the view · show the controls. |
+| G / Backspace / the top-right button | Back to `SongInfluenceGraph`. |
+
+The themes database holds no lyrics, and the viewer never shows any. Validation checks every
+song's hover card: it may contain only the title, artist, year, singer, text source, theme labels
+and scores.
+
+```bash
+# Edit-mode checks against themes_demo.db and themes_graph.db (-themesValidationDb <db> for one).
+# Writes data/screens/themes_overview.png (the DB the scene opens by default), per-DB
+# themes_{overview,hover,filter,all_labels}_<db>.png and themes_validation.json.
+"$UNITY" -batchmode -projectPath "$PWD/unity" -executeMethod MusicHistory.EditorTools.ThemesValidation.Run -logFile "$PWD/themes_validate.log"
+# Play mode: frame times, a click through the real SongPlayer, and the switch back to the influence graph.
+"$UNITY" -batchmode -projectPath "$PWD/unity" -executeMethod MusicHistory.EditorTools.ThemesPlayModeBench.Run -logFile "$PWD/themes_bench.log"
+# Rebuild the scene file (and its build-settings entry) from code.
+"$UNITY" -batchmode -projectPath "$PWD/unity" -executeMethod MusicHistory.EditorTools.ThemesValidation.CreateScene -logFile "$PWD/themes_scene.log"
+```
+
+In the editor, the same checks run from **MusicHistory → Lyric Themes**.
+
+Measured on 2026-09-30 with the RTX 2080 Ti on D3D11, at 1920×1080 with MSAA ×4. The scene
+had 1,012 songs from `themes_graph.db` (fallback positions). With the scene idle, the player loop
+took 0.54 ms on average (0.76 ms at p95), and a render plus GPU sync took 3.8 ms (5.8 ms at p95).
+Moving the hover to a new song took 0.79 ms at the median; that includes picking and all bubble
+states, with 24 or fewer shared bubble materials. Building the scene took about 0.9 s.
