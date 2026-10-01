@@ -3,6 +3,7 @@
  "paths": [
   {
    "id": "four-chords-worldwide",
+   "name": "Four Chords Worldwide",
    "title": "Four chords, three styles",
    "description": "Reggae, British pop and Latin pop built on the same I–V–vi–IV loop, the 'axis' progression; the chord check hears it in all three previews.",
    "works": [
@@ -13,6 +14,7 @@
   },
   {
    "id": "axis-lauper-to-capaldi",
+   "name": "The Axis Loop",
    "title": "The axis loop, 1983–2018",
    "description": "The I–V–vi–IV loop carried through four decades of ballads: Cyndi Lauper's lilting 1983 hit, Lonestar's country-pop, John Legend's piano ballad and Lewis Capaldi.",
    "works": [
@@ -24,6 +26,7 @@
   },
   {
    "id": "doo-wop-changes",
+   "name": "Doo-Wop Changes",
    "title": "Doo-wop changes",
    "description": "The I–vi–IV–V progression of 1950s doo-wop, carried from Paul Anka's teen pop to Coldplay's string-driven 2008 hit; the chord check hears it in every preview.",
    "works": [
@@ -34,6 +37,7 @@
   },
   {
    "id": "rock-and-roll-twelve-bars",
+   "name": "Rock and Roll Twelve Bars",
    "title": "Rock 'n' roll twelve bars",
    "description": "The 12-bar blues form under four early rock 'n' roll records, from Carl Perkins's rockabilly and Buddy Holly to Ray Charles and Dion.",
    "works": [
@@ -45,6 +49,7 @@
   },
   {
    "id": "aeolian-rock",
+   "name": "Aeolian Rock",
    "title": "Minor-key rock: i–bVI–bVII",
    "description": "The Aeolian i–bVI–bVII move of Layla's riff, passed on to Fleetwood Mac's Go Your Own Way and Prince's Little Red Corvette.",
    "works": [
@@ -55,6 +60,7 @@
   },
   {
    "id": "orbison-to-flowers",
+   "name": "Orbison to Flowers",
    "title": "Orbison to Flowers",
    "description": "Only the Lonely shares an exact bass riff with Duke of Earl; from there the I–vi–ii–V turnaround runs through Oh, Pretty Woman to Miley Cyrus's Flowers.",
    "works": [
@@ -66,6 +72,7 @@
   },
   {
    "id": "summer-place-to-barbie-girl",
+   "name": "Summer Place to Barbie Girl",
    "title": "A Summer Place to Barbie Girl",
    "description": "The I–vi–ii–V turnaround, from Percy Faith's 1959 string theme through Redbone's Come and Get Your Love to Aqua's Barbie Girl.",
    "works": [
@@ -76,12 +83,101 @@
   },
   {
    "id": "every-breath-interpolated",
+   "name": "Every Breath, Interpolated",
    "title": "Every Breath You Take, interpolated",
    "description": "A two-chord drift from 1967 leads into the Police's 1983 arpeggiated guitar figure, which came back note for note in 1997 as the backbone of a Puff Daddy and Faith Evans tribute.",
    "works": [
     "Q648157",
     "Q1330171",
     "Q2706084"
+   ]
+  },
+  {
+   "id": "day-o-to-dynamite",
+   "name": "Banana Boat to Dynamite",
+   "title": "Day-O to Dynamite, 1956–2010",
+   "description": "A calypso I–vi–V loop leads from Harry Belafonte's Day-O to Fine Young Cannibals, whose 24-note bass figure turns up again in Taio Cruz's Dynamite.",
+   "works": [
+    "Q806079",
+    "Q1631057",
+    "Q1269045"
+   ]
+  },
+  {
+   "id": "stairway-to-let-her-go",
+   "name": "Stairway to Let Her Go",
+   "title": "Stairway to Heaven to Let Her Go",
+   "description": "The I–V–vi move of Stairway to Heaven reaches Avril Lavigne's Complicated, whose Aeolian i–bVI–bVII turn carries on into Passenger's Let Her Go.",
+   "works": [
+    "Q192023",
+    "Q543362",
+    "Q3914117"
+   ]
+  },
+  {
+   "id": "hung-up-to-love-story",
+   "name": "Hung Up to Love Story",
+   "title": "Hung Up to Love Story, 2005–2008",
+   "description": "Three years of 2000s pop on one four-chord cycle: Madonna's vi–IV–I–iii dance loop, Rihanna's Umbrella and Taylor Swift's Love Story, which share the I–V–vi–IV axis.",
+   "works": [
+    "Q1407276",
+    "Q139916573",
+    "Q1764379"
+   ]
+  },
+  {
+   "id": "stand-by-me-to-basket-case",
+   "name": "Stand by Me to Basket Case",
+   "title": "Stand by Me to Basket Case",
+   "description": "The three-chord I–IV–V framework, from Ben E. King's 1961 soul ballad through Band Aid's 1984 charity single to Green Day's punk.",
+   "works": [
+    "Q1513654",
+    "Q1188494",
+    "Q1750952"
+   ]
+  },
+  {
+   "id": "u2-to-the-chili-peppers",
+   "name": "U2 to the Chili Peppers",
+   "title": "With or Without You to Dani California",
+   "description": "U2's I–V–vi–IV loop is shared by Madonna's Like a Prayer, whose vi–V–ii turn leads on to the Red Hot Chili Peppers' Dani California.",
+   "works": [
+    "Q1131812",
+    "Q139917982",
+    "Q729815"
+   ]
+  },
+  {
+   "id": "platters-to-shania",
+   "name": "Platters to Shania",
+   "title": "The Great Pretender to Still the One",
+   "description": "The I–IV–V changes, from the Platters' 1955 ballad through the Beatles' Please Please Me to Shania Twain's 1997 country-pop.",
+   "works": [
+    "Q5656384",
+    "Q736799",
+    "Q3045853"
+   ]
+  },
+  {
+   "id": "beat-it-to-party-rock",
+   "name": "Beat It to Party Rock",
+   "title": "Beat It to Party Rock Anthem",
+   "description": "Minor-key rock and dance on the i–bVII shuttle: Michael Jackson's Beat It, 3 Doors Down's Here Without You and its Aeolian i–bVI–bVII, carried into LMFAO's Party Rock Anthem.",
+   "works": [
+    "Q139809138",
+    "Q1032020",
+    "Q672515"
+   ]
+  },
+  {
+   "id": "managua-to-george-jones",
+   "name": "Managua to George Jones",
+   "title": "Managua, Nicaragua to George Jones",
+   "description": "A 1946 big-band ii–V–I cadence leads to Elvis Presley's It's Now or Never, whose I–IV–V changes run on to George Jones's 1980 country ballad.",
+   "works": [
+    "Q6746747",
+    "Q2915752",
+    "Q3128962"
    ]
   }
  ]

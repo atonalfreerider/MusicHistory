@@ -2,7 +2,7 @@
 the Unity walkthrough. Shape (UTF-8)::
 
     { "version": 2, "generated_at": ISO-8601, "morph_bars": 2,
-      "paths": [ { "id": slug, "title", "subtitle", "description", "identity", "seconds",
+      "paths": [ { "id": slug, "name", "title", "subtitle", "description", "identity", "seconds",
                    "steps": [ { "work_id", "title", "artist", "year",
                                 "file": "<path id>/<nn>_<work_id>.mp3" (relative to renders/),
                                 "seconds",
@@ -17,7 +17,9 @@ the Unity walkthrough. Shape (UTF-8)::
 ``start_semitones = Wrap(tonic(start_key) - tonic(key))``; ``start_bpm`` is the previous
 step's ``bpm`` folded toward this one only beyond 0.8 octave; the first step plays natively
 (``start_key == key``, ``start_semitones == 0``, ``start_bpm == bpm``, ``morph_seconds == 0``).
-``validate`` checks all of it.
+``name`` is the path's short display name in Title Case ("Aeolian Rock"), at most 32 characters,
+shown top-left in the viewer (which falls back to the Title Case of ``id``). ``validate`` checks
+all of it.
 """
 
 from __future__ import annotations
@@ -34,7 +36,8 @@ KEY_RE = re.compile(r"^([A-G])([b#]?) (major|minor)$")
 SLUG_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 STEP_KEYS = {"work_id", "title", "artist", "year", "file", "seconds", "via", "start_key", "key", "start_semitones",
              "start_bpm", "bpm", "morph_seconds", "key_source", "bpm_source"}
-PATH_KEYS = {"id", "title", "subtitle", "description", "identity", "seconds", "steps"}
+PATH_KEYS = {"id", "name", "title", "subtitle", "description", "identity", "seconds", "steps"}
+NAME_MAX = 32
 VIA_KEYS = {"identity", "strong", "z", "edge_kind", "family_size"}
 
 
@@ -79,9 +82,11 @@ def validate(doc: dict, renders_dir: Path | None = None) -> list[str]:
         if pid in ids:
             err.append(f"{where}: duplicate id")
         ids.add(pid)
-        for f in ("title", "subtitle", "description", "identity"):
+        for f in ("name", "title", "subtitle", "description", "identity"):
             if not isinstance(p.get(f), str) or not p.get(f):
                 err.append(f"{where}: {f} must be a non-empty string")
+        if isinstance(p.get("name"), str) and (len(p["name"]) > NAME_MAX or p["name"] != p["name"].strip()):
+            err.append(f"{where}: name must be at most {NAME_MAX} characters without outer spaces")
         steps = p.get("steps")
         if not isinstance(steps, list) or not (3 <= len(steps) <= 6):
             err.append(f"{where}: needs 3-6 steps")

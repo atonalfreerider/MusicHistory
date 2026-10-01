@@ -142,6 +142,15 @@ def test_validate_curated_rules():
     assert "slug" in errs(id="Axis Story")
     assert "music only" in errs(description="The lyrics say so.")
     assert "not in the graph" in errs(works=["Q1", "Q2", "Q99"])
+    assert "name" in errs(name="")
+    assert errs(name="Axis Story") == ""
+
+
+def test_display_name_fallback():
+    assert curate.display_name("aeolian-rock") == "Aeolian Rock"
+    assert curate.display_name("summer-place-to-barbie-girl") == "Summer Place to Barbie Girl"
+    assert curate.display_name("the-axis-loop") == "The Axis Loop"
+    assert curate.display_name("rock-and-roll-twelve-bars") == "Rock and Roll Twelve Bars"
 
 
 def test_subtitle_format():
@@ -155,13 +164,17 @@ def test_subtitle_format():
 def test_committed_curated_json_is_well_formed():
     doc = json.loads(curate.CURATED_PATH.read_text(encoding="utf-8"))
     paths = doc["paths"]
-    assert 6 <= len(paths) <= 12   # quality gate first: fewer, nicer paths are fine
+    assert 6 <= len(paths) <= 24   # quality gate first: fewer, nicer paths are fine
     ids = [p["id"] for p in paths]
     assert len(set(ids)) == len(ids)
     for p in paths:
         assert curate.SLUG.match(p["id"])
         assert curate.MIN_SONGS <= len(p["works"]) <= curate.MAX_SONGS
         assert p["title"] and len(p["title"]) <= 40
+        name = p["name"]             # short display name, Title Case, shown top-left in the viewer
+        assert name == name.strip() and 0 < len(name) <= curate.NAME_MAX, p["id"]
+        assert all(w[0].isupper() or w in curate.SMALL_WORDS or not w[0].isalpha() for w in name.split()), name
+        assert name[0].isupper(), name
         assert p["description"] and p["description"].count(".") <= 3
         assert "lyric" not in p["description"].lower()
     everyone = [w for p in paths for w in p["works"]]

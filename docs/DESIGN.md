@@ -695,6 +695,10 @@ previews (`tools/fetch_previews.py` → `data/audio/<work_id>/preview.mp3`, stor
 * **Render** each step with ffmpeg Rubber Band: it starts in the previous recording's measured key
   and tempo and glides to its own over two bars (smoothstep), loudness-normalized, with fades;
   `data/audio/renders/paths.json` (contract version 2) lists paths, steps, keys, tempos, glides.
+* **Names**: every path has a short display `name` in Title Case (at most 32 characters, e.g.
+  "Aeolian Rock", "The Axis Loop", "Every Breath, Interpolated"), set in `curated.json` and carried
+  into `paths.json` next to the longer `title`; a path without one (automatic picks) gets the Title
+  Case of its id. The viewer shows it top-left.
 * **Viewer**: the Featured Paths panel (P) lists them; hovering lights the route; playing follows
   it with the recording previews, crossfading at each handoff, while MIDI plays everywhere else.
 
@@ -802,3 +806,44 @@ the **root song's key and tempo**, handing off around the path and **looping bac
 * **Song info box**: the top info card is a compact title / artist · year / key · BPM header over
   a **chord-progression ring**: the song's main loop as a donut, one arc per chord sized by its
   length, in the chord-strip colours, roman numerals on the arcs, the loop's start at 12 o'clock.
+
+## 17. Melody mosaics (stage `mosaic`, `musichistory/mosaic/`)
+
+One song's melody rebuilt **piece by piece from other songs' melodies**, each piece transposed
+and time-scaled onto it, then **harmonized** by other melodies — a ~90 s video per example.
+
+* **Notes**: every preview's vocal stem (Demucs, §14) is transcribed to notes (pYIN pitch, onset
+  segmentation, snapped to the preview's beat grid; MIDI pitch, start/end in beats) in the
+  normalized C major / A minor frame. A song without a sung vocal is not a candidate. No lyrics.
+* **Target**: one loop of the target song's melody (whole bars, its main phrase).
+* **Pieces**: runs of consecutive notes from other songs whose **note-for-note** match to a span
+  of the target is as high as possible under one transposition (semitones) and one tempo ratio
+  (within 0.66–1.5, octave folds allowed): pitch equal after the shift, onsets within a small
+  tolerance, durations similar. The target is covered by a weighted interval schedule that
+  maximizes matched notes with **longer pieces strongly preferred** (a per-piece penalty, a
+  bonus growing with piece length), at most one piece per target span, pieces from different
+  songs where possible. Each piece's match rate and the overall coverage/match are reported.
+* **Harmonies**: other songs' melody spans that, aligned the same way, sound against the target
+  note for note in consonance (thirds, sixths, octaves, fifths; few dissonances on strong
+  beats), fit the target's chords, and are not unisons of it; one or two harmony voices.
+* **Examples**: targets are chosen by searching every candidate target for the highest mosaic
+  match (and long pieces) and the best harmonies; the best several become examples.
+* **Mix** (as many whole loops as fit in 90 s): **original** (target instrumental + its vocal)
+  → **mosaic** (target instrumental + the pieces' vocals, each pitch-shifted formant-preserving
+  and warped onto the target's beat grid, crossfaded at piece joins) → **harmony** (target
+  instrumental + target vocal + the harmony voices).
+* **Contract**: `data/audio/mosaics/mosaics.json` (version 1) + `<id>/mix.mp3`:
+  `{"version", "generated_at", "frame", "mosaics": [{"id", "name", "title", "target":
+  {"work_id", "title", "artist", "year"}, "file", "seconds", "key", "bpm", "beats_per_bar",
+  "loop_beats", "sections": [{"start", "end", "kind": "original" | "mosaic" | "harmony",
+  "loops"}], "beats": [[mix seconds, loop beat], ...], "chords": [[start beat, end beat, root pc,
+  quality, roman], ...] (the loop's), "notes": [[start beat, end beat, MIDI pitch], ...] (the
+  target loop's melody), "pieces": [{"work_id", "title", "artist", "year", "start", "end" (loop
+  beats it covers), "source_start", "source_end" (preview seconds), "shift_semitones",
+  "tempo_ratio", "match" (0..1), "notes": [...] (as heard, loop beats)}], "harmonies":
+  [{"work_id", "title", "artist", "year", "shift_semitones", "tempo_ratio", "consonance" (0..1),
+  "notes": [...]}], "coverage", "match"}]}`.
+* **Viewer**: a mosaic plays like a path (name top left, chord wheel, captions none): the melody
+  graph shows the target melody, the pieces as coloured spans labelled by song with the playing
+  piece bloom-lit and its song's bubble highlighted, then the harmony lines; recordings
+  `<id>_mosaic_<format>.mp4`.

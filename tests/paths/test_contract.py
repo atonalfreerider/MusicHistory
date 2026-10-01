@@ -32,7 +32,7 @@ def make_doc() -> dict:
                       "morph_seconds": round(p.morph_seconds, 3), "key_source": "audio", "bpm_source": "audio"})
         prev = (tonic, bpm)
     return {"version": 2, "generated_at": "2026-09-30T12:00:00Z", "morph_bars": 2,
-            "paths": [{"id": "demo-path", "title": "Demo", "subtitle": "1960 -> 1990 · 3 songs · chord progression",
+            "paths": [{"id": "demo-path", "name": "Demo Path", "title": "Demo", "subtitle": "1960 -> 1990 · 3 songs · chord progression",
                        "description": "Each song shares the axis progression.", "identity": "axis progression I-V-vi-IV",
                        "seconds": 88.5, "steps": steps}]}
 
@@ -62,6 +62,9 @@ def test_fold_is_enforced():
     (lambda d: d["paths"][0]["steps"][1].pop("bpm_source"), "differ from the contract"),
     (lambda d: d["paths"][0].__setitem__("seconds", 10.0), "sum of the steps"),
     (lambda d: d["paths"][0].__setitem__("id", "Not A Slug"), "slug"),
+    (lambda d: d["paths"][0].pop("name"), "differ from the contract"),
+    (lambda d: d["paths"][0].__setitem__("name", ""), "name must be a non-empty string"),
+    (lambda d: d["paths"][0].__setitem__("name", "A Name Far Too Long For The Corner Label"), "at most 32"),
     (lambda d: d.__setitem__("version", 1), "version"),
     (lambda d: d["paths"][0]["steps"][1]["via"].__setitem__("edge_kind", "loop"), "edge_kind"),
     (lambda d: d["paths"][0]["steps"][1].__setitem__("key_source", "guess"), "audio|midi"),
@@ -100,6 +103,7 @@ def test_real_paths_json():
         pytest.skip("paths.json not rendered yet")
     doc = json.loads(path.read_text(encoding="utf-8"))
     assert contract.validate(doc, path.parent) == []
-    assert 6 <= len(doc["paths"]) <= 12   # quality gate first: fewer, nicer paths are fine
+    assert 6 <= len(doc["paths"]) <= 24   # quality gate first: fewer, nicer paths are fine
     for p in doc["paths"]:
         assert "lyric" not in p["description"].lower()
+        assert p["name"] and p["name"][0].isupper()

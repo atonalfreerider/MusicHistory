@@ -185,7 +185,7 @@ def run(args: argparse.Namespace) -> int:
             _log(f"  {rec['select_title']}: {rec['verdict']} ({'; '.join(rec['reasons']) or 'meets the rules'})")
 
     curated_file = Path(args.curated) if args.curated else curate.CURATED_PATH
-    chosen: list[tuple[str, str, str, str | None, curate.Candidate]] = []
+    chosen: list[tuple[str, str, str, str | None, str, curate.Candidate]] = []   # id, title, desc, sub, name
     if not args.auto:
         for cp in curate.load_curated(curated_file):
             errors = curate.validate_curated(g, m, cp)
@@ -197,15 +197,15 @@ def run(args: argparse.Namespace) -> int:
             if problems:
                 _log(f"curated path {cp.id} skipped: {'; '.join(problems)}")
                 continue
-            chosen.append((cp.id, cp.title, cp.description, cp.subtitle, cand))
+            chosen.append((cp.id, cp.title, cp.description, cp.subtitle, cp.name or curate.display_name(cp.id), cand))
     if not chosen:
         _log("using the automatic picks" + ("" if args.auto else f" ({curated_file} has no valid path)"))
         for c in auto:
             slug, title, desc = curate.auto_title(g, c)
-            chosen.append((slug, title, desc, None, c))
+            chosen.append((slug, title, desc, None, curate.display_name(slug), c))
     _log(f"\nfeatured paths ({len(chosen)}):")
-    for pid, title, _, _, c in chosen:
-        for line in describe(g, m, c, f"  {pid}: {title}"):
+    for pid, title, _, _, name, c in chosen:
+        for line in describe(g, m, c, f"  {pid} ({name}): {title}"):
             _log(line)
 
     report = {"generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "measurement": agree,
@@ -232,11 +232,11 @@ def run(args: argparse.Namespace) -> int:
     t_render = time.monotonic()
     rendered = kept = 0
     verify_counts: Counter = Counter()
-    for pid, title, desc, sub, c in chosen:
+    for pid, title, desc, sub, name, c in chosen:
         steps = []
         prev = None
         rec = candidate_record(g, c)
-        rec.update(id=pid, title=title, steps=[])
+        rec.update(id=pid, name=name, title=title, steps=[])
         for i, nid in enumerate(c.nodes):
             s, x = g.songs[nid], m[nid]
             bpm = round(x.bpm, 2)
@@ -273,7 +273,7 @@ def run(args: argparse.Namespace) -> int:
             rec["steps"].append({"file": rel, "verify_start": state[rel].get("verify")})
             prev = (nid, x, bpm)
         total = round(sum(st["seconds"] for st in steps), 3)
-        paths_out.append({"id": pid, "title": title,
+        paths_out.append({"id": pid, "name": name, "title": title,
                           "subtitle": sub or curate.subtitle(g, c),
                           "description": desc, "identity": c.main_identity, "seconds": total, "steps": steps})
         report["featured"].append(rec)

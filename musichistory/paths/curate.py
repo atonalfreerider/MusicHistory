@@ -343,6 +343,17 @@ class CuratedPath:
     description: str
     works: list[str]
     subtitle: str | None = None
+    name: str | None = None           # short display name (title case), shown top-left in the viewer
+
+
+SMALL_WORDS = {"a", "an", "and", "as", "at", "but", "by", "for", "in", "nor", "of", "on", "or", "the", "to", "vs"}
+
+
+def display_name(slug: str) -> str:
+    """Title Case of a path id, the fallback display name ("aeolian-rock" -> "Aeolian Rock")."""
+    words = [w for w in re.split(r"[-_\s]+", slug) if w]
+    return " ".join(w if w.isdigit() else (w if 0 < i < len(words) - 1 and w in SMALL_WORDS else w.capitalize())
+                    for i, w in enumerate(words))
 
 
 def load_curated(path: Path = CURATED_PATH) -> list[CuratedPath]:
@@ -351,11 +362,13 @@ def load_curated(path: Path = CURATED_PATH) -> list[CuratedPath]:
     doc = json.loads(path.read_text(encoding="utf-8"))
     out = []
     for p in doc.get("paths") or []:
-        out.append(CuratedPath(p["id"], p["title"], p.get("description", ""), list(p["works"]), p.get("subtitle")))
+        out.append(CuratedPath(p["id"], p["title"], p.get("description", ""), list(p["works"]), p.get("subtitle"),
+                               p.get("name")))
     return out
 
 
 SLUG = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+NAME_MAX = 32
 
 
 def validate_curated(graph: Graph, measured: dict[int, Measured], cp: CuratedPath) -> list[str]:
@@ -363,6 +376,8 @@ def validate_curated(graph: Graph, measured: dict[int, Measured], cp: CuratedPat
     errors = []
     if not SLUG.match(cp.id):
         errors.append(f"id {cp.id!r} is not a slug")
+    if cp.name is not None and (not isinstance(cp.name, str) or not cp.name.strip() or len(cp.name) > NAME_MAX):
+        errors.append(f"name {cp.name!r} must be a non-empty string of at most {NAME_MAX} characters")
     if not (MIN_SONGS <= len(cp.works) <= MAX_SONGS):
         errors.append(f"{len(cp.works)} songs (need {MIN_SONGS}-{MAX_SONGS})")
     if len(set(cp.works)) != len(cp.works):
