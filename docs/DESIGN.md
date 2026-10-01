@@ -721,3 +721,36 @@ previous song's **instrumental**, matched in key, tempo and chord progression.
 * **Viewer**: playing a featured path uses its mashup when one exists; the **melody graph** (M)
   draws every song's melody on one pitch-vs-phrase-beat graph over a chord colour strip, the
   playing melodies bright with a bloom-lit point at the current position.
+
+## 15. Narrated walkthroughs (stages `scripts`, `narration`, `photos`)
+
+Each featured path's mashup gets a narrated, directed walkthrough: the narrator talks about the
+chord progressions the songs share, and — from documented accounts — how the musicians came up
+with the melodies and ideas, and whom they admired and were inspired by. Facts only, paraphrased,
+each cue citing its sources; no invented quotes and never any lyrics.
+
+* **Scripts** `musichistory/narration/scripts/<path id>.json` (committed, hand-editable):
+  `{"id", "title", "cues": [{"id", "anchor": {"segment": index into the mashup's segments,
+  "offset": seconds after that segment starts}, "kind": "intro"|"song"|"changeover"|"outro",
+  "text": the spoken line (declarative sentences ending in periods, for downward inflection),
+  "image": artist image id or null, "sources": [{"title", "url"}]}]}`.
+  A cue must fit before the next cue's anchor (about 2.6 words per second).
+* **Narration** (stage `narration`): ElevenLabs, voice JohnV4 `7NoxJCAEPTXbnfIvyaF6`, model
+  `eleven_v4`, key read from `C:\Users\johnb\Desktop\eleven-key.txt` (never logged or stored).
+  Responses cached by text hash. **Downward inflection** is checked: the pitch of every
+  sentence's last ~0.35 s must fall (pYIN slope < 0); a line that rises is regenerated (up to 3
+  tries) and reported. Output `data/audio/narration/narration.json`:
+  `{"version": 1, "voice", "voice_name": "JohnV4", "model", "paths": [{"id", "cues": [{"id",
+  "at": mix seconds, "seconds", "file": "<path id>/<nn>_<cue id>.wav" (48 kHz mono, -16 LUFS),
+  "text", "duck_db": music gain under the cue (e.g. -12, from the measured speech-band ratio of
+  the narration over the mix there), "image", "sources", "inflection": {"falls": n, "of": n}}]}]}`.
+* **Photos** (stage `photos`): freely licensed photographs of the singers and groups from
+  Wikimedia Commons (Wikidata P18 of the artist, else a Commons search restricted to free
+  licences), at most 720 px, `data/images/artists/<image id>.jpg`, catalogued in
+  `data/images/artists.json` with subject, Commons page, author, licence and licence URL, for
+  the attribution shown under every popup. Non-free or unlicensed files are never used.
+* **Viewer**: the path tour plays the narration cues at their times, ducking the music with a
+  smooth envelope (attack 0.15 s, release 0.6 s) to `duck_db`; a caption shows the line; a
+  photo popup (credit and licence under it) shows the cue's image. **Recording**: Unity Recorder
+  captures a narrated path to MP4 in **horizontal 1920x1080** or **vertical 1080x1920**, the HUD,
+  melody graph and popups re-laid out for each aspect; `data/recordings/`.
