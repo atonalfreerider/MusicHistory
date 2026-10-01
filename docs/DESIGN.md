@@ -753,8 +753,9 @@ each cue citing its sources; no invented quotes and never any lyrics.
   popup. Non-free or unlicensed files are never used, nor are non-photos (covers, labels,
   adverts, drawings), and the photo closest to the songs' years is preferred. Misses and the
   candidates rejected for each are listed in `data/images/artists_report.json`.
-* **Viewer**: the path tour plays the narration cues at their times, ducking the music with a
-  smooth envelope (attack 0.15 s, release 0.6 s) to `duck_db`; a caption shows the line; a
+* **Viewer**: captions only, **no voiceover**: the path tour shows each cue's line as a caption
+  at its time (held long enough to read) and never plays the narration audio or ducks the music;
+  the spoken takes and `duck_db` stay in `data/audio/narration` for future use. A
   photo popup (credit and licence under it) shows the cue's image. **Recording**: Unity Recorder
   captures a narrated path to MP4 in **horizontal 1920x1080** or **vertical 1080x1920**, the HUD,
   melody graph and popups re-laid out for each aspect; `data/recordings/`.
@@ -798,3 +799,6 @@ the **root song's key and tempo**, handing off around the path and **looping bac
   phrase as it pans).
 * **Photos on bubbles**: a song whose artist has a catalogued photo (§15) shows it as a round,
   camera-facing picture on its bubble in the 3D graph.
+* **Song info box**: the top info card is a compact title / artist · year / key · BPM header over
+  a **chord-progression ring**: the song's main loop as a donut, one arc per chord sized by its
+  length, in the chord-strip colours, roman numerals on the arcs, the loop's start at 12 o'clock.
