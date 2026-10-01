@@ -50,6 +50,9 @@ def add_arguments(p: argparse.ArgumentParser) -> None:
     p.add_argument("--tries", type=int, default=3, help="takes per cue at most, until every sentence falls (default 3)")
     p.add_argument("--max-requests", type=int, default=200, help="stop before sending more API requests than this")
     p.add_argument("--dry-run", action="store_true", help="validate scripts and print the fit plan; no API calls")
+    p.add_argument("--captions-only", action="store_true",
+                   help="write caption cues without speaking them (no API calls); without --path only for "
+                        "paths that have no narration yet")
 
 
 def _log(msg: str = "") -> None:
@@ -172,6 +175,19 @@ def narrate_path(doc: dict, mashup: dict, speaker: CueSpeaker, root: Path) -> tu
     return {"id": pid, "cues": cues}, {"id": pid, "cues": rep_cues}
 
 
+def caption_path(doc: dict, mashup: dict) -> dict:
+    """A path's cues as captions only: no audio, the reading time estimated at ``script.WORDS_PER_SECOND``."""
+    ats = [script.cue_time(c, mashup) for c in doc["cues"]]
+    cues = []
+    for i, c in enumerate(doc["cues"]):
+        text = textshape.shape(c["text"])
+        seconds = round(max(1.0, textshape.words(text) / script.WORDS_PER_SECOND), 3)
+        cues.append({"id": c["id"], "at": ats[i], "seconds": seconds, "file": None, "text": text, "duck_db": None,
+                     "image": c.get("image"), "sources": [{"title": s["title"], "url": s["url"]} for s in c.get("sources", [])],
+                     "inflection": None})
+    return {"id": doc["id"], "cues": cues}
+
+
 def _load_scripts(args: argparse.Namespace) -> list[tuple[Path, dict]]:
     files = list(args.script) if args.script else script.script_files(args.path)
     out = []
@@ -221,6 +237,8 @@ def run(args: argparse.Namespace, post=None) -> int:
         return 0
 
     root = out_dir(args)
+    if getattr(args, "captions_only", False):
+        return _run_captions(args, scripts, mashups, by_id, root)
     speaker = CueSpeaker(args, post=post)
     entries, reports, failed = {}, {}, {}
     for f, doc in scripts:
@@ -275,3 +293,31 @@ def run(args: argparse.Namespace, post=None) -> int:
                            "paths": [rmerged[i] for i in order if i in rmerged], "failed": failed}, indent=1)
     _log(f"wrote {doc_path} ({len(out['paths'])} path(s)) and {rep_path} in {time.monotonic() - t0:.0f}s")
     return 1 if failed else 0
+
+
+def _run_captions(args: argparse.Namespace, scripts, mashups: dict, by_id: dict, root: Path) -> int:
+    """``--captions-only``: merge caption cues into narration.json, keeping voiced paths as they are."""
+    doc_path = root / "narration.json"
+    old = {}
+    if doc_path.is_file():
+        prev = json.loads(doc_path.read_text(encoding="utf-8"))
+        if prev.get("version") == contract.VERSION:
+            old = {p["id"]: p for p in prev.get("paths", []) if p.get("id") in by_id}
+    entries = {}
+    for _, doc in scripts:
+        if not args.path and doc["id"] in old:
+            continue
+        entries[doc["id"]] = caption_path(doc, by_id[doc["id"]])
+        _log(f"{doc['id']}: {len(entries[doc['id']]['cues'])} caption cue(s)")
+    merged = {**old, **entries}
+    order = [p["id"] for p in mashups["paths"]]
+    out = {"version": contract.VERSION, "voice": tts.VOICE_ID, "voice_name": tts.VOICE_NAME, "model": tts.MODEL,
+           "paths": [merged[i] for i in order if i in merged]}
+    errors = contract.validate(out, root, mashups)
+    if errors:
+        for e in errors[:40]:
+            _log(f"contract error: {e}")
+        return 1
+    _write_json(doc_path, out)
+    _log(f"wrote {doc_path} ({len(out['paths'])} path(s); {len(entries)} captions-only)")
+    return 0

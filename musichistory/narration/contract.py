@@ -14,6 +14,9 @@ stage and the Unity viewer's path tour (DESIGN §15). Shape (compact UTF-8)::
                                "sources": [ { "title", "url" } ],
                                "inflection": { "falls": sentence ends that fall, "of": sentences } } ] } ] }
 
+A **captions-only** cue (no voice was synthesized: the viewer shows captions only, DESIGN §15)
+has ``file``, ``duck_db`` and ``inflection`` all null and ``seconds`` the estimated reading time.
+
 Cues of a path are in time order. Objects carry exactly these keys. ``validate`` checks it all
 (with ``root`` the WAV files must exist and be 48 kHz mono; with ``mashups`` every path must be
 a mashup and every cue must start inside its mix).
@@ -108,8 +111,11 @@ def validate(doc: dict, root: Path | None = None, mashups: dict | None = None) -
                 last = float(c["at"])
             if not (_num(c["seconds"]) and 0.2 <= c["seconds"] <= 120):
                 err.append(f"{wc}: seconds {c['seconds']!r}")
+            captions_only = c["file"] is None and c["duck_db"] is None and c["inflection"] is None
             want = cue_file(pid, ci, cid)
-            if c["file"] != want:
+            if captions_only:
+                pass
+            elif c["file"] != want:
                 err.append(f"{wc}: file must be {want!r}")
             elif root is not None:
                 f = Path(root) / c["file"]
@@ -129,7 +135,9 @@ def validate(doc: dict, root: Path | None = None, mashups: dict | None = None) -
             if not textshape.is_shaped(c["text"]):
                 err.append(f"{wc}: text must be declarative sentences ending in a period (no ? or !)")
             d = c["duck_db"]
-            if not (_num(d) and DUCK_RANGE[0] - EPS <= d <= DUCK_RANGE[1] + EPS):
+            if captions_only:
+                pass
+            elif not (_num(d) and DUCK_RANGE[0] - EPS <= d <= DUCK_RANGE[1] + EPS):
                 err.append(f"{wc}: duck_db {d!r} outside {list(DUCK_RANGE)}")
             img = c["image"]
             if img is not None and not (isinstance(img, str) and img):
@@ -145,7 +153,9 @@ def validate(doc: dict, root: Path | None = None, mashups: dict | None = None) -
                             and isinstance(s["url"], str) and s["url"].startswith(("http://", "https://"))):
                         err.append(f"{wc} source {si}: title and an http(s) url")
             inf = c["inflection"]
-            if _keys(inf, {"falls", "of"}, f"{wc} inflection", err):
+            if captions_only:
+                pass
+            elif _keys(inf, {"falls", "of"}, f"{wc} inflection", err):
                 f_, o_ = inf["falls"], inf["of"]
                 if not (isinstance(f_, int) and isinstance(o_, int) and not isinstance(f_, bool)
                         and not isinstance(o_, bool) and 0 <= f_ <= o_ and o_ >= 1):

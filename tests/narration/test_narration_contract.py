@@ -94,3 +94,16 @@ def test_fit_plan_flags_long_lines():
     plan = script.fit_plan(_script(), mashups()["paths"][0])
     assert plan[0]["fits"] and plan[0]["room"] == 10.5
     assert not plan[1]["fits"] and plan[1]["room"] == 18.0 and plan[1]["estimate"] > 18.0
+
+
+def test_captions_only_cue_is_valid_without_audio():
+    from musichistory.narration import contract
+
+    cue = {"id": "intro", "at": 0.3, "seconds": 4.2, "file": None, "text": "Three songs share one loop.",
+           "duck_db": None, "image": None, "sources": [{"title": "A", "url": "https://example.org/a"}],
+           "inflection": None}
+    doc = {"version": contract.VERSION, "voice": contract.VOICE, "voice_name": contract.VOICE_NAME,
+           "model": contract.MODEL, "paths": [{"id": "p", "cues": [cue]}]}
+    assert contract.validate(doc) == []
+    half = dict(cue, duck_db=-10.0)  # audio fields are null together or not at all
+    assert contract.validate({**doc, "paths": [{"id": "p", "cues": [half]}]})

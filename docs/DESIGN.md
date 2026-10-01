@@ -759,7 +759,9 @@ each cue citing its sources; no invented quotes and never any lyrics.
   candidates rejected for each are listed in `data/images/artists_report.json`.
 * **Viewer**: captions only, **no voiceover**: the path tour shows each cue's line as a caption
   at its time (held long enough to read) and never plays the narration audio or ducks the music;
-  the spoken takes and `duck_db` stay in `data/audio/narration` for future use. A
+  the spoken takes and `duck_db` stay in `data/audio/narration` for future use. Paths narrated
+  after that decision are **captions only** (`narration --captions-only`: cues with `file`, `duck_db`
+  and `inflection` null and a reading-time `seconds`; no voice is synthesized). A
   photo popup (credit and licence under it) shows the cue's image. **Recording**: Unity Recorder
   captures a narrated path to MP4 in **horizontal 1920x1080** or **vertical 1080x1920**, the HUD,
   melody graph and popups re-laid out for each aspect; `data/recordings/`.
