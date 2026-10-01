@@ -1,0 +1,78 @@
+{
+  "id": "beat-it-to-party-rock",
+  "title": "Beat It to Party Rock Anthem",
+  "cues": [
+    {
+      "id": "intro",
+      "anchor": {
+        "segment": 0,
+        "offset": 0.3
+      },
+      "kind": "intro",
+      "text": "Quincy Jones asked for a rock song like My Sharona, so Michael Jackson wrote Beat It. It shuttles from minor to flat seven.",
+      "image": "artist-Q2831",
+      "sources": [
+        {
+          "title": "Beat It (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Beat_It"
+        },
+        {
+          "title": "Michael Jackson, Beat It (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/michael-jackson/beat-it"
+        }
+      ]
+    },
+    {
+      "id": "doors-arrive",
+      "anchor": {
+        "segment": 1,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Here Without You sings over Jackson's band. Brad Arnold wrote it about missing someone on tour, and meant it as a happy song.",
+      "image": "artist-Q175097",
+      "sources": [
+        {
+          "title": "Here Without You (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Here_Without_You"
+        }
+      ]
+    },
+    {
+      "id": "lmfao-arrives",
+      "anchor": {
+        "segment": 4,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Party Rock Anthem now rides Three Doors Down's band. It loops minor, flat seven, flat six.",
+      "image": "artist-Q48978",
+      "sources": [
+        {
+          "title": "Party Rock Anthem (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Party_Rock_Anthem"
+        },
+        {
+          "title": "LMFAO, Party Rock Anthem (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/lmfao/party-rock-anthem"
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "anchor": {
+        "segment": 6,
+        "offset": 0.6
+      },
+      "kind": "outro",
+      "text": "Redfoo, a son of Berry Gordy, named Michael Jackson and Madonna as LMFAO's biggest influences.",
+      "image": "artist-Q48978",
+      "sources": [
+        {
+          "title": "LMFAO (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/LMFAO"
+        }
+      ]
+    }
+  ]
+}

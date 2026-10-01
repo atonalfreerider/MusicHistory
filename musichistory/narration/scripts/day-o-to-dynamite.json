@@ -1,0 +1,94 @@
+{
+  "id": "day-o-to-dynamite",
+  "title": "Day-O to Dynamite, 1956–2010",
+  "cues": [
+    {
+      "id": "intro",
+      "anchor": {
+        "segment": 0,
+        "offset": 0.3
+      },
+      "kind": "intro",
+      "text": "Day-O began as a Jamaican work song, sung by dock workers loading bananas at night. Harry Belafonte, mentored by Paul Robeson, recorded this adaptation in nineteen fifty-six.",
+      "image": "artist-Q214959",
+      "sources": [
+        {
+          "title": "Day-O (The Banana Boat Song) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Day-O_(The_Banana_Boat_Song)"
+        },
+        {
+          "title": "Harry Belafonte (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Harry_Belafonte"
+        }
+      ]
+    },
+    {
+      "id": "cannibals-arrive",
+      "anchor": {
+        "segment": 1,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "She Drives Me Crazy now sings over Belafonte's band. Roland Gift and David Steele wrote it. Its loop runs one, four, six minor, five.",
+      "image": "artist-Q14528",
+      "sources": [
+        {
+          "title": "She Drives Me Crazy (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/She_Drives_Me_Crazy"
+        },
+        {
+          "title": "Fine Young Cannibals, She Drives Me Crazy (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/fine-young-cannibals/she-drives-me-crazy"
+        }
+      ]
+    },
+    {
+      "id": "cruz-arrives",
+      "anchor": {
+        "segment": 4,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Taio Cruz's Dynamite now rides the Cannibals' band. In this graph's transcriptions, the two records share a twenty-four-note bass figure. Dr Luke and Max Martin wrote the melody, then asked Bonnie McKee for words.",
+      "image": "artist-Q313370",
+      "sources": [
+        {
+          "title": "Dynamite (Taio Cruz song) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Dynamite_(Taio_Cruz_song)"
+        },
+        {
+          "title": "Fine Young Cannibals, She Drives Me Crazy (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/fine-young-cannibals/she-drives-me-crazy"
+        },
+        {
+          "title": "Taio Cruz, Dynamite (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/taio-cruz/dynamite"
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "anchor": {
+        "segment": 5,
+        "offset": 0.3
+      },
+      "kind": "outro",
+      "text": "McKee thought it the dumbest song she had written, and it became her biggest hit. It loops the Cannibals' four chords, begun on six minor.",
+      "image": "artist-Q313370",
+      "sources": [
+        {
+          "title": "Dynamite (Taio Cruz song) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Dynamite_(Taio_Cruz_song)"
+        },
+        {
+          "title": "Taio Cruz, Dynamite (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/taio-cruz/dynamite"
+        },
+        {
+          "title": "Fine Young Cannibals, She Drives Me Crazy (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/fine-young-cannibals/she-drives-me-crazy"
+        }
+      ]
+    }
+  ]
+}

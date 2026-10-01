@@ -1,0 +1,86 @@
+{
+  "id": "hung-up-to-love-story",
+  "title": "Hung Up to Love Story, 2005–2008",
+  "cues": [
+    {
+      "id": "intro",
+      "anchor": {
+        "segment": 0,
+        "offset": 0.3
+      },
+      "kind": "intro",
+      "text": "Madonna drew on seventies disco, ABBA and Giorgio Moroder for Hung Up. To sample ABBA's Gimme Gimme Gimme, she sent an emissary to Stockholm with a pleading letter.",
+      "image": "artist-Q1744",
+      "sources": [
+        {
+          "title": "Hung Up (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Hung_Up"
+        }
+      ]
+    },
+    {
+      "id": "rihanna-arrives",
+      "anchor": {
+        "segment": 1,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Rihanna's Umbrella now sings over Madonna's band. Tricky Stewart and The-Dream wrote it for Britney Spears, but her label passed. Its loop is the axis begun on four: four, one, five, six minor.",
+      "image": "artist-Q36844",
+      "sources": [
+        {
+          "title": "Umbrella (song) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Umbrella_(song)"
+        },
+        {
+          "title": "Rihanna, Umbrella (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/rihanna/umbrella"
+        },
+        {
+          "title": "I–V–vi–IV progression (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/I%E2%80%93V%E2%80%93vi%E2%80%93IV_progression"
+        }
+      ]
+    },
+    {
+      "id": "swift-arrives",
+      "anchor": {
+        "segment": 3,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Taylor Swift's Love Story now rides the Umbrella band. Swift wrote it on her bedroom floor in about twenty minutes.",
+      "image": "artist-Q26876",
+      "sources": [
+        {
+          "title": "Love Story (Taylor Swift song) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Love_Story_(Taylor_Swift_song)"
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "anchor": {
+        "segment": 4,
+        "offset": 1.0
+      },
+      "kind": "outro",
+      "text": "She gave Romeo and Juliet a happy ending. Her chords run the axis: one, five, six minor, four. Three hits, three years, one cycle.",
+      "image": "artist-Q26876",
+      "sources": [
+        {
+          "title": "Love Story (Taylor Swift song) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Love_Story_(Taylor_Swift_song)"
+        },
+        {
+          "title": "Taylor Swift, Love Story (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/taylor-swift/love-story"
+        },
+        {
+          "title": "I–V–vi–IV progression (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/I%E2%80%93V%E2%80%93vi%E2%80%93IV_progression"
+        }
+      ]
+    }
+  ]
+}

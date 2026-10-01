@@ -1,0 +1,78 @@
+{
+  "id": "platters-to-shania",
+  "title": "The Great Pretender to Still the One",
+  "cues": [
+    {
+      "id": "intro",
+      "anchor": {
+        "segment": 0,
+        "offset": 0.3
+      },
+      "kind": "intro",
+      "text": "Buck Ram, the Platters' manager, said he wrote The Great Pretender in about twenty minutes, in a Las Vegas hotel washroom.",
+      "image": "artist-Q753905",
+      "sources": [
+        {
+          "title": "The Great Pretender (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/The_Great_Pretender"
+        }
+      ]
+    },
+    {
+      "id": "beatles-arrive",
+      "anchor": {
+        "segment": 1,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Please Please Me now sings over the Platters' band. John Lennon called it his attempt at a Roy Orbison song. George Martin sped it up.",
+      "image": "artist-Q1299",
+      "sources": [
+        {
+          "title": "Please Please Me (song) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Please_Please_Me_(song)"
+        }
+      ]
+    },
+    {
+      "id": "shania-arrives",
+      "anchor": {
+        "segment": 3,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Shania Twain now sings over the Beatles' band. She and Mutt Lange wrote You're Still the One to answer doubters of their marriage.",
+      "image": "artist-Q131433",
+      "sources": [
+        {
+          "title": "You're Still the One (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/You%27re_Still_the_One"
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "anchor": {
+        "segment": 4,
+        "offset": 2.5
+      },
+      "kind": "outro",
+      "text": "Lange added the counter-melody that became its hook. It cycles one, four, five, as this path does.",
+      "image": "artist-Q131433",
+      "sources": [
+        {
+          "title": "You're Still the One (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/You%27re_Still_the_One"
+        },
+        {
+          "title": "Shania Twain, You're Still the One (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/shania-twain/youre-still-the-one"
+        },
+        {
+          "title": "I–IV–V–I progression (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/I%E2%80%93IV%E2%80%93V%E2%80%93I_progression"
+        }
+      ]
+    }
+  ]
+}

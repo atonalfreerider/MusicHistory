@@ -1,0 +1,86 @@
+{
+  "id": "u2-to-the-chili-peppers",
+  "title": "With or Without You to Dani California",
+  "cues": [
+    {
+      "id": "intro",
+      "anchor": {
+        "segment": 0,
+        "offset": 0.3
+      },
+      "kind": "intro",
+      "text": "Bono wrote the first chords of With or Without You. It came alive when the Edge played a prototype Infinite Guitar from Michael Brook. Its loop is the axis: one, five, six minor, four.",
+      "image": "artist-Q396",
+      "sources": [
+        {
+          "title": "With or Without You (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/With_or_Without_You"
+        },
+        {
+          "title": "U2, With or Without You (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/u2/with-or-without-you"
+        },
+        {
+          "title": "I–V–vi–IV progression (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/I%E2%80%93V%E2%80%93vi%E2%80%93IV_progression"
+        }
+      ]
+    },
+    {
+      "id": "madonna-arrives",
+      "anchor": {
+        "segment": 1,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Madonna's Like a Prayer now sings over Bono's band. She wrote it with Patrick Leonard in about three hours, shaped by her Catholic upbringing. It turns the same four chords.",
+      "image": "artist-Q1744",
+      "sources": [
+        {
+          "title": "Like a Prayer (song) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Like_a_Prayer_(song)"
+        },
+        {
+          "title": "Madonna, Like a Prayer (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/madonna/like-a-prayer"
+        }
+      ]
+    },
+    {
+      "id": "chili-peppers-arrive",
+      "anchor": {
+        "segment": 3,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Dani California now rides Madonna's band. It turns six minor, five, two minor, a move Like a Prayer also makes.",
+      "image": "artist-Q10708",
+      "sources": [
+        {
+          "title": "Dani California (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Dani_California"
+        },
+        {
+          "title": "Madonna, Like a Prayer (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/madonna/like-a-prayer"
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "anchor": {
+        "segment": 4,
+        "offset": 3.6
+      },
+      "kind": "outro",
+      "text": "Anthony Kiedis traced Dani through earlier songs. The video dresses the band as rock acts from Elvis and the Beatles to Hendrix and Bowie.",
+      "image": "artist-Q10708",
+      "sources": [
+        {
+          "title": "Dani California (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Dani_California"
+        }
+      ]
+    }
+  ]
+}

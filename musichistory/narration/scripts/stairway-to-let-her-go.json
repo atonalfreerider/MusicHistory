@@ -1,0 +1,102 @@
+{
+  "id": "stairway-to-let-her-go",
+  "title": "Stairway to Heaven to Let Her Go",
+  "cues": [
+    {
+      "id": "intro",
+      "anchor": {
+        "segment": 0,
+        "offset": 0.3
+      },
+      "kind": "intro",
+      "text": "Jimmy Page wanted Stairway to Heaven to open on a fragile guitar and gather pace. Robert Plant wrote most of the words by the fire at Headley Grange. Its A minor opening walks the bass down by half steps.",
+      "image": "artist-Q2331",
+      "sources": [
+        {
+          "title": "Stairway to Heaven (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Stairway_to_Heaven"
+        },
+        {
+          "title": "Led Zeppelin, Stairway to Heaven (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/led-zeppelin/stairway-to-heaven"
+        }
+      ]
+    },
+    {
+      "id": "lavigne-arrives",
+      "anchor": {
+        "segment": 1,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Avril Lavigne's Complicated now sings over Zeppelin's band, matched in key and tempo. The Matrix brought her the chords, and she and Lauren Christy wrote the words under a tree. Its chorus runs six minor, four, one, five.",
+      "image": "artist-Q30449",
+      "sources": [
+        {
+          "title": "Complicated (Avril Lavigne song) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Complicated_(Avril_Lavigne_song)"
+        },
+        {
+          "title": "Avril Lavigne, Complicated (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/avril-lavigne/complicated"
+        },
+        {
+          "title": "I–V–vi–IV progression (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/I%E2%80%93V%E2%80%93vi%E2%80%93IV_progression"
+        }
+      ]
+    },
+    {
+      "id": "passenger-arrives",
+      "anchor": {
+        "segment": 4,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Passenger's Let Her Go now rides Lavigne's band. Both lean on the Aeolian move, minor, flat six, flat seven, which Stairway also climbs.",
+      "image": "artist-Q653086",
+      "sources": [
+        {
+          "title": "Passenger, Let Her Go (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/passenger/let-her-go"
+        },
+        {
+          "title": "Avril Lavigne, Complicated (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/avril-lavigne/complicated"
+        },
+        {
+          "title": "Led Zeppelin, Stairway to Heaven (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/led-zeppelin/stairway-to-heaven"
+        },
+        {
+          "title": "Aeolian mode (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Aeolian_mode"
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "anchor": {
+        "segment": 5,
+        "offset": 2.0
+      },
+      "kind": "outro",
+      "text": "Mike Rosenberg wrote it in under an hour, backstage in Australia, after a support set that met with indifference. Forty-one years after Stairway, the same minor move still turns.",
+      "image": "artist-Q653086",
+      "sources": [
+        {
+          "title": "Let Her Go by Passenger (Songfacts)",
+          "url": "https://www.songfacts.com/facts/passenger/let-her-go"
+        },
+        {
+          "title": "Let Her Go (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Let_Her_Go"
+        },
+        {
+          "title": "Stairway to Heaven (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Stairway_to_Heaven"
+        }
+      ]
+    }
+  ]
+}

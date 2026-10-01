@@ -1,0 +1,106 @@
+{
+  "id": "stand-by-me-to-basket-case",
+  "title": "Stand by Me to Basket Case",
+  "cues": [
+    {
+      "id": "intro",
+      "anchor": {
+        "segment": 0,
+        "offset": 0.3
+      },
+      "kind": "intro",
+      "text": "Ben E. King drew Stand by Me from a hymn by Charles Albert Tindley and a Soul Stirrers spiritual. In Mike Stoller's account, King sang the melody and Stoller built the bass line. It runs the fifties changes: one, six minor, four, five.",
+      "image": "artist-Q356140",
+      "sources": [
+        {
+          "title": "Stand by Me (Ben E. King song) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Stand_by_Me_(Ben_E._King_song)"
+        },
+        {
+          "title": "Ben E. King, Stand by Me (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/ben-e-king/stand-by-me"
+        },
+        {
+          "title": "'50s progression (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/%2750s_progression"
+        }
+      ]
+    },
+    {
+      "id": "band-aid-arrives",
+      "anchor": {
+        "segment": 1,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Band Aid's Do They Know It's Christmas now sings over King's band. Midge Ure wrote its tune on a portable keyboard.",
+      "image": null,
+      "sources": [
+        {
+          "title": "Do They Know It's Christmas? (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Do_They_Know_It%27s_Christmas%3F"
+        }
+      ]
+    },
+    {
+      "id": "band-aid",
+      "anchor": {
+        "segment": 1,
+        "offset": 12.0
+      },
+      "kind": "song",
+      "text": "Bob Geldof wrote the words after Michael Buerk's BBC reports on the famine in Ethiopia. He joked that Ure's tune sounded like the Z-Cars theme.",
+      "image": null,
+      "sources": [
+        {
+          "title": "Do They Know It's Christmas? (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Do_They_Know_It%27s_Christmas%3F"
+        }
+      ]
+    },
+    {
+      "id": "green-day-arrives",
+      "anchor": {
+        "segment": 4,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Green Day's Basket Case now rides the Band Aid band.",
+      "image": "artist-Q47871",
+      "sources": [
+        {
+          "title": "Basket Case (Green Day song) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Basket_Case_(Green_Day_song)"
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "anchor": {
+        "segment": 5,
+        "offset": 1.0
+      },
+      "kind": "outro",
+      "text": "Billie Joe Armstrong rewrote it about his panic attacks. Its verse closely mirrors Pachelbel's Canon. The graph links all three by one, four and five.",
+      "image": "artist-Q47871",
+      "sources": [
+        {
+          "title": "Basket Case (Green Day song) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Basket_Case_(Green_Day_song)"
+        },
+        {
+          "title": "Green Day, Basket Case (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/green-day/basket-case"
+        },
+        {
+          "title": "Pachelbel's Canon (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Pachelbel%27s_Canon"
+        },
+        {
+          "title": "Three-chord song (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Three-chord_song"
+        }
+      ]
+    }
+  ]
+}

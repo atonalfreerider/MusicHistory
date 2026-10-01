@@ -1,0 +1,94 @@
+{
+  "id": "managua-to-george-jones",
+  "title": "Managua, Nicaragua to George Jones",
+  "cues": [
+    {
+      "id": "intro",
+      "anchor": {
+        "segment": 0,
+        "offset": 0.3
+      },
+      "kind": "intro",
+      "text": "Irving Fields and Albert Gamse wrote Managua, Nicaragua in nineteen forty-six. Freddy Martin's orchestra took it to number one, with Stuart Wade singing.",
+      "image": "artist-Q2170130",
+      "sources": [
+        {
+          "title": "Managua, Nicaragua (song) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Managua,_Nicaragua_(song)"
+        }
+      ]
+    },
+    {
+      "id": "presley-arrives",
+      "anchor": {
+        "segment": 1,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Elvis now sings over Freddy Martin's band. The graph pairs them on two, five, one.",
+      "image": "artist-Q303",
+      "sources": [
+        {
+          "title": "It's Now or Never (song) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/It%27s_Now_or_Never_(song)"
+        },
+        {
+          "title": "ii–V–I progression (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Ii%E2%80%93V%E2%80%93I_progression"
+        }
+      ]
+    },
+    {
+      "id": "now-or-never",
+      "anchor": {
+        "segment": 2,
+        "offset": 0.3
+      },
+      "kind": "song",
+      "text": "It's Now or Never sets new words to O Sole Mio. Presley heard Tony Martin's version in the army in Germany.",
+      "image": "artist-Q303",
+      "sources": [
+        {
+          "title": "It's Now or Never (song) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/It%27s_Now_or_Never_(song)"
+        }
+      ]
+    },
+    {
+      "id": "jones-arrives",
+      "anchor": {
+        "segment": 4,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "George Jones now sings over Presley's band. Jones disliked He Stopped Loving Her Today, and kept singing it to the tune of Help Me Make It Through the Night.",
+      "image": "artist-Q508202",
+      "sources": [
+        {
+          "title": "He Stopped Loving Her Today (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/He_Stopped_Loving_Her_Today"
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "anchor": {
+        "segment": 5,
+        "offset": 0.3
+      },
+      "kind": "outro",
+      "text": "Billy Sherrill held out for the real melody, and it revived Jones's career. Harlan Howard called country three chords and the truth.",
+      "image": "artist-Q508202",
+      "sources": [
+        {
+          "title": "He Stopped Loving Her Today (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/He_Stopped_Loving_Her_Today"
+        },
+        {
+          "title": "Three-chord song (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Three-chord_song"
+        }
+      ]
+    }
+  ]
+}
