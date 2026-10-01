@@ -758,3 +758,43 @@ each cue citing its sources; no invented quotes and never any lyrics.
   photo popup (credit and licence under it) shows the cue's image. **Recording**: Unity Recorder
   captures a narrated path to MP4 in **horizontal 1920x1080** or **vertical 1080x1920**, the HUD,
   melody graph and popups re-laid out for each aspect; `data/recordings/`.
+
+## 16. Duet loops (stage `duets`, `musichistory/mashup/duet.py`)
+
+A second, unnarrated version of every featured path: **two sung melodies at all times**, all in
+the **root song's key and tempo**, handing off around the path and **looping back** to the start.
+
+* **Bed**: the root song S0's instrumental plays throughout (its loop repeated, restarting at
+  matching bar lines as the chain does). No morphs: every vocal is transposed (formant-preserving,
+  key-derived shift preferred) into S0's key and warped onto S0's beat grid (tempo octave nearest).
+* **Cycle** for a path S0..S(n-1): pair k = vocals of S_k and S_(k+1 mod n), for k = 0..n-1, so
+  pair 0 is S0 + S1 and the last pair S(n-1) + S0; after it the file wraps to pair 0. Each song's
+  vocal therefore sounds through two consecutive pairs as one window of its own consecutive bars
+  (repeating its vocal loop if the preview runs out), chosen to maximize chord agreement with the
+  bed under it. A pair lasts about `--pair` seconds (default 20) in whole bars of S0.
+* **Handoff** at every pair boundary (`--handoff-bars`, default 2, centred on the boundary): the
+  leaving vocal fades out while the entering one fades in, and the bed is briefly replaced by the
+  **entering song's instrumental** (the leaving song's when the entering song is S0), in S0's
+  key and tempo, at bars whose chords agree with the bed's, crossfaded in and out.
+* **Seamless loop**: the mix is rendered circularly, its last sample continuing into its first.
+* **Contract**: `data/audio/duets/duets.json` (version 1) + `<path id>/loop.mp3`:
+  `{"version", "generated_at", "frame", "paths": [{"id", "title", "file": "<id>/loop.mp3",
+  "seconds", "loops": true, "root": work_id, "key", "bpm", "beats_per_bar", "phrase_beats",
+  "segments": [{"start", "end", "kind": "duet" | "handoff", "instrumental": work_id,
+  "vocals": [work_id, work_id] (at the segment's end), "entering": work_id | null,
+  "leaving": work_id | null, "chord_match": 0..1}],
+  "beats": [[mix seconds, mix beat], ...] (every beat, mix beats from 0, increasing),
+  "chords": [[start beat, end beat, root pc, quality, roman], ...] (what the bed plays, in mix beats),
+  "songs": [{"work_id", "title", "artist", "year", "step", "shift_semitones", "tempo_ratio",
+  "melody": [[mix beat, MIDI pitch | null], ...] (as heard, in the normalized frame),
+  "vocal_audible": [[start, end], ...], "instrumental_audible": [[start, end], ...]}]}]}`
+  (seconds for the audible intervals; segments contiguous from 0 to `seconds`). Never lyrics.
+* **Viewer**: each featured path offers its duet loop next to the narrated mix (no narration);
+  both singing songs glow with the edge between them lit, the strip reads "Duet: A + B over
+  <root>", and the melody graph scrolls a timeline of mix beats under a fixed centre playhead,
+  the two playing melodies bright with bloom points. Recordings: `<path id>_duet_<format>.mp4`.
+* **Vertical melody graph** (all mixes): three times larger, panning right to left under a
+  playhead fixed at the screen's centre (a narrated mix's phrase-folded graph wraps around the
+  phrase as it pans).
+* **Photos on bubbles**: a song whose artist has a catalogued photo (§15) shows it as a round,
+  camera-facing picture on its bubble in the 3D graph.
