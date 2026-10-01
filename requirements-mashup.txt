@@ -1,0 +1,9 @@
+# Extra dependencies of the mashup stage (python -m musichistory mashup), on top of
+# requirements-paths.txt (librosa) and requirements-themes.txt (torch, CUDA 12.6 wheels):
+#   .venv\Scripts\python -m pip install -r requirements-mashup.txt
+# Installed 2026-09-30 next to torch 2.14: pylibrb 0.1.2 (Rubber Band 3 bindings, real-time
+# mode drives the beat time maps), beat_this 1.1.0 (beats/downbeats; pulls einops,
+# rotary-embedding-torch and torchaudio, which is only imported, never used for audio I/O).
+# Stems come from Resonance-2's own venv (Tools/SongLibrary/.venv: demucs 4.0.1), not from here.
+pylibrb==0.1.2
+beat_this==1.1.0

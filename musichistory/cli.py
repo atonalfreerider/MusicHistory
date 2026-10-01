@@ -21,6 +21,7 @@ STAGES: dict[str, tuple[str, str]] = {
     "layout": ("musichistory.dotnet", "GPU force-directed layout with time pinned (C#)"),
     "themes": ("musichistory.themes.stage", "Classify lyric themes, resolve singers, export the themes graph"),
     "paths": ("musichistory.paths.stage", "Curate featured paths and prerender their recording previews"),
+    "mashup": ("musichistory.mashup.stage", "Separate stems and render each featured path as one key/tempo/chord-matched mashup"),
     "status": ("musichistory.status", "Show progress of every stage"),
 }
 
