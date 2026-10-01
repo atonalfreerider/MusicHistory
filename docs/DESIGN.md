@@ -845,6 +845,11 @@ and time-scaled onto it, then **harmonized** by other melodies — a ~90 s video
   "tempo_ratio", "match" (0..1), "notes": [...] (as heard, loop beats)}], "harmonies":
   [{"work_id", "title", "artist", "year", "shift_semitones", "tempo_ratio", "consonance" (0..1),
   "notes": [...]}], "coverage", "match"}]}`.
+* **Safeguards**: beat grids above 165 BPM are recounted in half time (below 60 in double); a
+  target loop must be a clear melody (at most 45% repeated notes, five or more pitches over five
+  semitones), which drops chanted and rapped loops; pitches compare unrounded (within half a
+  semitone) with at most one octave of folding; and each rendered example's mosaic section is
+  re-transcribed, an example heard under 0.55 note-for-note being replaced by the next candidate.
 * **Viewer**: a mosaic plays like a path (name top left, chord wheel, captions none): the melody
   graph shows the target melody, the pieces as coloured spans labelled by song with the playing
   piece bloom-lit and its song's bubble highlighted, then the harmony lines; recordings

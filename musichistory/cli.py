@@ -23,6 +23,7 @@ STAGES: dict[str, tuple[str, str]] = {
     "paths": ("musichistory.paths.stage", "Curate featured paths and prerender their recording previews"),
     "mashup": ("musichistory.mashup.stage", "Separate stems and render each featured path as one key/tempo/chord-matched mashup"),
     "duets": ("musichistory.mashup.duet_stage", "Render each featured path as a seamless duet loop: two vocals at all times in the root's key/tempo over its instrumental"),
+    "mosaic": ("musichistory.mosaic.stage", "Rebuild a song's melody from other songs' melody pieces, harmonize it, render ~90 s mixes"),
     "narration": ("musichistory.narration.stage", "Speak each featured path's narration script (ElevenLabs) with inflection, loudness and duck checks"),
     "photos": ("musichistory.photos.stage", "Find freely licensed photos of the featured songs' artists on Wikimedia Commons"),
     "status": ("musichistory.status", "Show progress of every stage"),
