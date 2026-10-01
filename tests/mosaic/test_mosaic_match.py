@@ -140,3 +140,47 @@ def test_fold_shift_keeps_the_fewest_octaves():
     p = piece_like(0, 3)
     p.transpose = 18
     assert (p.shift, p.octave) == (6, 1)
+
+
+def test_pieces_span_at_least_a_bar():
+    target = melody(TUNE, RHYTHM, gap=0.1)
+    part = Seq("S", target.on[:4], target.off[:4], target.pitch[:4], 0.5)     # 4 notes over 3 beats
+    idx = Index({"S": part})
+    assert find_pieces(target, idx, ibi_target=0.5, **W)
+    assert find_pieces(target, idx, ibi_target=0.5, min_beats=4.0, **W) == []
+    five = Seq("S", target.on[:5], target.off[:5], target.pitch[:5], 0.5)     # ... the 5th holds to beat 4
+    assert {(p.a, p.b) for p in find_pieces(target, Index({"S": five}), ibi_target=0.5, min_beats=4.0, **W)} \
+        >= {(0, 4)}
+
+
+def test_long_spans_may_match_a_little_less():
+    target = melody(TUNE, RHYTHM, gap=0.1)                    # 16 notes over 12 beats
+    pitches = target.pitch.copy()
+    pitches[[3, 5, 7, 10, 12]] += 2                           # 5 wrong notes: 11/16 = 0.69 < MIN_RATE
+    source = Seq("S", target.on, target.off, pitches, 0.5)
+    idx = Index({"S": source})
+    whole = lambda ps: [p for p in ps if (p.a, p.b) == (0, 15)]
+    assert not whole(find_pieces(target, idx, ibi_target=0.5, **W))
+    got = whole(find_pieces(target, idx, ibi_target=0.5, long_beats=8.0, long_rate=0.6, **W))
+    assert got and abs(got[0].rate - 11 / 16) < 1e-9
+
+
+def test_ornaments_do_not_count_against_a_piece():
+    target = melody(TUNE[:8], RHYTHM[:8], gap=0.1)
+    grace = Seq("G", target.on[[3, 6]] - 0.1, target.on[[3, 6]] - 0.02, target.pitch[[3, 6]] + 1, 0.5)  # grace notes
+    split = Seq("R", target.on + 0.5 * (target.off - target.on), target.off, target.pitch, 0.5)  # re-sung halves
+    for extra in (grace, split):
+        src = Seq("S", np.r_[target.on, extra.on], np.r_[target.on + 0.5 * (target.off - target.on) - 0.01, extra.off]
+                  if extra is split else np.r_[target.off, extra.off], np.r_[target.pitch, extra.pitch], 0.5)
+        ps = [p for p in find_pieces(target, Index({"S": src}), ibi_target=0.5, **W) if (p.a, p.b) == (0, 7)]
+        assert ps and ps[0].rate == 1.0, extra.work_id
+
+
+def test_spoken_loops_are_not_melodies():
+    from musichistory.mosaic import search
+
+    tune = melody(TUNE, RHYTHM)
+    spoken = Seq("T", tune.on, tune.off, tune.pitch, 0.5, fpitch=tune.pitch + 0.3)   # between semitones
+    assert "spoken" in search.melody_problem(spoken)
+    assert "spoken" in search.melody_problem(tune, np.full(len(tune), 0.7))          # unsteady
+    assert search.melody_problem(tune, np.full(len(tune), 0.95)) == ""

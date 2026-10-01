@@ -9,10 +9,11 @@ Its notes (stability >= ``MIN_STABILITY``, onset in the window) are the target m
 beats.
 
 **Cover** (``cover``): a weighted interval schedule over the loop's notes. Every candidate
-piece (``match.Piece``) covers target notes ``a..b`` with weight
-``matched * (1 + LENGTH_BONUS * (matched - 1)) - MISS_COST * misses - PIECE_COST`` (longer
-pieces are worth more per note; every piece costs something), pieces may not share target
-notes, and the schedule maximizing the summed weight is found by dynamic programming. A song
+piece (``match.Piece``, at least ``MIN_SPAN_BARS`` bar long) covers target notes ``a..b`` with
+weight ``(matched - MISS_COST * misses) * (1 + LENGTH_BONUS * (matched - 1)) - PIECE_COST``
+(longer pieces are worth more per note, a miss costs what a match earns, every piece costs
+``PIECE_COST``: a 4-bar loop takes about 2-4 pieces), pieces may not share target notes, and
+the schedule maximizing the summed weight is found by dynamic programming. A song
 used for more than one piece costs ``DUP_COST`` per extra use: the schedule is re-solved with
 a repeated song restricted to one of its spans until no variant does better.
 
@@ -39,9 +40,12 @@ MAX_LOOP_SECONDS = 22.0
 MIN_STABILITY = 0.5
 MIN_LOOP_NOTES = 14
 MIN_NOTES_PER_BAR = 1.5
-LENGTH_BONUS = 0.15
-MISS_COST = 0.75
-PIECE_COST = 2.5
+LENGTH_BONUS = 0.2
+MISS_COST = 1.0
+PIECE_COST = 6.0
+MIN_SPAN_BARS = 1.0          # a piece spans at least this many bars of the target ...
+LONG_SPAN_BARS = 2.0         # ... and from this many on it may match a little less (``match.LONG_RATE``)
+RECOGNIZABLE_SECONDS = 3.5   # a piece this long (target span) is fully recognizable in the ranking
 DUP_COST = 2.0
 KEEP_PER_SPAN = 3             # candidate pieces kept per target span (distinct songs)
 
@@ -74,9 +78,9 @@ def stable_seq(sn: SongNotes, min_stability: float = MIN_STABILITY) -> tuple[Seq
 
 
 def choose_loop(track: Track, sn: SongNotes, *, bar_options=LOOP_BARS,
-                accept: Callable[[Seq], bool] | None = None) -> Loop | None:
+                accept: Callable[[Seq, np.ndarray], bool] | None = None) -> Loop | None:
     """The target's main phrase as a loop of whole bars (None when no window is sung enough;
-    ``accept`` may reject a window's notes, e.g. a chanted one)."""
+    ``accept(notes, stability)`` may reject a window's notes, e.g. a chanted or spoken one)."""
     seq, stab = stable_seq(sn)
     bpb = track.bpb
     tonic = track.tonic * 2 + (1 if track.mode == "minor" else 0)
@@ -93,7 +97,7 @@ def choose_loop(track: Track, sn: SongNotes, *, bar_options=LOOP_BARS,
             w = seq.window(b0, b1)
             sel = (seq.on >= b0) & (seq.on < b1)
             n = len(w)
-            if n < MIN_LOOP_NOTES or n / L < MIN_NOTES_PER_BAR or (accept is not None and not accept(w)):
+            if n < MIN_LOOP_NOTES or n / L < MIN_NOTES_PER_BAR or (accept is not None and not accept(w, stab[sel])):
                 continue
             sung = np.mean([track.bar_vocal(s + k) > 0 for k in range(L)])
             bars_with_notes = len({int(x // bpb) for x in w.on})
@@ -194,6 +198,12 @@ class Mosaic:
 
     pieces: list[Piece]
     n_notes: int
+    piece_seconds: list[float] = field(default_factory=list)    # each piece's target span (s)
+    bars: int = 4
+
+    @property
+    def mean_seconds(self) -> float:
+        return float(np.mean(self.piece_seconds)) if self.piece_seconds else 0.0
 
     @property
     def matched(self) -> int:
@@ -220,10 +230,11 @@ class Mosaic:
         return float(np.mean([p.rate for p in self.pieces])) if self.pieces else 0.0
 
     def quality(self) -> float:
-        """0..~1: match, coverage and long pieces first, then few pieces and distinct songs."""
+        """0..~1: note-for-note match and recognizable (long) pieces first - mean piece seconds,
+        notes per piece, few pieces (more than one a bar costs) - then coverage and distinct songs."""
         if not self.pieces:
             return 0.0
         k = len(self.pieces)
-        return (0.4 * self.match + 0.15 * self.coverage + 0.15 * self.mean_rate
-                + 0.3 * min(1.0, self.mean_notes / 8.0) - 0.02 * max(0, k - 4)
-                - 0.05 * (k - self.songs) - (0.15 if self.songs < 2 else 0.0))
+        return (0.3 * self.match + 0.1 * self.coverage + 0.1 * self.mean_rate
+                + 0.3 * min(1.0, self.mean_seconds / RECOGNIZABLE_SECONDS) + 0.2 * min(1.0, self.mean_notes / 10.0)
+                - 0.05 * max(0, k - self.bars) - 0.05 * (k - self.songs) - (0.15 if self.songs < 2 else 0.0))

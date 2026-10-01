@@ -8,10 +8,11 @@ piece from other songs' melodies, then harmonized by other melodies, as a ~90 s 
    and notes are unchanged; ``--research`` redoes it): every viable target's loop and its best
    cover by other songs' pieces (``match.py``, ``assemble.py``), in a process pool; harmonies
    (``harmony.py``) for the ``--harmony-top`` best covers.
-3. **Rank** targets by mosaic quality (match, coverage, long pieces, few pieces, distinct songs)
-   and harmony quality; eligible targets are rendered in that order (at most one per artist)
-   until ``--examples`` have passed the heard-match gate (``--min-heard``: the rendered mosaic,
-   transcribed again, must still match the target melody). ``data/reports/mosaic_report.json``
+3. **Rank** targets by mosaic quality (match, recognizable pieces: seconds and notes per piece,
+   few pieces; coverage, distinct songs) and harmony quality; eligible targets are rendered in
+   that order (at most one per artist) until ``--examples`` have passed the heard-match gate
+   (``--min-heard``: the rendered mosaic, transcribed again, must keep that share of its planned
+   note-for-note match). ``data/reports/mosaic_report.json``
    lists the top targets with their numbers, the examples and why other candidates were
    passed over.
 4. **Render** (``render.py``) as many whole loops as fit in ``--max-seconds``: original ->
@@ -45,7 +46,7 @@ from ..paths.ffmpeg import FfmpegNotFound, find_ffmpeg
 from . import assemble, contract, export, harmony, match, notes, render, search, verify
 
 REPORT_TOP = 30
-MIN_HEARD = 0.55             # a rendered mosaic whose re-transcribed melody matches less is replaced
+MIN_HEARD = 0.6              # a rendered mosaic whose re-transcribed melody keeps less of its planned match is replaced
 
 
 def add_arguments(p: argparse.ArgumentParser) -> None:
@@ -57,7 +58,7 @@ def add_arguments(p: argparse.ArgumentParser) -> None:
     p.add_argument("--research", action="store_true", help="search again even when the cached search is current")
     p.add_argument("--search-only", action="store_true", help="search and report, render nothing")
     p.add_argument("--min-heard", type=float, default=MIN_HEARD,
-                   help=f"heard match a rendered mosaic must reach to be kept (default {MIN_HEARD})")
+                   help=f"share of its planned match a rendered mosaic must keep when heard (default {MIN_HEARD})")
     p.add_argument("--no-verify", action="store_true", help="skip the measurements (and the heard-match gate)")
 
 
@@ -78,13 +79,15 @@ def params() -> dict:
     return {"notes": notes.VERSION, "onset_tol": match.ONSET_TOL, "dur_ratio": list(match.DUR_RATIO),
             "dur_abs": match.DUR_ABS, "folds": list(match.FOLDS), "fold_tol": match.FOLD_TOL,
             "tempo_range": list(match.TEMPO_RANGE), "ngram": match.NGRAM, "ratio_class": match.RATIO_CLASS,
-            "min_piece": match.MIN_PIECE, "max_octave": match.MAX_OCTAVE, "min_rate": match.MIN_RATE, "length_bonus": assemble.LENGTH_BONUS,
+            "min_piece": match.MIN_PIECE, "long_rate": match.LONG_RATE, "ornament": match.ORNAMENT,
+            "span_bars": [assemble.MIN_SPAN_BARS, assemble.LONG_SPAN_BARS], "max_octave": match.MAX_OCTAVE, "min_rate": match.MIN_RATE, "length_bonus": assemble.LENGTH_BONUS,
             "miss_cost": assemble.MISS_COST, "piece_cost": assemble.PIECE_COST, "dup_cost": assemble.DUP_COST,
             "keep_per_span": assemble.KEEP_PER_SPAN, "loop_bars": list(assemble.LOOP_BARS),
             "ideal_seconds": assemble.IDEAL_SECONDS, "loop_seconds": [assemble.MIN_LOOP_SECONDS, assemble.MAX_LOOP_SECONDS],
             "min_stability": assemble.MIN_STABILITY, "min_loop_notes": assemble.MIN_LOOP_NOTES,
             "clear_vocal_db": search.CLEAR_VOCAL_DB, "octave_bpm": [search.SLOW_BPM, search.FAST_BPM], "melodic": [search.MIN_CHANGES, search.CHANGE_SHARE, search.MAX_REPEAT_SHARE,
-                                              search.MIN_LOOP_PITCHES, search.MIN_LOOP_RANGE],
+                                              search.MIN_LOOP_PITCHES, search.MIN_LOOP_RANGE,
+                                              search.MAX_PITCH_DEVIATION, search.MIN_SUNG_STABILITY],
             "harmony": {"cell": harmony.CELL, "consonance": harmony.CONSONANCE.tolist(), "min_coverage": harmony.MIN_COVERAGE,
                         "weights": [harmony.STRONG_W, harmony.DOUBLE_W, harmony.DOUBLE_FREE, harmony.CHORD_W,
                                     harmony.SPREAD_W, harmony.PAIR_W, harmony.PAIR_DOUBLE_W]}}
@@ -194,25 +197,30 @@ def build_example(r: dict, corpus: dict, ffmpeg: str, args: argparse.Namespace) 
 
     f0 = export.frame_offset(s.tonic, s.mode)
     piece_objs, piece_rep = [], []
-    for p, ps in zip(pieces, pspecs):
+    for p, ps, cut in zip(pieces, pspecs, rendered.cuts):
         src = corpus[p.work_id]
         tmap = render.map_points(ps.src_beats, rendered.grid, p.fold, p.offset, ps.first, ps.last, ps.duration)
         ratio = float(np.median(np.diff(tmap.src) / np.diff(tmap.dst))) if tmap is not None else p.tempo_ratio
         seq = src.seq
-        sl = slice(p.sa, p.sb + 1)
-        heard = export.note_rows(p.fold * seq.on[sl] + p.offset, p.fold * seq.off[sl] + p.offset, seq.pitch[sl] + p.shift,
-                                 lb, 0)
-        start = round(float(np.clip(loop.notes.on[p.a], 0, lb)), 4)
-        end = round(float(min(loop.notes.off[p.b], lb)), 4)
-        s0 = float(notes.to_seconds(seq.on[p.sa], src.notes.beats))
-        s1 = float(notes.to_seconds(seq.off[p.sb], src.notes.beats))
-        piece_objs.append({**meta(src), "start": start, "end": end, "source_start": round(max(s0, 0.0), 3),
+        # where the piece is heard (lead-in to hand-over), in loop beats and source seconds
+        xa, xb = (float(x) for x in rendered.grid.beat(np.array(cut)))
+        ua, ub = (xa - p.offset) / p.fold, (xb - p.offset) / p.fold
+        on, off = p.fold * seq.on + p.offset, p.fold * seq.off + p.offset
+        sel = (on < xb) & (off > xa)
+        heard = export.note_rows(np.maximum(on[sel], xa), np.minimum(off[sel], xb), seq.pitch[sel] + p.shift, lb, 0)
+        start, end = round(float(np.clip(xa, 0, lb)), 4), round(float(np.clip(xb, 0, lb)), 4)
+        s0 = max(float(notes.to_seconds(ua, src.notes.beats)), 0.0)
+        s1 = min(float(notes.to_seconds(ub, src.notes.beats)), src.notes.duration or 1e9)
+        piece_objs.append({**meta(src), "start": start, "end": end, "source_start": round(s0, 3),
                            "source_end": round(s1, 3), "shift_semitones": int(p.shift), "tempo_ratio": round(ratio, 4),
                            "match": round(p.rate, 4), "notes": heard})
+        span = (round(float(loop.notes.on[p.a]), 3), round(float(min(match.held_until(loop.notes)[p.b], lb)), 3))
         piece_rep.append({"title": src.title, "artist": src.artist, "year": src.year, "work_id": p.work_id,
-                          "loop_beats": [start, end], "target_notes": [p.a, p.b], "source_seconds": [round(s0, 2), round(s1, 2)],
-                          "shift": p.shift, "octave": p.octave, "fold": p.fold, "tempo_ratio": round(ratio, 4),
-                          "matched": p.matched, "of": max(p.n_target, p.n_source), "match": round(p.rate, 4)})
+                          "loop_beats": [start, end], "heard_seconds": round(cut[1] - cut[0], 2),
+                          "matched_beats": list(span), "target_notes": [p.a, p.b],
+                          "source_seconds": [round(s0, 2), round(s1, 2)], "shift": p.shift, "octave": p.octave,
+                          "fold": p.fold, "tempo_ratio": round(ratio, 4), "matched": p.matched,
+                          "of": max(p.n_target, p.n_source), "match": round(p.rate, 4)})
     harm_objs, harm_rep = [], []
     for v in voices:
         src = corpus[v["work_id"]]
@@ -238,6 +246,7 @@ def build_example(r: dict, corpus: dict, ffmpeg: str, args: argparse.Namespace) 
         "sections": entry["sections"], "seconds": entry["seconds"], "loops": rendered.n_loops,
         "coverage": round(mo.coverage, 4), "match": round(mo.match, 4), "pieces": piece_rep,
         "mean_piece_notes": round(mo.mean_notes, 2), "longest_piece": max(p.matched for p in pieces),
+        "mean_piece_heard_seconds": round(float(np.mean([c[1] - c[0] for c in rendered.cuts])), 2),
         "harmonies": harm_rep, "quality": r["quality"], "harmony_quality": round(search.harmony_quality(r["harmony"]), 4),
         "total": r["total"], "gains": rendered.gains, "loudness": loud, "render_seconds": round(render_s, 1)}
     t_verify = time.monotonic()
@@ -268,10 +277,12 @@ def _summary(rep: dict) -> None:
     for p in rep["pieces"]:
         oct_ = f" oct {p['octave']}" if p["octave"] else ""
         heard = f", heard {p['heard']:.2f}" if "heard" in p else ""
-        _log(f"    piece beats {p['loop_beats'][0]:5.2f}-{p['loop_beats'][1]:5.2f} {p['title'][:30]:30s} ({p['year']})"
+        _log(f"    piece beats {p['loop_beats'][0]:5.2f}-{p['loop_beats'][1]:5.2f} ({p['heard_seconds']:.1f}s)"
+             f" {p['title'][:30]:30s} ({p['year']})"
              f" src {p['source_seconds'][0]:5.2f}-{p['source_seconds'][1]:5.2f}s shift {p['shift']:+d}{oct_}"
              f" x{p['tempo_ratio']:.2f} match {p['matched']}/{p['of']}{heard}")
-    _log(f"  coverage {rep['coverage']:.2f}, match {rep['match']:.2f}, mean piece {rep['mean_piece_notes']} notes,"
+    _log(f"  coverage {rep['coverage']:.2f}, match {rep['match']:.2f}, mean piece {rep['mean_piece_notes']} notes"
+         f" / {rep['mean_piece_heard_seconds']} s heard,"
          f" longest {rep['longest_piece']}")
     for h in rep["harmonies"]:
         heard = h.get("heard_consonance")
@@ -294,6 +305,7 @@ def target_row(r: dict, corpus: dict) -> dict:
     if "loop" in r:
         row.update({"loop": r["loop"], "match": r["match"], "coverage": r["coverage"], "pieces": len(r["pieces"]),
                     "songs": r["songs"], "mean_piece_notes": r["mean_notes"], "longest_piece": r["longest"],
+                    "mean_piece_seconds": r.get("mean_seconds"),
                     "mean_piece_match": r["mean_rate"], "candidates": r["candidates"],
                     "piece_songs": [f"{corpus[p['work_id']].title} ({p['matched']}/{max(p['n_target'], p['n_source'])})"
                                     for p in r["pieces"]]})
@@ -368,9 +380,9 @@ def run(args: argparse.Namespace) -> int:
             continue
         _summary(rep)
         heard = (rep.get("heard_match") or {}).get("octave")
-        if gate is not None and heard is not None and heard < gate and not is_forced:
+        if gate is not None and heard is not None and heard < gate * rep["match"] and not is_forced:
             shutil.rmtree(mosaics_dir() / entry["id"], ignore_errors=True)
-            why = f"heard match {heard:.2f} under {gate:.2f} after rendering (planned {rep['match']:.2f})"
+            why = (f"heard match {heard:.2f} under {gate:.0%} of the planned {rep['match']:.2f} after rendering")
             _log(f"  rejected: {why}")
             passed.append({**r, "why": why, "heard": rep["heard_match"]})
             continue

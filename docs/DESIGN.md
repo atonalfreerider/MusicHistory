@@ -825,15 +825,26 @@ and time-scaled onto it, then **harmonized** by other melodies — a ~90 s video
   maximizes matched notes with **longer pieces strongly preferred** (a per-piece penalty, a
   bonus growing with piece length), at most one piece per target span, pieces from different
   songs where possible. Each piece's match rate and the overall coverage/match are reported.
+  **Recognizable pieces**: every piece spans at least **one bar** of the target (first onset
+  until its last note gives way to the next) so you can tell which song sings; the per-piece
+  cost (6) and length bonus make a 4-bar loop take about 2–4 pieces, not 4–8. Spans of two
+  bars or more may match note for note at 0.6 instead of 0.7, while a miss costs what a match
+  earns, so the note-for-note match still ranks first; unmatched ornaments (notes under a
+  quarter beat, or another syllable on the same pitch) do not count against a piece.
 * **Harmonies**: other songs' melody spans that, aligned the same way, sound against the target
   note for note in consonance (thirds, sixths, octaves, fifths; few dissonances on strong
   beats), fit the target's chords, and are not unisons of it; one or two harmony voices.
 * **Examples**: targets are chosen by searching every candidate target for the highest mosaic
-  match (and long pieces) and the best harmonies; the best several become examples.
-* **Mix** (as many whole loops as fit in 90 s): **original** (target instrumental + its vocal)
-  → **mosaic** (target instrumental + the pieces' vocals, each pitch-shifted formant-preserving
-  and warped onto the target's beat grid, crossfaded at piece joins) → **harmony** (target
-  instrumental + target vocal + the harmony voices).
+  match, recognizability (mean piece seconds, notes per piece, few pieces) and the best
+  harmonies; the best several become examples.
+* **Mix** (as many whole loops as fit in 90 s): **original** (target instrumental + its vocal,
+  exactly **one loop** as the intro) → **mosaic** (target instrumental + the pieces' vocals, each
+  pitch-shifted formant-preserving and warped onto the target's beat grid; the larger share of
+  the remaining loops, about 60 %) → **harmony** (target instrumental + target vocal + the
+  harmony voices; the rest, at least one loop). Each piece is heard as a **continuous phrase**
+  of its source: it enters up to one beat of its own audio before its first matched note and
+  keeps singing past its last until the next piece enters (at most a bar beyond its last note),
+  with equal-power crossfades at the hand-overs.
 * **Contract**: `data/audio/mosaics/mosaics.json` (version 1) + `<id>/mix.mp3`:
   `{"version", "generated_at", "frame", "mosaics": [{"id", "name", "title", "target":
   {"work_id", "title", "artist", "year"}, "file", "seconds", "key", "bpm", "beats_per_bar",
@@ -841,15 +852,18 @@ and time-scaled onto it, then **harmonized** by other melodies — a ~90 s video
   "loops"}], "beats": [[mix seconds, loop beat], ...], "chords": [[start beat, end beat, root pc,
   quality, roman], ...] (the loop's), "notes": [[start beat, end beat, MIDI pitch], ...] (the
   target loop's melody), "pieces": [{"work_id", "title", "artist", "year", "start", "end" (loop
-  beats it covers), "source_start", "source_end" (preview seconds), "shift_semitones",
+  beats where it is heard, lead-in to hand-over), "source_start", "source_end" (preview seconds
+  heard), "shift_semitones",
   "tempo_ratio", "match" (0..1), "notes": [...] (as heard, loop beats)}], "harmonies":
   [{"work_id", "title", "artist", "year", "shift_semitones", "tempo_ratio", "consonance" (0..1),
   "notes": [...]}], "coverage", "match"}]}`.
 * **Safeguards**: beat grids above 165 BPM are recounted in half time (below 60 in double); a
   target loop must be a clear melody (at most 45% repeated notes, five or more pitches over five
-  semitones), which drops chanted and rapped loops; pitches compare unrounded (within half a
+  semitones, notes centred on their semitones and steady), which drops chanted, spoken and rapped
+  loops; pitches compare unrounded (within half a
   semitone) with at most one octave of folding; and each rendered example's mosaic section is
-  re-transcribed, an example heard under 0.55 note-for-note being replaced by the next candidate.
+  re-transcribed, an example keeping less than 60% of its planned note-for-note match when heard
+  being replaced by the next candidate.
 * **Viewer**: a mosaic plays like a path (name top left, chord wheel, captions none): the melody
   graph shows the target melody, the pieces as coloured spans labelled by song with the playing
   piece bloom-lit and its song's bubble highlighted, then the harmony lines; recordings

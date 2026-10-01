@@ -69,10 +69,11 @@ def test_whole_loops_and_sections(rendered):
     spec, r = rendered
     assert abs(r.grid.seconds - 8.0) < 1e-9 and r.n_loops == 5
     assert len(r.mix) == 5 * int(round(8.0 * SR))
-    assert r.sections == [("original", 0, 1), ("mosaic", 1, 2), ("harmony", 3, 2)]
+    assert r.sections == [("original", 0, 1), ("mosaic", 1, 3), ("harmony", 4, 1)]
     assert render.sections(3) == [("original", 0, 1), ("mosaic", 1, 1), ("harmony", 2, 1)]
-    assert [k for k, _, _ in render.sections(11)] == ["original", "mosaic", "harmony"]
-    assert sum(n for _, _, n in render.sections(11)) == 11
+    for n in range(3, 16):                       # one intro loop; the mosaic gets the larger share
+        (k0, _, o), (k1, _, m), (k2, _, h) = render.sections(n)
+        assert (k0, k1, k2) == ("original", "mosaic", "harmony") and o == 1 and m >= h >= 1 and o + m + h == n
     with pytest.raises(ValueError):
         render.sections(2)
 
@@ -85,11 +86,24 @@ def test_buses_sound_only_in_their_sections(rendered):
     spec, r = rendered
     T = r.grid.seconds
     seg = lambda bus, k: r.buses[bus][int((k * T + 0.5) * SR):int(((k + 1) * T - 0.5) * SR)]
-    assert rms(seg("target_vocal", 0)) > 0.02 and rms(seg("target_vocal", 3)) > 0.02
-    assert rms(seg("target_vocal", 1)) < 1e-4 and rms(seg("target_vocal", 2)) < 1e-4
+    assert rms(seg("target_vocal", 0)) > 0.02 and rms(seg("target_vocal", 4)) > 0.02
+    assert all(rms(seg("target_vocal", k)) < 1e-4 for k in (1, 2, 3))
     assert rms(seg("harmony_0", 0)) < 1e-4 and rms(seg("harmony_0", 4)) > 0.01
-    assert rms(seg("pieces", 0)) < 1e-4 and rms(seg("pieces", 1)) > 0.01 and rms(seg("pieces", 3)) < 1e-4
+    assert rms(seg("pieces", 0)) < 1e-4 and rms(seg("pieces", 4)) < 1e-4
+    assert all(rms(seg("pieces", k)) > 0.01 for k in (1, 2, 3))
     assert rms(seg("bed", 2)) > 0.01
+
+
+def test_pieces_run_on_as_continuous_phrases(rendered):
+    spec, r = rendered
+    # A (notes at loop beats 1..6.8) enters one beat early and sings on until B enters one beat
+    # before its first note (beat 8); B sings on until A enters again at the next loop
+    assert r.cuts[0] == pytest.approx((0.0, 4.0), abs=1e-6)
+    assert r.cuts[1] == pytest.approx((4.0, 8.0), abs=1e-6)
+    y = r.buses["pieces"][:, 0]
+    T = r.grid.seconds
+    for t in (T + 0.25, T + 3.7, T + 4.2, T + 7.7):            # lead-ins and continuations sound
+        assert rms(y[int((t - 0.05) * SR):int((t + 0.15) * SR)]) > 0.005, t
 
 
 def test_pieces_land_on_the_target_beats(rendered):
@@ -107,15 +121,16 @@ def test_pieces_land_on_the_target_beats(rendered):
 
 
 def test_piece_cuts_share_a_point_when_close():
-    cuts = render.piece_cuts([(0.1, 3.0), (3.1, 5.0), (7.0, 7.95)], 8.0)
-    assert cuts[0][1] == cuts[1][0] and 3.0 < cuts[0][1] < 3.1
-    assert cuts[1][1] == pytest.approx(5.0 + render.TAIL) and cuts[2][0] == pytest.approx(7.0 - render.LEAD)
-    # around the loop: the last piece meets the first one's onset in the next loop
-    assert cuts[2][1] == pytest.approx(cuts[0][0] + 8.0)
-    assert 7.95 < cuts[2][1] < 8.1
-    # far apart: each piece keeps its lead and tail
-    far = render.piece_cuts([(1.0, 2.0), (5.0, 6.0)], 8.0)
-    assert far == [pytest.approx((1.0 - render.LEAD, 2.0 + render.TAIL)), pytest.approx((5.0 - render.LEAD, 6.0 + render.TAIL))]
+    cuts = render.piece_cuts([(0.5, 3.0), (3.2, 5.0), (7.0, 7.6)], 8.0, lead=0.5, max_tail=1.0)
+    # a gap shorter than the lead: the cut sits just after the earlier piece's last note
+    assert cuts[0][1] == cuts[1][0] == pytest.approx(3.0 + render.MIN_TAIL)
+    # too far apart: the earlier piece stops a bar (max_tail) after its last note, then silence
+    assert cuts[1][1] == pytest.approx(6.0) and cuts[2][0] == pytest.approx(6.5)
+    # around the loop: the last piece sings on until the first one's lead-in in the next loop
+    assert cuts[2][1] == pytest.approx(8.0) and cuts[0][0] == pytest.approx(0.0)
+    # overlapping notes: the cut stays just before the later piece's first note
+    tight = render.piece_cuts([(0.5, 3.1), (3.0, 5.0)], 8.0, lead=0.5, max_tail=1.0)
+    assert tight[0][1] == tight[1][0] == pytest.approx(3.0 - render.MIN_LEAD)
 
 
 def test_window_is_equal_power_at_a_shared_cut():
@@ -130,7 +145,7 @@ def test_tiles_are_seamless_and_joins_click_free(rendered):
     spec, r = rendered
     grid = np.array([t for t, _ in render.mix_beats(r)])
     res = mverify.clicks(r.mix, SR, r.joins, grid, spec.bpb)
-    assert res["checked"] >= 8 and res["clicks"] == [], res
+    assert res["checked"] >= 6 and res["clicks"] == [], res
     # the bed repeats exactly every loop: the tile is identical, so is the mix bed
     n_tile = int(round(r.grid.seconds * SR))
     assert np.array_equal(r.buses["bed"][:n_tile], r.buses["bed"][n_tile:2 * n_tile])

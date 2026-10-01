@@ -17,10 +17,15 @@ order.
 A **piece** is a run of consecutive target notes ``a..b`` (both matched) sung by the run of
 consecutive source notes between their partners. Its match rate is ``matched / max(target
 notes, source notes)`` in the run, so a source that sings extra notes, or misses some, scores
-lower. Pieces need ``MIN_PIECE`` matched notes and a rate of at least ``MIN_RATE``.
+lower; notes of either melody left unmatched that are shorter than ``ORNAMENT`` beats, or repeat
+the note before them (another syllable on the same pitch), are ornaments and do not count. Pieces need ``MIN_PIECE`` matched notes, a span of at least ``min_beats`` target beats
+(one bar, from the first note's onset until the last note gives way to the next, ``held_until``:
+long enough to tell which song sings) and a rate of at least ``MIN_RATE`` - ``LONG_RATE`` for a span of ``long_beats`` or more
+(two bars), so a much longer piece may miss a few more notes.
 
-**Search** (``Index``, ``find_pieces``): every ``NGRAM``-note n-gram (3) of every song is
-indexed by its pitch intervals (and, with ``RATIO_CLASS`` > 0, its inter-onset ratios in log2
+**Search** (``Index``, ``find_pieces``): every ``NGRAM``-note n-gram (3) of every song's
+pitch-changing notes (a repeated pitch is skipped, ``contour_notes``) is indexed by its pitch
+intervals (and, with ``RATIO_CLASS`` > 0, its inter-onset ratios in log2
 classes; off by default, the rhythm is checked by the fold instead): a key that does not change
 under transposition or tempo. The target loop's n-grams look up their seeds (about 75 000
 notes, 30-60 per loop: a few thousand seeds a target); each seed gives an alignment (the fold
@@ -43,8 +48,8 @@ import numpy as np
 
 ONSET_TOL = 0.125            # beats
 PITCH_TOL = 0.5              # semitones between the unrounded pitches of matching notes
-DUR_RATIO = (0.45, 2.2)
-DUR_ABS = 0.375              # beats
+DUR_RATIO = (0.4, 2.5)
+DUR_ABS = 0.5                # beats
 FOLDS = (0.5, 1.0, 2.0)
 FOLD_TOL = 0.2               # |log2(span ratio / fold)| allowed for a seed (beat-grid wobble)
 TEMPO_RANGE = (0.66, 1.5)
@@ -52,6 +57,8 @@ NGRAM = 3
 RATIO_CLASS = 0.0            # IOI-ratio classes per octave in the seed key (0: pitch intervals only)
 MIN_PIECE = 4
 MIN_RATE = 0.7
+ORNAMENT = 0.25              # target beats: a shorter extra source note is an ornament, not a wrong note
+LONG_RATE = 0.6              # ... the rate a long piece (``long_beats``) needs
 MAX_SHIFT = 6                # audio transposition (semitones), octaves folded ...
 MAX_OCTAVE = 1               # ... and the piece heard at most this many octaves from the target
 
@@ -185,12 +192,22 @@ def refine_offset(target: Seq, source: Seq, fold: float, partner: np.ndarray, of
 
 
 def piece_weight(matched: int, span: int, *, length_bonus: float, miss_cost: float, piece_cost: float) -> float:
-    """Matched notes, more per note in longer pieces, less the misses and a per-piece cost."""
-    return matched * (1.0 + length_bonus * (matched - 1)) - miss_cost * (span - matched) - piece_cost
+    """``(matched - miss_cost * misses) * (1 + length_bonus * (matched - 1)) - piece_cost``: every
+    note is worth more in a longer piece, every miss costs as much as a matched note earns (so the
+    note-for-note match still ranks first), and every piece has a fixed cost."""
+    return (matched - miss_cost * (span - matched)) * (1.0 + length_bonus * (matched - 1)) - piece_cost
+
+
+def held_until(seq: Seq, max_rest: float = 1.0) -> np.ndarray:
+    """Per note, the beat until which it holds the melody: the next note's onset (a rest of at most
+    ``max_rest`` beats counts with the note before it), at least its own end."""
+    nxt = np.r_[seq.on[1:], seq.off[-1:]] if len(seq) else np.zeros(0)
+    return np.maximum(seq.off, np.minimum(nxt, seq.off + max_rest))
 
 
 def pieces_of(target: Seq, source: Seq, al: Alignment, partner: np.ndarray, *, ibi_target: float,
-              min_piece: int = MIN_PIECE, min_rate: float = MIN_RATE, **weights) -> list[Piece]:
+              min_piece: int = MIN_PIECE, min_rate: float = MIN_RATE, min_beats: float = 0.0,
+              long_beats: float = float("inf"), long_rate: float = LONG_RATE, **weights) -> list[Piece]:
     """Every valid piece (run of target notes between two matched ones) of an alignment."""
     m = np.flatnonzero(partner >= 0)
     if len(m) < min_piece:
@@ -200,10 +217,24 @@ def pieces_of(target: Seq, source: Seq, al: Alignment, partner: np.ndarray, *, i
     a, b = m[p], m[q]
     sa, sb = partner[a], partner[b]
     matched = q - p + 1
-    n_t = b - a + 1
-    n_s = sb - sa + 1
+    t_same = np.r_[False, np.abs(np.diff(target.fpitch)) <= PITCH_TOL]
+    t_cost = (((target.off - target.on) >= ORNAMENT) & ~t_same).astype(int)
+    tsum = np.r_[0, np.cumsum(t_cost)]
+    tm = np.r_[0, np.cumsum(t_cost[m])]
+    n_t = matched + np.maximum((tsum[b + 1] - tsum[a]) - (tm[q + 1] - tm[p]), 0)
+    # source notes sung between the partners count against the piece unless they are ornaments
+    # (shorter than ORNAMENT beats once laid on the target) or repeat the note before them
+    dur = al.fold * (source.off - source.on)
+    same = np.r_[False, np.abs(np.diff(source.fpitch)) <= PITCH_TOL]
+    cost = ((dur >= ORNAMENT) & ~same).astype(int)
+    csum = np.r_[0, np.cumsum(cost)]
+    mcost = np.r_[0, np.cumsum(cost[partner[m]])]
+    extra = (csum[sb + 1] - csum[sa]) - (mcost[q + 1] - mcost[p])
+    n_s = matched + np.maximum(extra, 0)
     span = np.maximum(n_t, n_s)
-    ok = (q >= p) & (matched >= min_piece) & (sb >= sa) & (matched >= min_rate * span)
+    beats = held_until(target)[b] - target.on[a]
+    need = np.where(beats >= long_beats, min(long_rate, min_rate), min_rate)
+    ok = (q >= p) & (matched >= min_piece) & (sb >= sa) & (matched >= need * span - 1e-9) & (beats >= min_beats - 1e-9)
     tr = tempo_ratio(source.ibi, ibi_target, al.fold)
     out = []
     for i, j in zip(*np.nonzero(ok)):
@@ -217,49 +248,63 @@ def pieces_of(target: Seq, source: Seq, al: Alignment, partner: np.ndarray, *, i
 
 
 # --------------------------------------------------------------------------- index
-def ngram_keys(seq: Seq, n: int = NGRAM) -> list[tuple]:
-    """Transposition- and tempo-invariant key of the n-gram starting at every note."""
-    keys = []
+def contour_notes(seq: Seq) -> np.ndarray:
+    """Indices of the notes that change pitch (a note repeating the one before it - another
+    syllable on the same pitch - is skipped), so seeds survive re-sung or split notes."""
+    if not len(seq):
+        return np.zeros(0, dtype=int)
+    return np.flatnonzero(np.r_[True, np.diff(seq.pitch) != 0])
+
+
+def ngram_keys(seq: Seq, n: int = NGRAM) -> list[tuple[tuple | None, tuple[int, ...]]]:
+    """(transposition- and tempo-invariant key, note indices) of the n-gram of pitch-changing
+    notes (``contour_notes``) starting at each of them."""
+    out = []
+    idx = contour_notes(seq)
     on, pitch = seq.on, seq.pitch
-    for j in range(len(seq) - n + 1):
-        ioi = np.diff(on[j:j + n])
+    for k in range(len(idx) - n + 1):
+        js = idx[k:k + n]
+        ioi = np.diff(on[js])
         if np.any(ioi <= 1e-6):
-            keys.append(None)
+            out.append((None, tuple(int(x) for x in js)))
             continue
-        iv = tuple(int(x) for x in np.diff(pitch[j:j + n]))
+        iv = tuple(int(x) for x in np.diff(pitch[js]))
         if RATIO_CLASS > 0:
-            iv += tuple(int(np.clip(round(math.log2(ioi[k + 1] / ioi[k]) * RATIO_CLASS), -4, 4)) for k in range(n - 2))
-        keys.append(iv)
-    return keys
+            iv += tuple(int(np.clip(round(math.log2(ioi[q + 1] / ioi[q]) * RATIO_CLASS), -4, 4)) for q in range(n - 2))
+        out.append((iv, tuple(int(x) for x in js)))
+    return out
 
 
 class Index:
-    """n-gram -> [(song, first note)] over a corpus of sequences."""
+    """n-gram -> [(song, its note indices)] over a corpus of sequences."""
 
     def __init__(self, seqs: dict[str, Seq], n: int = NGRAM):
         self.seqs = seqs
         self.n = n
-        self.table: dict[tuple, list[tuple[str, int]]] = defaultdict(list)
+        self.table: dict[tuple, list[tuple[str, tuple[int, ...]]]] = defaultdict(list)
         for wid, s in seqs.items():
-            for j, key in enumerate(ngram_keys(s, n)):
+            for key, js in ngram_keys(s, n):
                 if key is not None:
-                    self.table[key].append((wid, j))
+                    self.table[key].append((wid, js))
 
-    def seeds(self, target: Seq, exclude: set[str] = frozenset()) -> Iterable[tuple[int, str, int]]:
-        """(target note, source song, source note) of every shared n-gram."""
-        for i, key in enumerate(ngram_keys(target, self.n)):
+    def seeds(self, target: Seq, exclude: set[str] = frozenset()
+              ) -> Iterable[tuple[tuple[int, ...], str, tuple[int, ...]]]:
+        """(target notes, source song, source notes) of every shared n-gram."""
+        for key, ti in ngram_keys(target, self.n):
             if key is None:
                 continue
-            for wid, j in self.table.get(key, ()):
+            for wid, js in self.table.get(key, ()):
                 if wid not in exclude:
-                    yield i, wid, j
+                    yield ti, wid, js
 
 
-def seed_alignment(target: Seq, source: Seq, i: int, j: int, n: int, ibi_target: float) -> Alignment | None:
-    """The alignment a seed implies (None when no allowed fold fits its span, or the piece would
-    be heard more than ``MAX_OCTAVE`` octaves from the target)."""
-    t_span = target.on[i + n - 1] - target.on[i]
-    s_span = source.on[j + n - 1] - source.on[j]
+def seed_alignment(target: Seq, source: Seq, ti, sj, ibi_target: float) -> Alignment | None:
+    """The alignment a seed (matching target notes ``ti`` and source notes ``sj``) implies (None
+    when no allowed fold fits its span, or the piece would be heard more than ``MAX_OCTAVE``
+    octaves from the target)."""
+    ti, sj = np.asarray(ti), np.asarray(sj)
+    t_span = target.on[ti[-1]] - target.on[ti[0]]
+    s_span = source.on[sj[-1]] - source.on[sj[0]]
     if t_span <= 0 or s_span <= 0:
         return None
     r = t_span / s_span
@@ -267,23 +312,23 @@ def seed_alignment(target: Seq, source: Seq, i: int, j: int, n: int, ibi_target:
     if not folds:
         return None
     f = folds[0]
-    off = float(np.median(target.on[i:i + n] - f * source.on[j:j + n]))
-    tr = int(target.pitch[i] - source.pitch[j])
+    off = float(np.median(target.on[ti] - f * source.on[sj]))
+    tr = int(target.pitch[ti[0]] - source.pitch[sj[0]])
     if abs(tr) > MAX_SHIFT + 12 * MAX_OCTAVE:
         return None
     return Alignment(source.work_id, f, round(off * 16) / 16, tr)
 
 
 def find_pieces(target: Seq, index: Index, *, ibi_target: float, exclude: set[str] = frozenset(),
-                min_piece: int = MIN_PIECE, min_rate: float = MIN_RATE, **weights) -> list[Piece]:
+                min_piece: int = MIN_PIECE, min_rate: float = MIN_RATE, min_beats: float = 0.0,
+                long_beats: float = float("inf"), long_rate: float = LONG_RATE, **weights) -> list[Piece]:
     """Every valid piece of every seeded alignment of the corpus onto ``target``."""
     seen: set[Alignment] = set()
     done: set[tuple] = set()
     out: list[Piece] = []
-    n = index.n
-    for i, wid, j in index.seeds(target, exclude):
+    for ti, wid, sj in index.seeds(target, exclude):
         src = index.seqs[wid]
-        al = seed_alignment(target, src, i, j, n, ibi_target)
+        al = seed_alignment(target, src, ti, sj, ibi_target)
         if al is None or al in seen:
             continue
         seen.add(al)
@@ -297,5 +342,6 @@ def find_pieces(target: Seq, index: Index, *, ibi_target: float, exclude: set[st
         done.add(key)
         al2 = Alignment(wid, al.fold, round(off, 4), al.transpose)
         out += pieces_of(target, src, al2, partner, ibi_target=ibi_target, min_piece=min_piece,
-                         min_rate=min_rate, **weights)
+                         min_rate=min_rate, min_beats=min_beats, long_beats=long_beats, long_rate=long_rate,
+                         **weights)
     return out

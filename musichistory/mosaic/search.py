@@ -17,7 +17,7 @@
   loop (``assemble.choose_loop``) of 4-8 bars with enough sung notes.
 * **Per target** (``evaluate_target``): its loop, which must be a clear melody (at most
   ``MAX_REPEAT_SHARE`` repeated notes, ``MIN_LOOP_PITCHES`` pitches over ``MIN_LOOP_RANGE``
-  semitones: no chanting or rap), every piece of every other song (``match.find_pieces``;
+  semitones, notes centred on their semitones and steady: no chanting, speech or rap), every piece of every other song (``match.find_pieces``;
   songs of the same title - covers of the same composition - are excluded) whose span moves
   (``melodic_piece``), the pieces pruned per span and scheduled (``assemble.cover``).
 * **Harmonies** (``harmonize``) for the best targets: ``harmony.voices`` over every other
@@ -54,6 +54,8 @@ CHANGE_SHARE = 0.35            # ... and this share of its intervals (a repeated
 MAX_REPEAT_SHARE = 0.45        # a target loop repeating its pitch more often is chanted or rapped, not a melody
 MIN_LOOP_PITCHES = 5           # ... and one needs this many distinct pitches
 MIN_LOOP_RANGE = 5             # ... over at least this range (semitones)
+MAX_PITCH_DEVIATION = 0.215    # mean |unrounded - rounded pitch| of a sung loop (speech glides between semitones) ...
+MIN_SUNG_STABILITY = 0.82      # ... and its notes' mean stability
 
 
 @dataclass
@@ -168,11 +170,18 @@ def melodic_piece(target: match.Seq, p: match.Piece) -> bool:
     return changes >= max(MIN_CHANGES, int(np.ceil(CHANGE_SHARE * (len(seg) - 1))))
 
 
-def melody_problem(seq: match.Seq) -> str:
-    """Why a loop's notes are no clear melody ('' when they are)."""
+def melody_problem(seq: match.Seq, stability: np.ndarray | None = None) -> str:
+    """Why a loop's notes are no clear melody ('' when they are): chanted (repeated notes), too
+    few pitches, or spoken / rapped rather than sung (notes off their semitones - mean distance
+    of the unrounded pitch over ``MAX_PITCH_DEVIATION`` - or unsteady, mean stability under
+    ``MIN_SUNG_STABILITY``)."""
     p = seq.pitch
     if len(p) < 2:
         return "no melody"
+    dev = float(np.mean(np.abs(seq.fpitch - seq.pitch)))
+    steady = float(np.mean(stability)) if stability is not None and len(stability) else 1.0
+    if dev > MAX_PITCH_DEVIATION or steady < MIN_SUNG_STABILITY:
+        return f"spoken or rapped, not sung (pitch deviation {dev:.2f}, stability {steady:.2f})"
     rep = float(np.mean(np.diff(p) == 0))
     if rep > MAX_REPEAT_SHARE:
         return f"chanted, not a melody ({rep:.0%} repeated notes)"
@@ -191,17 +200,19 @@ def evaluate_target(wid: str) -> dict:
     if s.notes.vocal_rel_db < CLEAR_VOCAL_DB:
         return {**out, "rejected": f"vocal not clear ({s.notes.vocal_rel_db:+.1f} dB re mix)"}
     tr = s.track()
-    loop = assemble.choose_loop(tr, s.notes, accept=lambda w: not melody_problem(w))
+    loop = assemble.choose_loop(tr, s.notes, accept=lambda w, st: not melody_problem(w, st))
     if loop is None:
         loose = assemble.choose_loop(tr, s.notes)
-        why = melody_problem(loose.notes) if loose is not None else ""
+        why = melody_problem(loose.notes, loose.stability) if loose is not None else ""
         return {**out, "rejected": why or "no 4-8 bar loop with enough sung notes"}
     target = loop.notes
     pieces = match.find_pieces(target, _STATE["index"], ibi_target=s.notes.ibi, exclude=excluded(corpus, wid),
-                               **WEIGHTS)
+                               min_rate=match.MIN_RATE, long_rate=match.LONG_RATE,
+                               min_beats=assemble.MIN_SPAN_BARS * loop.bpb,
+                               long_beats=assemble.LONG_SPAN_BARS * loop.bpb, **WEIGHTS)
     pieces = [p for p in pieces if melodic_piece(target, p)]
     chosen = assemble.cover(assemble.prune(pieces), len(target))
-    mo = assemble.Mosaic(chosen, len(target))
+    mo = assemble.Mosaic(chosen, len(target), [span_seconds(s, loop, p) for p in chosen], loop.bars)
     out.update({
         "loop": {"start_bar": loop.start_bar, "bars": loop.bars, "bpb": loop.bpb, "beat0": loop.beat0,
                  "seconds": loop.params["seconds"], "notes": len(target), "seam": loop.seam, "score": round(loop.score, 3),
@@ -209,9 +220,18 @@ def evaluate_target(wid: str) -> dict:
         "candidates": len(pieces), "pieces": [piece_doc(p) for p in chosen],
         "match": round(mo.match, 4), "coverage": round(mo.coverage, 4), "songs": mo.songs,
         "mean_notes": round(mo.mean_notes, 2), "mean_rate": round(mo.mean_rate, 4),
+        "mean_seconds": round(mo.mean_seconds, 3),
         "longest": max((p.matched for p in chosen), default=0), "quality": round(mo.quality(), 4),
         "seconds": round(time.monotonic() - t0, 2)})
     return out
+
+
+def span_seconds(s: Song, loop: assemble.Loop, p: match.Piece) -> float:
+    """Seconds of the target span a piece rebuilds (its first onset until its last note gives way)."""
+    a = loop.beat0 + float(loop.notes.on[p.a])
+    b = loop.beat0 + min(float(match.held_until(loop.notes)[p.b]), float(loop.beats))
+    t = notes_mod.to_seconds([a, b], s.notes.beats)
+    return float(t[1] - t[0])
 
 
 def loop_of(s: Song, d: dict) -> tuple[tracks.Track, assemble.Loop]:

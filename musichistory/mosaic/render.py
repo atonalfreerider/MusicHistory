@@ -5,7 +5,8 @@
   periodically (``LoopGrid``), so a loop ``k`` later is ``k * T`` seconds later.
 * **Sections** (``sections``): **original** (target instrumental + target vocal) -> **mosaic**
   (target instrumental + the pieces' vocals) -> **harmony** (target instrumental + target vocal
-  + the harmony voices), about a quarter of the loops original, 30 % harmony, the rest mosaic.
+  + the harmony voices): exactly one original loop (the intro), the remaining loops split
+  between mosaic (the larger share, about 60 %) and harmony.
 * **Tiles.** The bed (the target's ``instruments`` stem), the target vocal and every harmony
   voice are rendered once as a circular loop tile (``circular_tile``): the audio a little
   before and after the loop is laid on, equal-power crossfaded over ``JOIN`` (bed) or
@@ -15,10 +16,12 @@
   difference to the target.
 * **Pieces.** Each piece's source notes are warped onto the target's beat grid by its fold and
   offset (time map points every half source beat) and transposed (formant-preserving) by its
-  shift plus the tuning difference. It sounds from ``LEAD`` before its first note to ``TAIL``
-  after its last; where neighbouring pieces are closer than that, they meet at one cut point
-  between them (around the loop circularly), and every cut is an equal-power crossfade of
-  ``XF`` seconds. The rendered pieces are added at every mosaic loop.
+  shift plus the tuning difference. Its source is heard as a continuous phrase: it enters
+  ``LEAD_BEATS`` (one beat) of its own audio before its first matched note and keeps singing
+  past its last until the next piece enters (around the loop circularly), at most
+  ``TAIL_BARS`` bar beyond its last note (silence after that); neighbours share one cut point
+  (the later piece's full lead-in wherever there is room), and every cut is an equal-power
+  crossfade of ``XF`` seconds. The rendered pieces are added at every mosaic loop.
 * **Levels.** Bed and target vocal as the preview (``mashup.render.song_gain``); every piece is
   scaled to the target vocal's active level (``mashup.duet_render.active_db``, at most
   ``PIECE_MAX_DB`` away) and every harmony voice to ``HARMONY_REL_DB`` under it, panned
@@ -43,9 +46,11 @@ SR = mrender.SR
 MAX_SECONDS = 90.0
 JOIN = 0.010
 VOICE_JOIN = 0.03
-XF = 0.04
-LEAD = 0.12
-TAIL = 0.20
+XF = 0.06
+LEAD_BEATS = 1.0             # a piece's own audio before its first matched note
+TAIL_BARS = 1.0              # ... and at most this long after its last one
+MIN_LEAD = 0.03              # seconds of a piece always heard before its first note ...
+MIN_TAIL = 0.08              # ... and after its last
 MARGIN = 0.3
 PIECE_MAX_DB = 12.0
 HARMONY_REL_DB = -3.0
@@ -145,12 +150,14 @@ class Rendered:
 
 # --------------------------------------------------------------------------- plan
 def sections(n_loops: int) -> list[tuple[str, int, int]]:
-    """(kind, first loop, loops): about a quarter original, 30 % harmony, the rest mosaic."""
+    """(kind, first loop, loops): one original loop (the intro), then the mosaic (about 60 % of
+    the rest, rounded up) and the harmonies (the remainder, at least one loop)."""
     if n_loops < MIN_LOOPS:
         raise ValueError(f"{n_loops} loops: a mosaic needs at least {MIN_LOOPS}")
-    o = max(1, (n_loops + 1) // 4)
-    h = max(1, int(round(n_loops * 0.3)))
-    m = n_loops - o - h
+    o = 1
+    rest = n_loops - o
+    m = min(rest - 1, int(np.ceil(0.6 * rest)))
+    h = rest - m
     return [("original", 0, o), ("mosaic", o, m), ("harmony", o + m, h)]
 
 
@@ -158,25 +165,28 @@ def loops_in(seconds: float, loop_seconds: float) -> int:
     return int(np.floor(seconds / loop_seconds + 1e-9))
 
 
-def piece_cuts(spans: list[tuple[float, float]], T: float, lead: float = LEAD, tail: float = TAIL
+def piece_cuts(spans: list[tuple[float, float]], T: float, lead: float, max_tail: float
                ) -> list[tuple[float, float]]:
-    """(cut in, cut out) of every piece from its (first onset, last end) in loop seconds,
-    sorted by onset; neighbours (around the loop) closer than ``tail + lead`` share one cut."""
+    """(cut in, cut out) in loop seconds of every piece from its (first onset, last end), sorted
+    by onset. A piece enters ``lead`` before its first note; the piece before it (around the loop)
+    keeps singing until then - at most ``max_tail`` past its own last note, so far-apart pieces
+    leave silence between them - and the two share that cut. Where the gap is shorter than the
+    lead, the cut moves later (``MIN_TAIL`` after the earlier piece's last note, but at least
+    ``MIN_LEAD`` before the later one's first)."""
     n = len(spans)
-    cuts = [[on - lead, off + tail] for on, off in spans]
+    cuts = [[on - lead, off + max_tail] for on, off in spans]
     for i in range(n):
         j = (i + 1) % n
+        wrap = j <= i
         off_i = spans[i][1]
-        on_j = spans[j][0] + (T if j <= i else 0.0)
-        if n == 1:
-            on_j = spans[0][0] + T
-        gap = on_j - off_i
-        if gap >= lead + tail:
+        on_j = spans[j][0] + (T if wrap else 0.0)
+        enter = on_j - lead
+        if off_i + max_tail < enter:
             continue
-        c = off_i + max(gap, 0.0) * tail / (lead + tail) if gap > 0 else on_j - 0.015
+        c = min(max(enter, off_i + MIN_TAIL), on_j - MIN_LEAD)
         cuts[i][1] = c
-        cuts[j][0] = c - (T if j <= i or n == 1 else 0.0)
-    return [(float(a), float(b)) for a, b in cuts]
+        cuts[j][0] = c - (T if wrap else 0.0)
+    return [(float(x), float(y)) for x, y in cuts]
 
 
 # --------------------------------------------------------------------------- audio helpers
@@ -320,7 +330,8 @@ def render(spec: Spec, stems, log=None, sr: int = SR) -> Rendered:
     # pieces
     spans = [(float(grid.time(p.first)), float(grid.time(p.last))) for p in spec.pieces]
     order = np.argsort([s[0] for s in spans])
-    cuts_sorted = piece_cuts([spans[i] for i in order], T)
+    beat = float(np.median(np.diff(grid.times)))
+    cuts_sorted = piece_cuts([spans[i] for i in order], T, LEAD_BEATS * beat, TAIL_BARS * spec.bpb * beat)
     cuts: list[tuple[float, float]] = [(0.0, 0.0)] * len(spans)
     for k, i in enumerate(order):
         cuts[i] = cuts_sorted[k]
@@ -350,7 +361,6 @@ def render(spec: Spec, stems, log=None, sr: int = SR) -> Rendered:
 
     # sections
     span = {kind: (a * T, (a + m) * T) for kind, a, m in secs}
-    beat = float(np.median(np.diff(grid.times)))
     fade = min(0.5 * beat, mrender.MAX_FADE)
     bed = tile(bed_tile, n_loops)
     tv = tile(voc_tile, n_loops) * section_env(n, [span["original"], span["harmony"]], fade, total, sr)[:, None]
