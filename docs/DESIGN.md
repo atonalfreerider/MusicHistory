@@ -697,3 +697,27 @@ previews (`tools/fetch_previews.py` → `data/audio/<work_id>/preview.mp3`, stor
   `data/audio/renders/paths.json` (contract version 2) lists paths, steps, keys, tempos, glides.
 * **Viewer**: the Featured Paths panel (P) lists them; hovering lights the route; playing follows
   it with the recording previews, crossfading at each handoff, while MIDI plays everywhere else.
+
+## 14. Mashup chains (stage `mashup`, `musichistory/mashup/`)
+
+A featured path played as one continuous mix in which each song's **vocal** is carried over the
+previous song's **instrumental**, matched in key, tempo and chord progression.
+
+* **Stems** come from exactly Resonance-2's offline model: `Tools/SongLibrary/separate.py`
+  (Demucs 4.0.1 `htdemucs`, shifts 1, overlap 0.25) run with Resonance-2's own venv, read-only;
+  vocals / drums / bass / other / instruments land in `data/audio/stems/<work_id>/`.
+* **Chain**: S1 in full for its first phrase → changeover 1 (20 s, whole bars): S1 instrumental +
+  S2 vocal → 2-bar morph: S2 in full, entering in S1's key and tempo and gliding to its own →
+  changeover 2: S2 instrumental + S3 vocal → … → the last song in full. Vocals lead,
+  instrumentals follow. Changeover length is a parameter.
+* **Matching**: the vocal is transposed (formant-preserving) into the instrumental's key, warped
+  beat by beat onto its beat grid (time map), and its window/offset is chosen so its original
+  chords agree with the instrumental's bar by bar (the paths share a progression identity);
+  chord agreement and beat-alignment error are measured per changeover.
+* **Contract**: `data/audio/mashups/mashups.json` + `<path id>/mix.mp3` — segments (kind,
+  instrumental/vocal songs, key, BPM, shift, tempo ratio, chord match, beat error), every beat
+  with its phrase position, and per song its sung melody (pitch-tracked from the vocal stem, in
+  the normalized C/Am frame) and chords in phrase coordinates. Never any lyric text.
+* **Viewer**: playing a featured path uses its mashup when one exists; the **melody graph** (M)
+  draws every song's melody on one pitch-vs-phrase-beat graph over a chord colour strip, the
+  playing melodies bright with a bloom-lit point at the current position.
