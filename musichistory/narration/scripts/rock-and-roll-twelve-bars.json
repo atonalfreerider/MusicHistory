@@ -1,0 +1,114 @@
+{
+  "id": "rock-and-roll-twelve-bars",
+  "title": "Rock 'n' roll twelve bars",
+  "cues": [
+    {
+      "id": "intro",
+      "anchor": {
+        "segment": 0,
+        "offset": 0.2
+      },
+      "kind": "intro",
+      "text": "In Carl Perkins's account, he wrote Blue Suede Shoes after hearing a dancer warn his date off his suede shoes.",
+      "image": "artist-Q310339",
+      "sources": [
+        {
+          "title": "Blue Suede Shoes (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Blue_Suede_Shoes"
+        }
+      ]
+    },
+    {
+      "id": "holly-arrives",
+      "anchor": {
+        "segment": 1,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Buddy Holly's Peggy Sue now rides Perkins's band. Holly turned to rock and roll after seeing and opening for Elvis Presley in nineteen fifty-five.",
+      "image": "artist-Q5977",
+      "sources": [
+        {
+          "title": "Peggy Sue (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Peggy_Sue"
+        },
+        {
+          "title": "Buddy Holly (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Buddy_Holly"
+        }
+      ]
+    },
+    {
+      "id": "charles-arrives",
+      "anchor": {
+        "segment": 3,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Ray Charles now sings over Holly's band. He improvised What'd I Say to fill the end of a show.",
+      "image": "artist-Q544387",
+      "sources": [
+        {
+          "title": "What'd I Say (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/What%27d_I_Say"
+        }
+      ]
+    },
+    {
+      "id": "twelve-bars",
+      "anchor": {
+        "segment": 3,
+        "offset": 11.3
+      },
+      "kind": "song",
+      "text": "It sets gospel call and response inside the twelve-bar form: four bars home, two on the four chord, two home, then five, four, and home.",
+      "image": "artist-Q544387",
+      "sources": [
+        {
+          "title": "What'd I Say (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/What%27d_I_Say"
+        },
+        {
+          "title": "Twelve-bar blues (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Twelve-bar_blues"
+        }
+      ]
+    },
+    {
+      "id": "dion-arrives",
+      "anchor": {
+        "segment": 5,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Dion's The Wanderer now meets Charles's band. Ernie Maresca built it on a twelve-bar verse.",
+      "image": "artist-Q1226921",
+      "sources": [
+        {
+          "title": "The Wanderer (Dion song) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/The_Wanderer_(Dion_song)"
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "anchor": {
+        "segment": 6,
+        "offset": 0.3
+      },
+      "kind": "outro",
+      "text": "Dion loved Hank Williams, blues and doo-wop. One form carries all four.",
+      "image": "artist-Q1226921",
+      "sources": [
+        {
+          "title": "Dion DiMucci (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Dion_DiMucci"
+        },
+        {
+          "title": "Twelve-bar blues (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Twelve-bar_blues"
+        }
+      ]
+    }
+  ]
+}

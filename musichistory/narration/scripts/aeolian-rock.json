@@ -1,0 +1,82 @@
+{
+  "id": "aeolian-rock",
+  "title": "Minor-key rock: i–bVI–bVII",
+  "cues": [
+    {
+      "id": "intro",
+      "anchor": {
+        "segment": 0,
+        "offset": 0.3
+      },
+      "kind": "intro",
+      "text": "Eric Clapton wrote Layla about his love for Pattie Boyd, after reading Nizami's Persian tale of Layla and Majnun. Its riff, which Clapton credits to Duane Allman, turns D minor, B flat, C: minor, flat six, flat seven.",
+      "image": "artist-Q724406",
+      "sources": [
+        {
+          "title": "Layla (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Layla"
+        },
+        {
+          "title": "Derek and the Dominos, Layla (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/derek-and-the-dominos/layla"
+        }
+      ]
+    },
+    {
+      "id": "fleetwood-mac-arrives",
+      "anchor": {
+        "segment": 1,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Lindsey Buckingham's Go Your Own Way, about parting from Stevie Nicks, now rides Layla's band. Its chorus moves D minor, B flat, C.",
+      "image": "artist-Q106648",
+      "sources": [
+        {
+          "title": "Go Your Own Way (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Go_Your_Own_Way"
+        },
+        {
+          "title": "Fleetwood Mac, Go Your Own Way (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/fleetwood-mac/go-your-own-way"
+        }
+      ]
+    },
+    {
+      "id": "prince-arrives",
+      "anchor": {
+        "segment": 3,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Little Red Corvette now rides Fleetwood Mac's band. Prince got the idea dozing in Lisa Coleman's pink Mercury.",
+      "image": "artist-Q7542",
+      "sources": [
+        {
+          "title": "Little Red Corvette (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Little_Red_Corvette"
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "anchor": {
+        "segment": 5,
+        "offset": 0.2
+      },
+      "kind": "outro",
+      "text": "It climbs the same three chords: flat six, flat seven, minor. Three bands, one move.",
+      "image": "artist-Q7542",
+      "sources": [
+        {
+          "title": "Prince, Little Red Corvette (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/prince/little-red-corvette"
+        },
+        {
+          "title": "Derek and the Dominos, Layla (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/derek-and-the-dominos/layla"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "id": "axis-lauper-to-capaldi",
+  "title": "The axis loop, 1983–2018",
+  "cues": [
+    {
+      "id": "intro",
+      "anchor": {
+        "segment": 0,
+        "offset": 0.3
+      },
+      "kind": "intro",
+      "text": "Cyndi Lauper wrote Time After Time with Rob Hyman, naming it after a TV Guide film listing. It turns on the axis chords: one, five, six minor and four.",
+      "image": "artist-Q1545",
+      "sources": [
+        {
+          "title": "Time After Time (Cyndi Lauper song) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Time_After_Time_(Cyndi_Lauper_song)"
+        },
+        {
+          "title": "Cyndi Lauper, Time After Time (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/cyndi-lauper/time-after-time"
+        },
+        {
+          "title": "I–V–vi–IV progression (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/I%E2%80%93V%E2%80%93vi%E2%80%93IV_progression"
+        }
+      ]
+    },
+    {
+      "id": "lonestar-arrives",
+      "anchor": {
+        "segment": 1,
+        "offset": 2.0
+      },
+      "kind": "changeover",
+      "text": "Lonestar's Amazed now rides Lauper's band, matched in key and tempo. Marv Green, Aimee Mayo and Chris Lindsey wrote it.",
+      "image": "artist-Q1869293",
+      "sources": [
+        {
+          "title": "Amazed (Lonestar song) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Amazed_(Lonestar_song)"
+        }
+      ]
+    },
+    {
+      "id": "legend-arrives",
+      "anchor": {
+        "segment": 4,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "John Legend and Toby Gad wrote All of Me, inspired by Chrissy Teigen. Its loop starts on six minor.",
+      "image": "artist-Q44857",
+      "sources": [
+        {
+          "title": "All of Me (John Legend song) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/All_of_Me_(John_Legend_song)"
+        },
+        {
+          "title": "John Legend, All of Me (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/john-legend/all-of-me"
+        },
+        {
+          "title": "I–V–vi–IV progression (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/I%E2%80%93V%E2%80%93vi%E2%80%93IV_progression"
+        }
+      ]
+    },
+    {
+      "id": "capaldi-arrives",
+      "anchor": {
+        "segment": 6,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Lewis Capaldi's voice now meets Legend's piano. Someone You Loved plays the loop plainly: one, five, six minor, four.",
+      "image": "artist-Q42315001",
+      "sources": [
+        {
+          "title": "Someone You Loved (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Someone_You_Loved"
+        },
+        {
+          "title": "Lewis Capaldi, Someone You Loved (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/lewis-capaldi/someone-you-loved"
+        },
+        {
+          "title": "I–V–vi–IV progression (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/I%E2%80%93V%E2%80%93vi%E2%80%93IV_progression"
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "anchor": {
+        "segment": 8,
+        "offset": 0.1
+      },
+      "kind": "outro",
+      "text": "Capaldi spent about six months writing it at the piano. Thirty-five years, one loop of four chords.",
+      "image": "artist-Q42315001",
+      "sources": [
+        {
+          "title": "Someone You Loved (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Someone_You_Loved"
+        },
+        {
+          "title": "I–V–vi–IV progression (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/I%E2%80%93V%E2%80%93vi%E2%80%93IV_progression"
+        }
+      ]
+    }
+  ]
+}

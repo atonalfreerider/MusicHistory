@@ -1,0 +1,102 @@
+{
+  "id": "every-breath-interpolated",
+  "title": "Every Breath You Take, interpolated",
+  "cues": [
+    {
+      "id": "intro",
+      "anchor": {
+        "segment": 0,
+        "offset": 0.3
+      },
+      "kind": "intro",
+      "text": "Scott McKenzie sang San Francisco, which John Phillips wrote ahead of the Monterey Pop Festival. It turns four axis chords from the minor: E minor, C, G, D.",
+      "image": "artist-Q326281",
+      "sources": [
+        {
+          "title": "San Francisco (Be Sure to Wear Flowers in Your Hair) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/San_Francisco_(Be_Sure_to_Wear_Flowers_in_Your_Hair)"
+        },
+        {
+          "title": "Scott McKenzie, San Francisco (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/scott-mckenzie/san-francisco"
+        },
+        {
+          "title": "I–V–vi–IV progression (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/I%E2%80%93V%E2%80%93vi%E2%80%93IV_progression"
+        }
+      ]
+    },
+    {
+      "id": "police-arrive",
+      "anchor": {
+        "segment": 1,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Every Breath You Take now sings over McKenzie's band. Its verse runs the fifties changes.",
+      "image": "artist-Q178095",
+      "sources": [
+        {
+          "title": "The Police, Every Breath You Take (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/the-police/every-breath-you-take"
+        },
+        {
+          "title": "'50s progression (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/%2750s_progression"
+        }
+      ]
+    },
+    {
+      "id": "every-breath",
+      "anchor": {
+        "segment": 2,
+        "offset": 1.0
+      },
+      "kind": "song",
+      "text": "Sting wrote it at Ian Fleming's old desk in Jamaica. He later called the tune generic.",
+      "image": "artist-Q178095",
+      "sources": [
+        {
+          "title": "Every Breath You Take (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Every_Breath_You_Take"
+        }
+      ]
+    },
+    {
+      "id": "missing-you-arrives",
+      "anchor": {
+        "segment": 4,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "I'll Be Missing You now rides the Police's band. It reuses Andy Summers's guitar figure, which he drew from Bartók's violin duets.",
+      "image": "artist-Q236318",
+      "sources": [
+        {
+          "title": "I'll Be Missing You (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/I%27ll_Be_Missing_You"
+        },
+        {
+          "title": "Every Breath You Take (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Every_Breath_You_Take"
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "anchor": {
+        "segment": 5,
+        "offset": 3.2
+      },
+      "kind": "outro",
+      "text": "Released in nineteen ninety-seven, it mourned the Notorious B.I.G., Faith Evans's husband. Sting is credited as a writer.",
+      "image": "artist-Q236318",
+      "sources": [
+        {
+          "title": "I'll Be Missing You (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/I%27ll_Be_Missing_You"
+        }
+      ]
+    }
+  ]
+}

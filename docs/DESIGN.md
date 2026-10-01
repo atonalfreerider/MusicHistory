@@ -747,8 +747,12 @@ each cue citing its sources; no invented quotes and never any lyrics.
 * **Photos** (stage `photos`): freely licensed photographs of the singers and groups from
   Wikimedia Commons (Wikidata P18 of the artist, else a Commons search restricted to free
   licences), at most 720 px, `data/images/artists/<image id>.jpg`, catalogued in
-  `data/images/artists.json` with subject, Commons page, author, licence and licence URL, for
-  the attribution shown under every popup. Non-free or unlicensed files are never used.
+  `data/images/artists.json` with subject, Commons page, author, licence and licence URL (null
+  for public-domain files without one), plus `year` (photo date or null), `source` (`p18`,
+  `depicts`, `category` or `leader`) and `commons_file`, for the attribution shown under every
+  popup. Non-free or unlicensed files are never used, nor are non-photos (covers, labels,
+  adverts, drawings), and the photo closest to the songs' years is preferred. Misses and the
+  candidates rejected for each are listed in `data/images/artists_report.json`.
 * **Viewer**: the path tour plays the narration cues at their times, ducking the music with a
   smooth envelope (attack 0.15 s, release 0.6 s) to `duck_db`; a caption shows the line; a
   photo popup (credit and licence under it) shows the cue's image. **Recording**: Unity Recorder

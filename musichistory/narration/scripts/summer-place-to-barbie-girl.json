@@ -1,0 +1,98 @@
+{
+  "id": "summer-place-to-barbie-girl",
+  "title": "A Summer Place to Barbie Girl",
+  "cues": [
+    {
+      "id": "intro",
+      "anchor": {
+        "segment": 0,
+        "offset": 0.3
+      },
+      "kind": "intro",
+      "text": "Max Steiner wrote this theme for the film A Summer Place. Percy Faith's version held number one for nine weeks. This path follows the turnaround: one, six minor, two minor, five.",
+      "image": "artist-Q712683",
+      "sources": [
+        {
+          "title": "Theme from A Summer Place (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Theme_from_A_Summer_Place"
+        },
+        {
+          "title": "'50s progression (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/%2750s_progression"
+        }
+      ]
+    },
+    {
+      "id": "redbone-arrives",
+      "anchor": {
+        "segment": 1,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Redbone's Come and Get Your Love now sings over Faith's strings. Lolly Vegas wrote it. Its loop runs two minor, five, one, six minor, the same turnaround rotated.",
+      "image": "artist-Q1751280",
+      "sources": [
+        {
+          "title": "Come and Get Your Love (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Come_and_Get_Your_Love"
+        },
+        {
+          "title": "Redbone, Come and Get Your Love (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/redbone/come-and-get-your-love"
+        }
+      ]
+    },
+    {
+      "id": "aqua-arrives",
+      "anchor": {
+        "segment": 3,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Aqua's Barbie Girl now rides Redbone's groove. Søren Rasted got the idea at a Danish exhibition on kitsch.",
+      "image": "artist-Q213388",
+      "sources": [
+        {
+          "title": "Barbie Girl (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Barbie_Girl"
+        }
+      ]
+    },
+    {
+      "id": "barbie-girl",
+      "anchor": {
+        "segment": 3,
+        "offset": 10.8
+      },
+      "kind": "song",
+      "text": "Barbie Girl loops the turnaround from its minor chord: C sharp minor, F sharp minor, B, E.",
+      "image": "artist-Q213388",
+      "sources": [
+        {
+          "title": "Aqua, Barbie Girl (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/aqua/barbie-girl"
+        },
+        {
+          "title": "Barbie Girl (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Barbie_Girl"
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "anchor": {
+        "segment": 5,
+        "offset": 1.6
+      },
+      "kind": "outro",
+      "text": "Mattel sued Aqua's label, and an appeals court ruled the song a parody. From Steiner to Aqua, the turnaround carries on.",
+      "image": "artist-Q213388",
+      "sources": [
+        {
+          "title": "Barbie Girl (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Barbie_Girl"
+        }
+      ]
+    }
+  ]
+}

@@ -22,6 +22,8 @@ STAGES: dict[str, tuple[str, str]] = {
     "themes": ("musichistory.themes.stage", "Classify lyric themes, resolve singers, export the themes graph"),
     "paths": ("musichistory.paths.stage", "Curate featured paths and prerender their recording previews"),
     "mashup": ("musichistory.mashup.stage", "Separate stems and render each featured path as one key/tempo/chord-matched mashup"),
+    "narration": ("musichistory.narration.stage", "Speak each featured path's narration script (ElevenLabs) with inflection, loudness and duck checks"),
+    "photos": ("musichistory.photos.stage", "Find freely licensed photos of the featured songs' artists on Wikimedia Commons"),
     "status": ("musichistory.status", "Show progress of every stage"),
 }
 

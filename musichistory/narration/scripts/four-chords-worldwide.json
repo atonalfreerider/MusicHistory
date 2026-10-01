@@ -1,0 +1,106 @@
+{
+  "id": "four-chords-worldwide",
+  "title": "Four chords, three styles",
+  "cues": [
+    {
+      "id": "intro",
+      "anchor": {
+        "segment": 0,
+        "offset": 0.3
+      },
+      "kind": "intro",
+      "text": "Four chords, three styles. Bob Marley and the Wailers built No Woman, No Cry on one, five, six minor, four. Here that is C, G, A minor, F. Though Marley is widely thought to have written it, the credit went to Vincent Ford, who ran a soup kitchen in Trenchtown.",
+      "image": "artist-Q2525354",
+      "sources": [
+        {
+          "title": "No Woman, No Cry (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/No_Woman,_No_Cry"
+        },
+        {
+          "title": "Bob Marley, No Woman, No Cry (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/bob-marley/no-woman-no-cry"
+        },
+        {
+          "title": "I–V–vi–IV progression (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/I%E2%80%93V%E2%80%93vi%E2%80%93IV_progression"
+        }
+      ]
+    },
+    {
+      "id": "spice-girls-arrive",
+      "anchor": {
+        "segment": 1,
+        "offset": 2.2
+      },
+      "kind": "changeover",
+      "text": "The Spice Girls now sing over Marley's band. Wannabe uses the same four chords, starting on the five.",
+      "image": "artist-Q55641",
+      "sources": [
+        {
+          "title": "Spice Girls, Wannabe (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/spice-girls/wannabe"
+        },
+        {
+          "title": "I–V–vi–IV progression (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/I%E2%80%93V%E2%80%93vi%E2%80%93IV_progression"
+        }
+      ]
+    },
+    {
+      "id": "wannabe",
+      "anchor": {
+        "segment": 1,
+        "offset": 11.1
+      },
+      "kind": "song",
+      "text": "The group wrote it with Matt Rowe and Richard Stannard in about half an hour, stitching chants, raps and sung parts together.",
+      "image": "artist-Q55641",
+      "sources": [
+        {
+          "title": "Wannabe (song) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Wannabe_(song)"
+        }
+      ]
+    },
+    {
+      "id": "shakira-arrives",
+      "anchor": {
+        "segment": 3,
+        "offset": 2.2
+      },
+      "kind": "changeover",
+      "text": "Shakira's Whenever, Wherever now rides the Wannabe band. She wrote it first in Spanish, as Suerte, composing with Tim Mitchell.",
+      "image": "artist-Q34424",
+      "sources": [
+        {
+          "title": "Whenever, Wherever (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Whenever,_Wherever"
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "anchor": {
+        "segment": 4,
+        "offset": 0.4
+      },
+      "kind": "outro",
+      "text": "Gloria Estefan helped adapt it into English. Its loop, C sharp minor, A, E, B, is the axis again, begun on the minor chord. Three styles, one loop.",
+      "image": "artist-Q34424",
+      "sources": [
+        {
+          "title": "Whenever, Wherever (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Whenever,_Wherever"
+        },
+        {
+          "title": "Shakira, Whenever, Wherever (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/shakira/whenever-wherever"
+        },
+        {
+          "title": "I–V–vi–IV progression (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/I%E2%80%93V%E2%80%93vi%E2%80%93IV_progression"
+        }
+      ]
+    }
+  ]
+}

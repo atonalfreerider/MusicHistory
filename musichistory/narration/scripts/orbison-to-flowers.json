@@ -1,0 +1,138 @@
+{
+  "id": "orbison-to-flowers",
+  "title": "Orbison to Flowers",
+  "cues": [
+    {
+      "id": "intro",
+      "anchor": {
+        "segment": 0,
+        "offset": 0.3
+      },
+      "kind": "intro",
+      "text": "Orbison to Flowers. Roy Orbison and Joe Melson wrote Only the Lonely in nineteen sixty and offered it to Elvis Presley and the Everly Brothers. Both passed, so Orbison sang it himself, soaring into falsetto.",
+      "image": "artist-Q188426",
+      "sources": [
+        {
+          "title": "Only the Lonely (Know the Way I Feel) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Only_the_Lonely"
+        }
+      ]
+    },
+    {
+      "id": "chandler-arrives",
+      "anchor": {
+        "segment": 1,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Gene Chandler's Duke of Earl now sings over Orbison's band. In this graph's transcriptions, the two records share a sixteen-note bass line. The song grew out of a warm-up exercise by Chandler's group, the Dukays.",
+      "image": "artist-Q711442",
+      "sources": [
+        {
+          "title": "Duke of Earl (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Duke_of_Earl"
+        },
+        {
+          "title": "Only the Lonely (Know the Way I Feel) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Only_the_Lonely"
+        }
+      ]
+    },
+    {
+      "id": "pretty-woman-arrives",
+      "anchor": {
+        "segment": 4,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Oh, Pretty Woman now rides Chandler's band. Its title came from a Bill Dees quip as Claudette Orbison headed out.",
+      "image": "artist-Q188426",
+      "sources": [
+        {
+          "title": "Oh, Pretty Woman (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Oh,_Pretty_Woman"
+        }
+      ]
+    },
+    {
+      "id": "pretty-woman",
+      "anchor": {
+        "segment": 4,
+        "offset": 11.6
+      },
+      "kind": "song",
+      "text": "It rocks between one and six minor before four and five, the fifties changes. The turnaround swaps four for two minor.",
+      "image": "artist-Q188426",
+      "sources": [
+        {
+          "title": "Roy Orbison, Oh, Pretty Woman (Hooktheory TheoryTab, chords)",
+          "url": "https://www.hooktheory.com/theorytab/view/roy-orbison/oh-pretty-woman"
+        },
+        {
+          "title": "'50s progression (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/%2750s_progression"
+        }
+      ]
+    },
+    {
+      "id": "cyrus-arrives",
+      "anchor": {
+        "segment": 7,
+        "offset": 2.1
+      },
+      "kind": "changeover",
+      "text": "Miley Cyrus's Flowers rides Orbison's band. It starts the turnaround on the minor: six minor, two minor, five, one.",
+      "image": "artist-Q4235",
+      "sources": [
+        {
+          "title": "Flowers chords, Miley Cyrus (Spytunes)",
+          "url": "https://spytunes.com/flowers-chords/"
+        },
+        {
+          "title": "'50s progression (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/%2750s_progression"
+        }
+      ]
+    },
+    {
+      "id": "flowers",
+      "anchor": {
+        "segment": 7,
+        "offset": 11.4
+      },
+      "kind": "song",
+      "text": "Cyrus wrote it with Gregory Hein and Michael Pollack. It began as a ballad on Rhodes piano.",
+      "image": "artist-Q4235",
+      "sources": [
+        {
+          "title": "Flowers (Miley Cyrus song) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Flowers_(Miley_Cyrus_song)"
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "anchor": {
+        "segment": 9,
+        "offset": 0.2
+      },
+      "kind": "outro",
+      "text": "From Orbison's falsetto to Flowers, sixty-three years apart, the same turnaround keeps coming home.",
+      "image": "artist-Q4235",
+      "sources": [
+        {
+          "title": "Only the Lonely (Know the Way I Feel) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Only_the_Lonely"
+        },
+        {
+          "title": "Flowers (Miley Cyrus song) (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Flowers_(Miley_Cyrus_song)"
+        },
+        {
+          "title": "'50s progression (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/%2750s_progression"
+        }
+      ]
+    }
+  ]
+}
